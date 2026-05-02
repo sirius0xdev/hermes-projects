@@ -151,12 +151,30 @@ def find_bullish_fvg(gold_15m: pd.DataFrame, utc_now: datetime, after_hour: int 
     # Return the most recent FVG
     return results[-1] if results else None
 
-def main():
-    utc_now = datetime.now(timezone.utc)
+def in_market_window(utc_now: datetime) -> bool:
+    """
+    Forex market window: Sunday 18:00 UTC → Friday 05:00 UTC.
+    Closed: Friday 05:00 – Sunday 18:00 UTC (weekend).
+    """
+    dow = utc_now.weekday()  # 0=Mon .. 6=Sun
     hour = utc_now.hour
 
-    # Only run during active window 07:00-18:00 UTC
-    if hour < 7 or hour >= 18:
+    if dow in (0, 1, 2, 3):  # Mon-Thu: full day
+        return True
+    if dow == 4:  # Friday: closed after 05:00 UTC
+        return hour < 5
+    if dow == 5:  # Saturday: closed all day
+        return False
+    if dow == 6:  # Sunday: opens at 18:00 UTC
+        return hour >= 18
+
+    return False
+
+def main():
+    utc_now = datetime.now(timezone.utc)
+
+    # Skip if market is closed (weekend / Friday AM close / Sunday PM open)
+    if not in_market_window(utc_now):
         print("SLEEP")
         return
 
