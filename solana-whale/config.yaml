@@ -1,0 +1,57 @@
+# Solana Whale Tracker Configuration
+
+rpc:
+  https: "https://api.mainnet-beta.solana.com"
+  wss: "wss://api.mainnet-beta.solana.com"
+  # For higher rate limits, use a paid RPC:
+  # https: "https://mainnet.helius-rpc.com/?api-key=YOUR_KEY"
+  # wss: "wss://mainnet.helius-rpc.com/?api-key=YOUR_KEY"
+
+thresholds:
+  sol_usd: 50000        # Min SOL transfer (USD) to alert
+  spl_usd: 100000       # Min SPL token transfer (USD) to alert
+  top_n: 20             # Transfers shown in summary
+
+monitored_tokens:
+  - mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    symbol: "USDC"
+    decimals: 6
+    price_usd: 1.0       # Stablecoin peg
+  - mint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkYP1kkCurH2tSo"
+    symbol: "USDT"
+    decimals: 6
+    price_usd: 1.0       # Stablecoin peg
+  - mint: "7dHbWXmci3dT4UF99gs68iPjkOfUCzg5V2TLBoQD9vtn"
+    symbol: "PYTH"
+    decimals: 6
+  - mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"
+    symbol: "Bonk"
+    decimals: 5
+  - mint: "JUPyiwrYJFskUPiHa7hkeR8VUtk6BWo3eB6L9wqbF2j"
+    symbol: "JUP"
+    decimals: 6
+  - mint: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+    symbol: "mSOL"
+    decimals: 9
+  - mint: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs"
+    symbol: "ETH"
+    decimals: 6
+  - mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm"
+    symbol: "WIF"
+    decimals: 6
+
+watched_wallets:
+  - address: "5TzkiJfFfQ9k9rUQUoBaDTRchMFnHUcvPQdmPpLcxzhD"
+    label: "Jupiter Aggregator"
+  - address: "CF6t35y15mK6UB2MRhxYmKNn3rmZtV8qBgH9ZpMzsy6"
+    label: "Jupiter LP"
+  - address: "dN4tBpDAXhzbGjgKXGGYhj9XiGxUeda1iBuMeqjNTz"
+    label: "Marinade Finance"
+
+behavior:
+  log_file: "/opt/data/solana-whale/log.jsonl"
+  summary_interval_seconds: 300
+  max_history: 5000
+  rpc_delay_seconds: 3.0      # Delay between RPC calls (public RPC is strict)
+  max_retries: 5
+  backoff_base: 5             # Base seconds for exponential backoff on 429
