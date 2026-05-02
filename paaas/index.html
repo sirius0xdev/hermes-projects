@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaaAS &mdash; Personal Assistant as a Service</title>
+  <meta name="description" content="Private, dedicated Hermes or OpenClaw agents with persistent memory, high-performance inference, and optional web hosting &mdash; built for serious users.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-up { animation: fadeUp 0.6s ease-out forwards; }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-md border-b border-gray-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="text-xl font-bold tracking-tight text-white">P<span class="text-brand-400">aa</span>AS</a>
+      <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#pricing" class="hover:text-white transition">Pricing</a>
+        <a href="#architecture" class="hover:text-white transition">Architecture</a>
+        <a href="#join" class="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg transition">Join Waitlist</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="pt-32 pb-20 px-6 text-center">
+    <div class="max-w-3xl mx-auto">
+      <div class="animate-fade-up opacity-0">
+        <span class="inline-block bg-brand-900/50 text-brand-300 text-xs font-semibold px-3 py-1 rounded-full border border-brand-700/50 mb-6">Now accepting pilot users</span>
+      </div>
+      <h1 class="animate-fade-up delay-100 opacity-0 text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+        Your own dedicated<br><span class="bg-gradient-to-r from-brand-400 to-purple-400 bg-clip-text text-transparent">AI teammate</span>
+      </h1>
+      <p class="animate-fade-up delay-200 opacity-0 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+        Private, persistent Hermes or OpenClaw agents with dedicated GPU inference, long-term memory, and optional web hosting&mdash;managed for you. No shared hosts, no API costs, no infra headaches.
+      </p>
+      <div class="animate-fade-up delay-300 opacity-0 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#join" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold px-8 py-3 rounded-xl transition text-lg">Join the Waitlist</a>
+        <a href="#features" class="border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold px-8 py-3 rounded-xl transition text-lg">See What's Included</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="py-20 px-6 bg-gray-900/50">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Everything you need. Nothing you don't.</h2>
+        <p class="text-gray-400 max-w-xl mx-auto">A complete private workspace that feels like having your own AI developer/operations team member.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-brand-700/50 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-900/60 flex items-center justify-center text-brand-400 mb-4 text-xl">&#9889;</div>
+          <h3 class="text-lg font-semibold mb-2">Managed AI Agent</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Hermes or OpenClaw&mdash;your choice. Persistent, autonomous, with strong tool-calling and reasoning capabilities.</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-brand-700/50 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-900/60 flex items-center justify-center text-brand-400 mb-4 text-xl">&#128366;</div>
+          <h3 class="text-lg font-semibold mb-2">Dedicated GPU Inference</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">RTX 6000 Pro Ada backend for blazing-fast, local multimodal and VLM workloads. No external APIs.</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-brand-700/50 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-900/60 flex items-center justify-center text-brand-400 mb-4 text-xl">&#128451;</div>
+          <h3 class="text-lg font-semibold mb-2">Persistent Memory</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Dedicated PostgreSQL for long-term memory, RAG over personal data, conversation history, and knowledge bases.</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-brand-700/50 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-900/60 flex items-center justify-center text-brand-400 mb-4 text-xl">&#127760;</div>
+          <h3 class="text-lg font-semibold mb-2">Optional Web Hosting</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">One-click deployment for agent frontends, dashboards, simple tools, or internal web UIs.</p>
+        </div>
+        <!-- Feature 5 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-brand-700/50 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-900/60 flex items-center justify-center text-brand-400 mb-4 text-xl">&#128274;</div>
+          <h3 class="text-lg font-semibold mb-2">Privacy-First</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">No external LLM APIs by default. All inference stays on your private cluster. Your data never leaves.</p>
+        </div>
+        <!-- Feature 6 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-brand-700/50 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-900/60 flex items-center justify-center text-brand-400 mb-4 text-xl">&#9881;</div>
+          <h3 class="text-lg font-semibold mb-2">Zero Ops</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">We handle cluster management, GPU provisioning, monitoring, and updates. You just use your agent.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
+        <p class="text-gray-400">No hidden costs. Practically unlimited tokens with fair use.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Standard -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+          <h3 class="text-xl font-bold mb-1">Standard</h3>
+          <p class="text-gray-400 text-sm mb-6">Personal users &middot; light experimentation</p>
+          <div class="mb-6">
+            <span class="text-4xl font-extrabold">$100</span><span class="text-gray-400">/mo</span>
+          </div>
+          <ul class="space-y-3 text-sm text-gray-300 mb-8">
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Dedicated Hermes or OpenClaw agent</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Persistent PostgreSQL database</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Basic web hosting</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Standard GPU priority</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Fair-use unlimited tokens</li>
+          </ul>
+          <a href="#join" class="block text-center border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold py-3 rounded-xl transition">Get Started</a>
+        </div>
+        <!-- Heavy -->
+        <div class="bg-gray-900 border-2 border-brand-600 rounded-2xl p-8 relative">
+          <span class="absolute -top-3 left-6 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Most Popular</span>
+          <h3 class="text-xl font-bold mb-1">Heavy / 24-7</h3>
+          <p class="text-gray-400 text-sm mb-6">Power users &middot; always-on workflows</p>
+          <div class="mb-6">
+            <span class="text-4xl font-extrabold">$200</span><span class="text-gray-400">/mo</span>
+          </div>
+          <ul class="space-y-3 text-sm text-gray-300 mb-8">
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Everything in Standard, plus:</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Priority GPU access</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Higher resource allocations</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Designed for dedicated 24/7 usage</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Priority support</li>
+          </ul>
+          <a href="#join" class="block text-center bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture" class="py-20 px-6 bg-gray-900/50">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Built on battle-tested infrastructure</h2>
+        <p class="text-gray-400 max-w-xl mx-auto">Google Kubernetes Engine, Cilium networking, RTX 6000 Pro GPUs, and spot+on-demand resilience.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h3 class="font-semibold mb-3 flex items-center gap-2">&#127970; Primary Cluster</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Lightweight GKE for control plane, user agents, Postgres, web hosting, and management. Agents live here always-on.</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h3 class="font-semibold mb-3 flex items-center gap-2">&#127752; GPU Node Pools</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Spot primary + On-Demand fallback with node selectors/taints. Graceful preemption handling. RTX 6000 Pro Ada GPUs.</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h3 class="font-semibold mb-3 flex items-center gap-2">&#128268; Networking</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Cilium Cluster Mesh for seamless communication between clusters and services. GatewayAPI for host-based routing.</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h3 class="font-semibold mb-3 flex items-center gap-2">&#9889; Scaling</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">On-demand GPU spin-up for inference. Auto-shutdown when idle. KEDA scaling for intelligent resource management.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO IS THIS FOR -->
+  <section class="py-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-10">Built for you if you&hellip;</h2>
+      <div class="grid md:grid-cols-2 gap-4 text-left">
+        <div class="flex items-start gap-3 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <span class="text-brand-400 text-lg mt-0.5">&#9997;</span>
+          <div>
+            <p class="font-semibold text-sm">Are an indie hacker</p>
+            <p class="text-gray-400 text-sm">Iterating on agents and need a reliable, private playground.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <span class="text-brand-400 text-lg mt-0.5">&#9997;</span>
+          <div>
+            <p class="font-semibold text-sm">Value privacy</p>
+            <p class="text-gray-400 text-sm">Want persistent VLMs without sending data to public APIs.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <span class="text-brand-400 text-lg mt-0.5">&#9997;</span>
+          <div>
+            <p class="font-semibold text-sm">Are a developer/researcher</p>
+            <p class="text-gray-400 text-sm">Need a managed workspace for multimodal experiments and agent development.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+          <span class="text-brand-400 text-lg mt-0.5">&#9997;</span>
+          <div>
+            <p class="font-semibold text-sm">Hate infra work</p>
+            <p class="text-gray-400 text-sm">Want zero-ops management so you can focus on building, not maintaining.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITLIST / CTA -->
+  <section id="join" class="py-20 px-6 bg-gradient-to-b from-brand-900/20 to-gray-950">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to get started?</h2>
+      <p class="text-gray-400 mb-8">We're currently onboarding our first cohort of pilot users. Limited spots available for a high-touch experience.</p>
+      <a href="https://t.me/sirius_devops" target="_blank" rel="noopener" class="inline-block bg-brand-600 hover:bg-brand-500 text-white font-semibold px-10 py-4 rounded-xl transition text-lg">
+        Contact @sirius_devops on Telegram
+      </a>
+      <p class="text-gray-500 text-sm mt-4">Or join our private Discord waitlist &mdash; link shared on request.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-8 px-6 border-t border-gray-800 text-center text-gray-500 text-sm">
+    <p>&copy; 2026 PaaAS. Not about building a unicorn&mdash;about creating sustainable value for a small group of users.</p>
+    <p class="mt-1">Founder: Lance (@sirius_devops) &middot; DevOps & AI builder &middot; North Carolina</p>
+  </footer>
+
+</body>
+</html>
