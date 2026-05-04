@@ -28,13 +28,13 @@
       }
     }
   </script>
-  <style>
+    <style>
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-up { animation: fadeUp 0.6s ease-out forwards; }
     .delay-100 { animation-delay: 0.1s; }
     .delay-200 { animation-delay: 0.2s; }
     .delay-300 { animation-delay: 0.3s; }
-  </style>
+    </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans antialiased">
 
@@ -122,43 +122,49 @@
   <section id="pricing" class="py-20 px-6">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-14">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
-        <p class="text-gray-400">No hidden costs. Practically unlimited tokens with fair use.</p>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Simple pricing to get started</h2>
+        <p class="text-gray-400">Choose your plan. Upgrade anytime.</p>
       </div>
       <div class="grid md:grid-cols-2 gap-6">
-        <!-- Standard -->
+        <!-- Starter / Cheap -->
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8">
-          <h3 class="text-xl font-bold mb-1">Standard</h3>
-          <p class="text-gray-400 text-sm mb-6">Personal users &middot; light experimentation</p>
+          <h3 class="text-xl font-bold mb-1">Starter</h3>
+          <p class="text-gray-400 text-sm mb-6">Light use · personal agents</p>
+          <div class="mb-6">
+            <span class="text-4xl font-extrabold">$50</span><span class="text-gray-400">/mo</span>
+          </div>
+          <ul class="space-y-3 text-sm text-gray-300 mb-8">
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Dedicated Hermes or OpenClaw agent</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Persistent PostgreSQL memory</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Basic web hosting</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Shared GPU access</li>
+          </ul>
+          <a href="#join" class="block text-center border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold py-3 rounded-xl transition">Join Waitlist</a>
+        </div>
+        <!-- Max -->
+        <div class="bg-gray-900 border-2 border-brand-600 rounded-2xl p-8 relative">
+          <span class="absolute -top-3 left-6 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Most Popular</span>
+          <h3 class="text-xl font-bold mb-1">Max</h3>
+          <p class="text-gray-400 text-sm mb-6">Power users · always-on workflows</p>
           <div class="mb-6">
             <span class="text-4xl font-extrabold">$100</span><span class="text-gray-400">/mo</span>
           </div>
           <ul class="space-y-3 text-sm text-gray-300 mb-8">
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Dedicated Hermes or OpenClaw agent</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Persistent PostgreSQL database</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Basic web hosting</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Standard GPU priority</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Fair-use unlimited tokens</li>
-          </ul>
-          <a href="#join" class="block text-center border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold py-3 rounded-xl transition">Get Started</a>
-        </div>
-        <!-- Heavy -->
-        <div class="bg-gray-900 border-2 border-brand-600 rounded-2xl p-8 relative">
-          <span class="absolute -top-3 left-6 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Most Popular</span>
-          <h3 class="text-xl font-bold mb-1">Heavy / 24-7</h3>
-          <p class="text-gray-400 text-sm mb-6">Power users &middot; always-on workflows</p>
-          <div class="mb-6">
-            <span class="text-4xl font-extrabold">$200</span><span class="text-gray-400">/mo</span>
-          </div>
-          <ul class="space-y-3 text-sm text-gray-300 mb-8">
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Everything in Standard, plus:</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Priority GPU access</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Higher resource allocations</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Designed for dedicated 24/7 usage</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Everything in Starter, plus:</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Higher resource priority</li>
+            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Improved GPU allocation</li>
             <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">&#10003;</span> Priority support</li>
           </ul>
-          <a href="#join" class="block text-center bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition">Get Started</a>
+          <a href="#join" class="block text-center bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition">Join Waitlist</a>
         </div>
+      </div>
+
+      <!-- Premium IaaS callout -->
+      <div class="mt-10 max-w-2xl mx-auto text-center bg-gray-900/60 border border-gray-800 rounded-2xl p-6">
+        <p class="text-gray-300 text-sm">
+          For serious production workloads, we also offer <span class="font-semibold text-brand-400">private IaaS on dedicated GPUs</span> at a steep premium.
+          Contact us to discuss custom dedicated hardware.
+        </p>
       </div>
     </div>
   </section>
@@ -172,8 +178,8 @@
       </div>
       <div class="grid md:grid-cols-2 gap-6">
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h3 class="font-semibold mb-3 flex items-center gap-2">&#127970; Primary Cluster</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Lightweight GKE for control plane, user agents, Postgres, web hosting, and management. Agents live here always-on.</p>
+          <h3 class="font-semibold mb-3 flex items-center gap-2">&#127970; Worker Nodes</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">All user workloads—including agents, Postgres, web hosting, and management—run on dedicated GKE worker nodes. Nothing runs on the Kubernetes control plane.</p>
         </div>
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
           <h3 class="font-semibold mb-3 flex items-center gap-2">&#127752; GPU Node Pools</h3>
