@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgentForge — Private AI Agent Workspace</title>
-<meta name="description" content="Dedicated RTX 6000 Pro GPU on GKE. Your own managed AI agent with persistent storage. From $100/mo — private, never shared. Join the waitlist.">
+<meta name="description" content="High-performance on GKE. Your own managed AI agent with persistent storage. From $100/mo — private, never shared. Join the waitlist.">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -135,21 +135,6 @@ nav .container{display:flex;align-items:center;justify-content:space-between;hei
 .stat .num{font-size:2.5rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
 .stat .num .accent{color:var(--accent-light)}
 .stat .label{font-size:.8125rem;color:var(--text-dim);margin-top:4px}
-.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:64px}
-.testimonial{
-  text-align:left;padding:28px;border-radius:var(--radius);
-  border:1px solid var(--border);background:var(--bg-card);
-}
-.testimonial p{font-size:.875rem;color:var(--text-muted);line-height:1.7;margin-bottom:18px;font-style:italic}
-.testimonial .author{display:flex;align-items:center;gap:10px}
-.testimonial .avatar{
-  width:36px;height:36px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-light) 100%);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:700;color:#fff;
-}
-.testimonial .name{font-size:.8125rem;font-weight:600}
-.testimonial .role{font-size:.75rem;color:var(--text-dim)}
 
 /* === PRICING === */
 .pricing{text-align:center}
@@ -240,7 +225,7 @@ footer a:hover{color:var(--text)}
   section:first-of-type{padding-top:100px}
   .nav-links{display:none}
   .menu-toggle{display:block}
-  .features-grid,.testimonials{grid-template-columns:1fr}
+  .features-grid{grid-template-columns:1fr}
   .stats-row{gap:32px}
   .pricing-cards{flex-direction:column;align-items:center}
   .pricing-card{max-width:100%;width:100%}
@@ -284,7 +269,7 @@ footer a:hover{color:var(--text)}
   <div class="container">
     <div class="badge"><span class="dot"></span> Now accepting early access signups</div>
     <h1>Your own dedicated<br><span class="gradient">AI agent workspace</span></h1>
-    <p>Dedicated RTX&nbsp;6000&nbsp;Pro GPU on GKE, managed Hermes agent, persistent PostgreSQL — all yours, always on, never shared.</p>
+    <p>High-performance on GKE, managed Hermes agent, persistent PostgreSQL — all yours, always on, never shared.</p>
     <form class="hero-form" id="heroForm" onsubmit="return handleSignup(event)">
       <input type="email" placeholder="you@example.com" required id="heroEmail" autocomplete="email">
       <button type="submit" class="btn-primary">Join Waitlist</button>
@@ -292,7 +277,7 @@ footer a:hover{color:var(--text)}
     <p class="hero-cta-note">No credit card required · Limited spots rolling out</p>
     <div class="hero-logos">
       <div class="logos-row">
-        <span class="tech">NVIDIA RTX 6000</span>
+        <span class="tech">dedicated GPU</span>
         <span class="tech">GKE</span>
         <span class="tech">Hermes</span>
         <span class="tech">PostgreSQL</span>
@@ -314,8 +299,8 @@ footer a:hover{color:var(--text)}
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <h3>Dedicated RTX 6000 Pro</h3>
-        <p>Full GPU assigned to you alone. No noisy neighbors, no shared time slices, no queue. 48GB VRAM ready the moment you need it.</p>
+        <h3>Dedicated high-performance GPU</h3>
+        <p>Full GPU assigned to you alone. No noisy neighbors, no shared time slices, no queue. Ready the moment you need it.</p>
       </div>
       <div class="feature-card fade-up">
         <div class="feature-icon">
@@ -365,8 +350,8 @@ footer a:hover{color:var(--text)}
     </div>
     <div class="stats-row fade-up">
       <div class="stat">
-        <div class="num">48<span class="accent">GB</span></div>
-        <div class="label">VRAM per workspace</div>
+        <div class="num">Dedicated</div>
+        <div class="label">High-performance</div>
       </div>
       <div class="stat">
         <div class="num">99.9<span class="accent">%</span></div>
@@ -379,29 +364,6 @@ footer a:hover{color:var(--text)}
       <div class="stat">
         <div class="num">24<span class="accent">/7</span></div>
         <div class="label">Agent uptime</div>
-      </div>
-    </div>
-    <div class="testimonials fade-up">
-      <div class="testimonial">
-        <p>"Finally, GPU compute I don't have to babysit. My agent just runs."</p>
-        <div class="author">
-          <div class="avatar">AK</div>
-          <div><div class="name">Alex K.</div><div class="role">Indie hacker, building an AI SaaS</div></div>
-        </div>
-      </div>
-      <div class="testimonial">
-        <p>"The persistent Postgres with pgVector saved me a weekend of infra setup."</p>
-        <div class="author">
-          <div class="avatar">SR</div>
-          <div><div class="name">Sarah R.</div><div class="role">ML researcher, PhD candidate</div></div>
-        </div>
-      </div>
-      <div class="testimonial">
-        <p>"Dedicated GPU means my fine-tuning jobs don't queue for hours. Game changer."</p>
-        <div class="author">
-          <div class="avatar">MT</div>
-          <div><div class="name">Marcus T.</div><div class="role">AI engineer at a fast-growing startup</div></div>
-        </div>
       </div>
     </div>
   </div>
@@ -426,7 +388,7 @@ footer a:hover{color:var(--text)}
         <ul class="pricing-features">
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Dedicated RTX 6000 Pro GPU
+            Dedicated high-performance GPU
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -466,7 +428,7 @@ footer a:hover{color:var(--text)}
         <ul class="pricing-features">
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Dedicated RTX 6000 Pro GPU (full time)
+            Dedicated high-performance GPU (full time)
           </li>
           <li>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -506,7 +468,7 @@ footer a:hover{color:var(--text)}
     <div class="faq-list fade-up">
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">What exactly do I get with my workspace?</button>
-        <div class="faq-a"><div class="faq-a-inner">A fully isolated container on Google Kubernetes Engine with a dedicated NVIDIA RTX 6000 Pro GPU, a managed AI agent (Hermes or OpenClaw) running 24/7, and a managed PostgreSQL database with pgVector extensions. Everything is pre-configured and ready to use.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">A fully isolated container on Google Kubernetes Engine with a dedicated high-performance GPU, a managed AI agent (Hermes or OpenClaw) running 24/7, and a managed PostgreSQL database with pgVector extensions. Everything is pre-configured and ready to use.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">What's the difference between Standard and Heavy?</button>
