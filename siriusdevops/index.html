@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sirius DevOps — Infrastructure Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#08080c;
+  --surface:#111118;
+  --surface-hover:#161622;
+  --border:#22222e;
+  --text:#d4d4dc;
+  --text-muted:#787896;
+  --accent:#5b9cf5;
+  --accent-glow:#5b9cf533;
+  --green:#4ade80;
+  --amber:#f59e0b;
+  --purple:#a78bfa;
+  --radius:12px;
+  --radius-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{max-width:960px;margin:0 auto;padding:64px 24px 120px}
+header{margin-bottom:80px}
+header .logo{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent);letter-spacing:-0.5px;margin-bottom:40px}
+hero{margin-bottom:80px}
+hero h1{font-size:clamp(36px,5vw,56px);font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:24px;color:#f0f0f6}
+hero h1 span{color:var(--accent)}
+hero p{font-size:18px;line-height:1.7;color:var(--text-muted);max-width:640px}
+.tech-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.tech-tags span{font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);letter-spacing:0.3px}
+.tech-tags span.highlight{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
+
+section{margin-bottom:72px}
+section h2{font-size:24px;font-weight:600;margin-bottom:32px;color:#e8e8f0;display:flex;align-items:center;gap:12px}
+section h2::before{content:'';width:4px;height:24px;background:var(--accent);border-radius:2px}
+
+.projects{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:border-color .2s,background .2s}
+.card:hover{border-color:#333350;background:var(--surface-hover)}
+.card h3{font-size:20px;font-weight:600;margin-bottom:8px;color:#e8e8f0}
+.card .card-sub{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);margin-bottom:20px;letter-spacing:0.3px}
+.card .card-desc{font-size:15px;line-height:1.65;color:var(--text-muted);margin-bottom:20px}
+.card ul{list-style:none;padding:0}
+.card ul li{font-size:14px;line-height:1.6;color:var(--text-muted);padding:4px 0;padding-left:18px;position:relative}
+.card ul li::before{content:'\203A';position:absolute;left:0;color:var(--accent);font-weight:600}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:80px}
+.stat{padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);text-align:center}
+.stat .value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600;color:var(--accent);margin-bottom:6px}
+.stat .label{font-size:13px;color:var(--text-muted)}
+
+.arch-section{margin-bottom:80px}
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.stack-item{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'JetBrains Mono',monospace;font-size:13px}
+.stack-item .cat{color:var(--accent);margin-bottom:6px;font-weight:500}
+.stack-item .tools{color:var(--text-muted);line-height:1.7}
+
+footer{padding-top:48px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+footer .brand{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent)}
+footer .links{display:flex;gap:24px}
+footer .links a{color:var(--text-muted);text-decoration:none;font-size:14px;transition:color .2s}
+footer .links a:hover{color:var(--accent)}
+
+@media(max-width:720px){
+  .projects{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  body{padding:40px 16px 80px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">siriusdevops.com</div>
+</header>
+
+<hero>
+  <h1>Infrastructure <span>Engineering</span> &amp; Cloud-Native DevOps</h1>
+  <p>Building production Kubernetes clusters, GPU-accelerated AI inference platforms, and automated data pipelines. GitOps from commit to cluster, infrastructure as code, monitoring that works.</p>
+  <div class="tech-tags">
+    <span class="highlight">Kubernetes</span>
+    <span>Terraform</span>
+    <span>GKE</span>
+    <span>Flux CD</span>
+    <span>Cilium</span>
+    <span>vLLM</span>
+    <span>PostgreSQL</span>
+    <span>Prometheus</span>
+    <span>Docker</span>
+    <span>Python</span>
+    <span>GitOps</span>
+    <span>GPU Clusters</span>
+  </div>
+</hero>
+
+<div class="stats">
+  <div class="stat"><div class="value">2</div><div class="label">Production Clusters</div></div>
+  <div class="stat"><div class="value">370+</div><div class="label">Data Feeds Automated</div></div>
+  <div class="stat"><div class="value">GPU</div><div class="label">L4 + A100 Inference</div></div>
+  <div class="stat"><div class="value">24/7</div><div class="label">GitOps Deployments</div></div>
+</div>
+
+<section>
+  <h2>Projects</h2>
+  <div class="projects">
+    <a href="https://github.com/sirius0xdev/gcloud-lab" style="text-decoration:none;color:inherit;display:block">
+      <div class="card">
+        <h3>GCloud Lab</h3>
+        <div class="card-sub">GCP &middot; GKE &middot; Terraform &middot; Flux CD</div>
+        <div class="card-desc">Cloud-native infrastructure on Google Cloud Platform with GPU-accelerated AI inference and automated data pipelines.</div>
+        <ul>
+          <li>Dual-tier LLM platform — L4 dispatcher + A100 deep thinker with KEDA scale-to-zero</li>
+          <li>News quant pipeline — 371 global feeds analyzed by DeepSeek-R1 for futures trading signals</li>
+          <li>N8N workflow automation with CloudNativePG HA databases</li>
+          <li>Cilium CNI + Hubble observability + Tailscale VPN mesh</li>
+          <li>Infrastructure-as-code: Terraform, SOPS/Age encryption, SPOT GPU cost optimization</li>
+        </ul>
+      </div>
+    </a>
+    <a href="https://github.com/sirius0xdev/lab" style="text-decoration:none;color:inherit;display:block">
+      <div class="card">
+        <h3>Kubernetes Lab</h3>
+        <div class="card-sub">Multi-Cloud &middot; kubeadm &middot; Flux CD &middot; Cilium</div>
+        <div class="card-desc">Multi-cloud Kubernetes cluster running diverse production workloads — from blockchain infrastructure to game servers.</div>
+        <ul>
+          <li>Zcash infrastructure — Zebrad full node + Lightwallet with gRPC API</li>
+          <li>Minecraft server cluster — Multipaper with Velocity proxy, MariaDB backend</li>
+          <li>XMPP messaging (Prosody) + Linkding bookmark management</li>
+          <li>BGP + L2 announcements via Cilium for LoadBalancer services</li>
+          <li>Renovate dependency automation, Prometheus/Grafana monitoring, SOPS secrets</li>
+        </ul>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="arch-section">
+  <h2>Stack</h2>
+  <div class="stack-grid">
+    <div class="stack-item">
+      <div class="cat">Orchestration</div>
+      <div class="tools">Kubernetes &middot; GKE &middot; Docker &middot; Helm &middot; Kustomize</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">IaC &amp; GitOps</div>
+      <div class="tools">Terraform &middot; Flux CD &middot; SOPS &middot; Age Encryption</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">Networking</div>
+      <div class="tools">Cilium &middot; BGP &middot; Hubble &middot; Gateway API &middot; Tailscale</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">AI / ML Infra</div>
+      <div class="tools">vLLM &middot; Ollama &middot; DeepSeek-R1 &middot; NVIDIA L4 &middot; A100</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">Databases</div>
+      <div class="tools">CloudNative PG &middot; PostgreSQL &middot; MariaDB &middot; HA Clusters</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">Monitoring</div>
+      <div class="tools">Prometheus &middot; Grafana &middot; AlertManager &middot; k9s</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">Languages</div>
+      <div class="tools">Python &middot; Bash &middot; HCL &middot; YAML &middot; SQL</div>
+    </div>
+    <div class="stack-item">
+      <div class="cat">CI/CD</div>
+      <div class="tools">GitHub Actions &middot; Flux CD &middot; Renovate &middot; Dev Containers</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand">siriusdevops.com</div>
+  <div class="links">
+    <a href="https://github.com/sirius0xdev">GitHub</a>
+    <a href="mailto:sirius@siriusdevops.com">sirius@siriusdevops.com</a>
+  </div>
+</footer>
+
+</body>
+</html>
