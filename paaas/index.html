@@ -542,25 +542,37 @@ async function handleSignup(e){
   btn.disabled=true;
 
   try{
-    // POST to placeholder webhook — replace URL with your actual endpoint
-    await fetch('https://example.com/api/waitlist',{
+    const resp = await fetch('/api/waitlist',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email}),
-      mode:'no-cors'
+      body:JSON.stringify({email,source:'agentforge-landing'})
     });
+
+    if(resp.ok){
+      const data = await resp.json();
+      btn.textContent=orig;
+      btn.disabled=false;
+      input.value='';
+
+      // Show success toast
+      const toast=document.getElementById('toast');
+      toast.textContent='You are on the list!';
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'),3500);
+    }else{
+      throw new Error(resp.status===409?'already registered':'server error');
+    }
   }catch(err){
-    // Fail silently for demo — in production, handle errors properly
+    btn.textContent=orig;
+    btn.disabled=false;
+
+    const toast=document.getElementById('toast');
+    toast.textContent=err.message==='already registered'
+      ?'You are already on the list!'
+      :'Something went wrong. Try again.';
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'),3500);
   }
-
-  btn.textContent=orig;
-  btn.disabled=false;
-  input.value='';
-
-  // Show toast
-  const toast=document.getElementById('toast');
-  toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),3500);
 
   return false;
 }
