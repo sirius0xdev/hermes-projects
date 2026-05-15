@@ -3,74 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sirius DevOps — Infrastructure Engineering</title>
+<title>Sirius DevOps — Cloud Infrastructure Engineering</title>
+<meta name="description" content="Production cloud infrastructure engineering — GKE, AI/ML platforms, GitOps pipelines, and database fleets. I build and manage the infrastructure so your team ships features.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:#08080c;
-  --surface:#111118;
-  --surface-hover:#161622;
-  --border:#22222e;
+  --surface:#0d0d14;
+  --surface-raised:#111118;
+  --border:#1e1e2a;
+  --border-hover:#2a2a3c;
   --text:#d4d4dc;
-  --text-muted:#787896;
+  --text-heading:#ededf5;
+  --text-muted:#70708c;
   --accent:#5b9cf5;
-  --accent-glow:#5b9cf533;
+  --accent-dim:#3b6cb5;
+  --accent-glow:#5b9cf518;
   --green:#4ade80;
-  --amber:#f59e0b;
   --purple:#a78bfa;
   --radius:12px;
   --radius-sm:8px;
+  --radius-lg:16px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0}
-html{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-body{max-width:960px;margin:0 auto;padding:64px 24px 120px}
-header{margin-bottom:80px}
-header .logo{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent);letter-spacing:-0.5px;margin-bottom:40px}
-hero{margin-bottom:80px}
-hero h1{font-size:clamp(36px,5vw,56px);font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:24px;color:#f0f0f6}
-hero h1 span{color:var(--accent)}
-hero p{font-size:18px;line-height:1.7;color:var(--text-muted);max-width:640px}
-.tech-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
-.tech-tags span{font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);letter-spacing:0.3px}
-.tech-tags span.highlight{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
+html{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{max-width:1040px;margin:0 auto;padding:80px 24px 120px}
 
-section{margin-bottom:72px}
-section h2{font-size:24px;font-weight:600;margin-bottom:32px;color:#e8e8f0;display:flex;align-items:center;gap:12px}
-section h2::before{content:'';width:4px;height:24px;background:var(--accent);border-radius:2px}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:80px}
+header .logo{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--accent);letter-spacing:-0.3px}
+header nav{display:flex;gap:28px}
+header nav a{color:var(--text-muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
+header nav a:hover{color:var(--text)}
 
-.projects{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:border-color .2s,background .2s}
-.card:hover{border-color:#333350;background:var(--surface-hover)}
-.card h3{font-size:20px;font-weight:600;margin-bottom:8px;color:#e8e8f0}
-.card .card-sub{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);margin-bottom:20px;letter-spacing:0.3px}
-.card .card-desc{font-size:15px;line-height:1.65;color:var(--text-muted);margin-bottom:20px}
-.card ul{list-style:none;padding:0}
-.card ul li{font-size:14px;line-height:1.6;color:var(--text-muted);padding:4px 0;padding-left:18px;position:relative}
-.card ul li::before{content:'\203A';position:absolute;left:0;color:var(--accent);font-weight:600}
+/* Hero */
+.hero{margin-bottom:96px}
+.hero .overline{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,5.5vw,56px);font-weight:800;line-height:1.08;letter-spacing:-1.2px;margin-bottom:24px;color:var(--text-heading)}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{font-size:18px;line-height:1.7;color:var(--text-muted);max-width:600px;margin-bottom:36px}
+.hero .actions{display:flex;gap:14px;flex-wrap:wrap}
+.hero .actions a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;text-decoration:none;transition:all .2s}
+.hero .actions .primary{background:var(--accent);color:#fff}
+.hero .actions .primary:hover{background:#4a8ae5;transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
+.hero .actions .secondary{border:1px solid var(--border);color:var(--text)}
+.hero .actions .secondary:hover{border-color:var(--border-hover);background:var(--surface-raised)}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:80px}
-.stat{padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);text-align:center}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:96px;background:var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.stat{padding:28px 24px;background:var(--surface);text-align:center}
 .stat .value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600;color:var(--accent);margin-bottom:6px}
-.stat .label{font-size:13px;color:var(--text-muted)}
+.stat .label{font-size:13px;color:var(--text-muted);line-height:1.4}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
 
-.arch-section{margin-bottom:80px}
-.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.stack-item{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'JetBrains Mono',monospace;font-size:13px}
-.stack-item .cat{color:var(--accent);margin-bottom:6px;font-weight:500}
-.stack-item .tools{color:var(--text-muted);line-height:1.7}
+/* Section headings */
+.section-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px}
+.section-heading{font-size:28px;font-weight:700;color:var(--text-heading);letter-spacing:-0.5px;margin-bottom:16px}
+.section-sub{font-size:16px;color:var(--text-muted);line-height:1.6;max-width:560px;margin-bottom:48px}
 
-footer{padding-top:48px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-footer .brand{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent)}
+/* Services grid */
+.services{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:96px}
+.service-card{padding:32px;background:var(--surface);transition:background .2s}
+.service-card:hover{background:var(--surface-raised)}
+.service-card .icon{font-size:22px;margin-bottom:16px}
+.service-card h3{font-size:16px;font-weight:600;color:var(--text-heading);margin-bottom:8px}
+.service-card p{font-size:14px;line-height:1.6;color:var(--text-muted)}
+
+/* Proof section */
+.proof{margin-bottom:96px}
+.proof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.proof-card{display:flex;flex-direction:column;padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);transition:border-color .2s,background .2s;text-decoration:none;color:inherit}
+.proof-card:hover{border-color:var(--border-hover);background:var(--surface-raised)}
+.proof-card .proof-icon{font-size:18px;margin-bottom:12px}
+.proof-card .proof-url{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:8px;word-break:break-all}
+.proof-card .proof-desc{font-size:14px;color:var(--text-muted);line-height:1.5}
+.proof-card .proof-arrow{font-size:13px;color:var(--text-muted);margin-top:auto;padding-top:16px;transition:color .2s}
+.proof-card:hover .proof-arrow{color:var(--accent)}
+
+/* CTA */
+.cta{position:relative;padding:64px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;margin-bottom:96px;overflow:hidden}
+.cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,var(--accent-glow),transparent);pointer-events:none}
+.cta h2{position:relative;font-size:clamp(24px,4vw,36px);font-weight:700;color:var(--text-heading);letter-spacing:-0.5px;margin-bottom:12px}
+.cta p{position:relative;font-size:16px;color:var(--text-muted);margin-bottom:32px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6}
+.cta .cta-links{position:relative;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta .cta-links a{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;text-decoration:none;transition:all .2s}
+.cta .cta-links .cta-primary{background:var(--accent);color:#fff}
+.cta .cta-links .cta-primary:hover{background:#4a8ae5;transform:translateY(-1px)}
+.cta .cta-links .cta-secondary{border:1px solid var(--border);color:var(--text)}
+.cta .cta-links .cta-secondary:hover{border-color:var(--border-hover);background:var(--surface-raised)}
+
+/* Footer */
+footer{padding-top:32px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+footer .brand{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)}
 footer .links{display:flex;gap:24px}
 footer .links a{color:var(--text-muted);text-decoration:none;font-size:14px;transition:color .2s}
 footer .links a:hover{color:var(--accent)}
 
 @media(max-width:720px){
-  .projects{grid-template-columns:1fr}
-  .stats{grid-template-columns:1fr 1fr}
-  body{padding:40px 16px 80px}
+  body{padding:48px 16px 80px}
+  header{margin-bottom:56px;flex-direction:column;align-items:flex-start;gap:16px}
+  header nav{gap:20px}
+  .hero{margin-bottom:64px}
+  .hero .actions{flex-direction:column}
+  .hero .actions a{justify-content:center}
+  .cta{padding:40px 24px}
+  .proof-grid{grid-template-columns:1fr}
+  footer{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -78,103 +118,112 @@ footer .links a:hover{color:var(--accent)}
 
 <header>
   <div class="logo">siriusdevops.com</div>
+  <nav>
+    <a href="#services">Services</a>
+    <a href="#proof">Work</a>
+    <a href="#contact">Contact</a>
+  </nav>
 </header>
 
-<hero>
-  <h1>Infrastructure <span>Engineering</span> &amp; Cloud-Native DevOps</h1>
-  <p>Building production Kubernetes clusters, GPU-accelerated AI inference platforms, and automated data pipelines. GitOps from commit to cluster, infrastructure as code, monitoring that works.</p>
-  <div class="tech-tags">
-    <span class="highlight">Kubernetes</span>
-    <span>Terraform</span>
-    <span>GKE</span>
-    <span>Flux CD</span>
-    <span>Cilium</span>
-    <span>vLLM</span>
-    <span>PostgreSQL</span>
-    <span>Prometheus</span>
-    <span>Docker</span>
-    <span>Python</span>
-    <span>GitOps</span>
-    <span>GPU Clusters</span>
+<section class="hero">
+  <div class="overline">Cloud Infrastructure Engineering</div>
+  <h1>Your infrastructure,<br><em>production-ready.</em></h1>
+  <p>I design, build, and manage cloud infrastructure for teams that need it to just work — GPU clusters for AI inference, multi-cloud Kubernetes, automated GitOps pipelines, and hardened database fleets. You ship features; I handle everything underneath.</p>
+  <div class="actions">
+    <a href="#contact" class="primary">Work with me</a>
+    <a href="#services" class="secondary">See what I do</a>
   </div>
-</hero>
+</section>
 
 <div class="stats">
-  <div class="stat"><div class="value">2</div><div class="label">Production Clusters</div></div>
+  <div class="stat"><div class="value">2</div><div class="label">Production GKE Clusters</div></div>
   <div class="stat"><div class="value">370+</div><div class="label">Data Feeds Automated</div></div>
-  <div class="stat"><div class="value">GPU</div><div class="label">L4 + A100 Inference</div></div>
+  <div class="stat"><div class="value">GPU</div><div class="label">L4 &amp; A100 Inference</div></div>
   <div class="stat"><div class="value">24/7</div><div class="label">GitOps Deployments</div></div>
 </div>
 
-<section>
-  <h2>Projects</h2>
-  <div class="projects">
-    <a href="https://github.com/sirius0xdev/gcloud-lab" style="text-decoration:none;color:inherit;display:block">
-      <div class="card">
-        <h3>GCloud Lab</h3>
-        <div class="card-sub">GCP &middot; GKE &middot; Terraform &middot; Flux CD</div>
-        <div class="card-desc">Cloud-native infrastructure on Google Cloud Platform with GPU-accelerated AI inference and automated data pipelines.</div>
-        <ul>
-          <li>Dual-tier LLM platform — L4 dispatcher + A100 deep thinker with KEDA scale-to-zero</li>
-          <li>News quant pipeline — 371 global feeds analyzed by DeepSeek-R1 for futures trading signals</li>
-          <li>N8N workflow automation with CloudNativePG HA databases</li>
-          <li>Cilium CNI + Hubble observability + Tailscale VPN mesh</li>
-          <li>Infrastructure-as-code: Terraform, SOPS/Age encryption, SPOT GPU cost optimization</li>
-        </ul>
-      </div>
+<section id="services" class="services-section">
+  <div class="section-label">Capabilities</div>
+  <h2 class="section-heading">What I can do for your team</h2>
+  <p class="section-sub">Specialized infrastructure engineering across the stack — from cluster bootstrap to day-two operations and cost optimization.</p>
+
+  <div class="services">
+    <div class="service-card">
+      <div class="icon">&#9881;</div>
+      <h3>GKE Cluster Design &amp; Management</h3>
+      <p>Production-grade GKE clusters with node auto-provisioning, workload identity, and multi-region topologies. Built to run reliably from day one.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#9670;</div>
+      <h3>CloudNativePG Database Fleets</h3>
+      <p>HA PostgreSQL on Kubernetes with automated backups, point-in-time recovery, and connection pooling. No more managed DB lock-in.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#8644;</div>
+      <h3>CI/CD &amp; GitOps Pipelines</h3>
+      <p>GitHub Actions workflows, Flux CD reconciliation, Renovate dependency automation. Every commit to cluster — auditable, repeatable, fast.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#9654;</div>
+      <h3>Gateway API &amp; HTTP Routing</h3>
+      <p>Advanced traffic routing with Gateway API, automatic TLS via cert-manager, and granular request matching. Ingress, but actually good.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#9737;</div>
+      <h3>Cost Optimization</h3>
+      <p>SPOT instance orchestration, KEDA scale-to-zero, right-sizing node pools, and committed-use discount planning. Infrastructure that respects your budget.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#9874;</div>
+      <h3>Security Hardening</h3>
+      <p>NetworkPolicy micro-segmentation, non-root containers, SOPS-encrypted secrets, and CIS benchmark compliance. Defense in depth, by default.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#9883;</div>
+      <h3>AI/ML Infrastructure</h3>
+      <p>vLLM serving on GPU node pools, KEDA-driven scale-to-zero for inference, and multi-tier model routing. L4 for dispatch, A100 for heavy lifting.</p>
+    </div>
+    <div class="service-card">
+      <div class="icon">&#9878;</div>
+      <h3>Infrastructure as Code</h3>
+      <p>Terraform for cloud resources, Kustomize for Kubernetes manifests, all versioned in Git. Nothing is click-ops. Everything is reproducible.</p>
+    </div>
+  </div>
+</section>
+
+<section id="proof" class="proof">
+  <div class="section-label">Live Work</div>
+  <h2 class="section-heading">Not just talk &mdash; here's what's running</h2>
+  <p class="section-sub">Production infrastructure you can inspect. These are live projects, not portfolio pieces.</p>
+
+  <div class="proof-grid">
+    <a href="https://github.com/sirius0xdev/gcloud-lab" target="_blank" rel="noopener" class="proof-card">
+      <div class="proof-icon">&#128187;</div>
+      <div class="proof-url">github.com/sirius0xdev/gcloud-lab</div>
+      <div class="proof-desc">Full GKE cluster config — Terraform, Flux CD, GPU node pools, CloudNativePG, Cilium CNI. The infrastructure behind the AI inference and data pipelines described above.</div>
+      <div class="proof-arrow">&rarr; View repository</div>
     </a>
-    <a href="https://github.com/sirius0xdev/lab" style="text-decoration:none;color:inherit;display:block">
-      <div class="card">
-        <h3>Kubernetes Lab</h3>
-        <div class="card-sub">Multi-Cloud &middot; kubeadm &middot; Flux CD &middot; Cilium</div>
-        <div class="card-desc">Multi-cloud Kubernetes cluster running diverse production workloads — from blockchain infrastructure to game servers.</div>
-        <ul>
-          <li>Zcash infrastructure — Zebrad full node + Lightwallet with gRPC API</li>
-          <li>Minecraft server cluster — Multipaper with Velocity proxy, MariaDB backend</li>
-          <li>XMPP messaging (Prosody) + Linkding bookmark management</li>
-          <li>BGP + L2 announcements via Cilium for LoadBalancer services</li>
-          <li>Renovate dependency automation, Prometheus/Grafana monitoring, SOPS secrets</li>
-        </ul>
-      </div>
+    <a href="https://github.com/sirius0xdev/lab" target="_blank" rel="noopener" class="proof-card">
+      <div class="proof-icon">&#9881;</div>
+      <div class="proof-url">github.com/sirius0xdev/lab</div>
+      <div class="proof-desc">Multi-cloud Kubernetes lab — kubeadm clusters, BGP load balancing, Minecraft server orchestration, Zcash full nodes. Real workloads on real clusters.</div>
+      <div class="proof-arrow">&rarr; View repository</div>
+    </a>
+    <a href="https://github.com/sirius0xdev/hermes-projects" target="_blank" rel="noopener" class="proof-card">
+      <div class="proof-icon">&#129302;</div>
+      <div class="proof-url">github.com/sirius0xdev/hermes-projects</div>
+      <div class="proof-desc">Multi-agent AI team running on Hermes — autonomous coding, research, and operations agents orchestrated via kanban. AI infrastructure in practice.</div>
+      <div class="proof-arrow">&rarr; View repository</div>
     </a>
   </div>
 </section>
 
-<section class="arch-section">
-  <h2>Stack</h2>
-  <div class="stack-grid">
-    <div class="stack-item">
-      <div class="cat">Orchestration</div>
-      <div class="tools">Kubernetes &middot; GKE &middot; Docker &middot; Helm &middot; Kustomize</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">IaC &amp; GitOps</div>
-      <div class="tools">Terraform &middot; Flux CD &middot; SOPS &middot; Age Encryption</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">Networking</div>
-      <div class="tools">Cilium &middot; BGP &middot; Hubble &middot; Gateway API &middot; Tailscale</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">AI / ML Infra</div>
-      <div class="tools">vLLM &middot; Ollama &middot; DeepSeek-R1 &middot; NVIDIA L4 &middot; A100</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">Databases</div>
-      <div class="tools">CloudNative PG &middot; PostgreSQL &middot; MariaDB &middot; HA Clusters</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">Monitoring</div>
-      <div class="tools">Prometheus &middot; Grafana &middot; AlertManager &middot; k9s</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">Languages</div>
-      <div class="tools">Python &middot; Bash &middot; HCL &middot; YAML &middot; SQL</div>
-    </div>
-    <div class="stack-item">
-      <div class="cat">CI/CD</div>
-      <div class="tools">GitHub Actions &middot; Flux CD &middot; Renovate &middot; Dev Containers</div>
-    </div>
+<section id="contact" class="cta">
+  <h2>Let's build something reliable.</h2>
+  <p>Whether you need a production cluster designed, an existing setup hardened, or an AI inference platform stood up — I'm available for consulting and contract work.</p>
+  <div class="cta-links">
+    <a href="mailto:sirius@siriusdevops.com" class="cta-primary">Get in touch</a>
+    <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="cta-secondary">GitHub &rarr;</a>
   </div>
 </section>
 
