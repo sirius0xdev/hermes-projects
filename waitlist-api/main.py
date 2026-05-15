@@ -13,13 +13,19 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from contextlib import asynccontextmanager
+from ipaddress import ip_address
 
 import asyncpg
 import httpx
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 # ── logging ────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -37,6 +43,78 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "")
+
+# ── rate limiter ───────────────────────────────────────────────────────────
+limiter = Limiter(key_func=get_remote_address)
+
+# ── IP validation ──────────────────────────────────────────────────────────
+
+
+def _validate_ip(raw: str) -> str:
+    """Validate and extract the leftmost client IP from a header value.
+
+    Takes the leftmost IP from X-Forwarded-For (the true client IP if
+    proxies are trusted). Validates IPv4/IPv6 format and rejects
+    private, loopback, and link-local addresses (they indicate spoofing
+    or misconfigured proxies).
+    """
+    if not raw or raw.lower() == "unknown":
+        return "unknown"
+
+    candidate = raw.split(",")[0].strip()
+    try:
+        addr = ip_address(candidate)
+    except ValueError:
+        return "unknown"
+
+    # Reject non-global addresses (private, loopback, link-local, multicast)
+    if not addr.is_global:
+        # Allow private IPs only if they're from a trusted proxy
+        # (e.g., in-cluster traffic). For a public endpoint, reject them.
+        return "unknown"
+
+    return candidate
+
+
+def _sanitize_source(raw: str | None) -> str | None:
+    """Strip HTML tags and control characters from signup source."""
+    if not raw:
+        return None
+    # Strip HTML tags
+    cleaned = re.sub(r"<[^>]*>", "", raw)
+    # Strip control characters (0x00-0x1F except tab, newline, carriage return)
+    cleaned = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", cleaned)
+    cleaned = cleaned.strip()
+    if not cleaned:
+        return None
+    # Truncate to max length
+    return cleaned[:64]
+
+# ── auth dependency ────────────────────────────────────────────────────────
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+async def _require_admin_api_key(api_key: str = Security(_api_key_header)) -> None:
+    """Require a valid admin API key for protected endpoints."""
+    if not ADMIN_API_KEY:
+        raise HTTPException(status_code=501, detail="Admin API key not configured")
+    if not api_key:
+        raise HTTPException(status_code=401, detail="Missing X-API-Key header")
+    # Constant-time comparison to prevent timing attacks
+    if not _constant_time_compare(api_key, ADMIN_API_KEY):
+        raise HTTPException(status_code=403, detail="Invalid API key")
+
+
+def _constant_time_compare(a: str, b: str) -> bool:
+    """Constant-time string comparison to prevent timing side-channels."""
+    if len(a) != len(b):
+        return False
+    result = 0
+    for x, y in zip(a, b):
+        result |= ord(x) ^ ord(y)
+    return result == 0
 
 # ── globals ────────────────────────────────────────────────────────────────
 pool: asyncpg.Pool | None = None
@@ -99,6 +177,10 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
+# Register rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # ── models ─────────────────────────────────────────────────────────────────
 class WaitlistRequest(BaseModel):
     email: str = Field(
@@ -148,19 +230,24 @@ async def _notify_telegram(email: str, source: str | None) -> None:
 
 # ── routes ─────────────────────────────────────────────────────────────────
 @app.post("/api/waitlist", response_model=WaitlistResponse)
+@limiter.limit("5/minute")
 async def signup(req: WaitlistRequest, request: Request):
     """Accept a waitlist signup. Stores email + metadata in PostgreSQL."""
     email = _normalize_email(req.email)
 
-    # Extract client IP
-    ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
-    ip = ip.split(",")[0].strip()
+    # Extract and validate client IP (take leftmost from X-Forwarded-For)
+    raw_ip = request.headers.get(
+        "X-Forwarded-For",
+        request.client.host if request.client else "unknown",
+    )
+    ip = _validate_ip(raw_ip)
 
-    source = (req.source or "").strip()[:64] or None
+    # Sanitize source — strip HTML tags and control characters
+    source = _sanitize_source(req.source)
 
     async with pool.acquire() as conn:
         try:
-            await conn.execute(
+            result = await conn.execute(
                 """
                 INSERT INTO waitlist_signups (email, signup_source, ip_address)
                 VALUES ($1, $2, $3)
@@ -171,6 +258,11 @@ async def signup(req: WaitlistRequest, request: Request):
         except Exception as exc:
             logger.exception("DB insert failed for %s", email)
             raise HTTPException(status_code=500, detail="Database error")
+
+    # asyncpg execute returns "INSERT 0 N" — N=0 means duplicate (ON CONFLICT skipped)
+    rows_inserted = int(result.split()[-1])
+    if rows_inserted == 0:
+        raise HTTPException(status_code=409, detail="This email is already on the waitlist")
 
     # Fire-and-forget Telegram notification (don't block the response)
     import asyncio as _asyncio
@@ -194,7 +286,7 @@ async def healthz():
 
 
 @app.get("/api/waitlist/count")
-async def count():
+async def count(_: None = Depends(_require_admin_api_key)):
     """Return total signup count (optional admin endpoint)."""
     if pool is None:
         raise HTTPException(status_code=503, detail="DB pool not ready")
