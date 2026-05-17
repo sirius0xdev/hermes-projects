@@ -1,0 +1,23 @@
+/*** @type {import('tailwindcss').Config} */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a1f2e;
+  --border: #2a3548;
+  --accent: #00d4aa;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-primary);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+}

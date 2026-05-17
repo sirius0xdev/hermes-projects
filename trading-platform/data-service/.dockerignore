@@ -1,0 +1,14 @@
+# Docker and kubectl ignore files
+.dockerignore
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.git/
+.gitignore
+*.md
+tests/
+.venv/
+data_service.egg-info/
+.pytest_cache/
+.ruff_cache/

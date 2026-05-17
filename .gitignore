@@ -1,2 +1,21 @@
 gold_scanner_state.json
-gold_scanner_state.json
+
+# Research/development throwaway scripts
+dashboard_fix_quotes.py
+dashboard_setup.py
+fetch_hyperliquid_data.py
+fix2.py
+fix_backticks.py
+fix_dashboard.py
+research_web3.py
+
+# Trading platform build artifacts
+trading-platform/node_modules
+trading-platform/.next
+trading-platform/__pycache__
+trading-platform/**/*.pyc
+trading-platform/**/__pycache__
+trading-platform/**/.venv
+trading-platform/**/venv
+trading-platform/**/node_modules
+trading-platform/**/.next

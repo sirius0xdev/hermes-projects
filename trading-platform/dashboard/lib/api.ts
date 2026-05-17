@@ -1,0 +1,462 @@
+// API layer — connects to backend when available, falls back to mock data
+export const EXEC_BASE = process.env.NEXT_PUBLIC_EXEC_SERVICE_URL ?? 'http://localhost:8000';
+export const NEWS_BASE = process.env.NEXT_PUBLIC_NEWS_SERVICE_URL ?? 'http://localhost:8001';
+
+export interface TickerPrice {
+  symbol: string;
+  price: number;
+  change24h: number;
+  volume24h: number;
+  high24h: number;
+  low24h: number;
+}
+
+export interface Candle {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface OrderBookEntry {
+  price: number;
+  size: number;
+}
+
+export interface OrderBook {
+  bids: OrderBookEntry[];
+  asks: OrderBookEntry[];
+  symbol: string;
+  timestamp: number;
+}
+
+export interface Position {
+  id: string;
+  symbol: string;
+  side: 'LONG' | 'SHORT';
+  size: number;
+  entryPrice: number;
+  markPrice: number;
+  pnl: number;
+  pnlPct: number;
+  leverage: number;
+  platform: 'Hyperliquid' | 'Solana';
+}
+
+export interface Balance {
+  total: number;
+  available: number;
+  inPositions: number;
+  unrealizedPnl: number;
+}
+
+export interface Order {
+  id: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  type: 'LIMIT' | 'MARKET' | 'STOP';
+  price: number;
+  stopPrice?: number;
+  amount: number;
+  filled: number;
+  status: 'OPEN' | 'FILLED' | 'CANCELLED' | 'PENDING';
+  timestamp: number;
+  platform: 'Hyperliquid' | 'Solana';
+  chain: 'Hyperliquid' | 'Solana';
+}
+
+export interface TradeHistoryItem {
+  id: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  type: 'LIMIT' | 'MARKET' | 'STOP';
+  price: number;
+  amount: number;
+  fee: number;
+  pnl: number;
+  timestamp: number;
+  chain: 'Hyperliquid' | 'Solana';
+  status: 'FILLED' | 'CANCELLED' | 'PARTIAL';
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  summary: string;
+  url: string;
+  source: string;
+  publishedAt: string;
+  sentiment: 'bullish' | 'bearish' | 'neutral';
+  sentimentScore: number;
+  tickers: string[];
+  signal?: string;
+}
+
+// ========== AUTH TYPES ==========
+export interface AuthNonce {
+  nonce: string;
+  expires_at: string;
+}
+
+export interface AuthVerifyResponse {
+  access_token: string;
+  refresh_token: string;
+  wallet_address: string;
+  chain: string;
+  expires_in: number;
+}
+
+// ========== MOCK DATA HELPERS ==========
+function generateCandles(count = 200, basePrice = 42000): Candle[] {
+  const candles: Candle[] = [];
+  let price = basePrice;
+  const now = Math.floor(Date.now() / 1000);
+  for (let i = count; i >= 0; i--) {
+    const change = (Math.random() - 0.48) * price * 0.015;
+    const open = price;
+    const close = price + change;
+    const high = Math.max(open, close) + Math.random() * Math.abs(change) * 2;
+    const low = Math.min(open, close) - Math.random() * Math.abs(change) * 2;
+    candles.push({
+      time: now - i * 300,
+      open: +open.toFixed(2),
+      high: +high.toFixed(2),
+      low: +low.toFixed(2),
+      close: +close.toFixed(2),
+      volume: +(Math.random() * 500 + 100).toFixed(2),
+    });
+    price = close;
+  }
+  return candles;
+}
+
+function generateOrderBookAsks(basePrice: number): OrderBookEntry[] {
+  const side: OrderBookEntry[] = [];
+  for (let i = 0; i < 12; i++) {
+    side.push({
+      price: +(basePrice * (1 + (i + 1) * 0.001 + Math.random() * 0.0005)).toFixed(2),
+      size: +(Math.random() * 20 + 1).toFixed(4),
+    });
+  }
+  return side;
+}
+
+function generateOrderBookBids(basePrice: number): OrderBookEntry[] {
+  const side: OrderBookEntry[] = [];
+  for (let i = 0; i < 12; i++) {
+    side.push({
+      price: +(basePrice * (1 - (i + 1) * 0.001 - Math.random() * 0.0005)).toFixed(2),
+      size: +(Math.random() * 20 + 1).toFixed(4),
+    });
+  }
+  return side;
+}
+
+function generateMockOrders(): Order[] {
+  return [
+    { id: 'o1', symbol: 'BTC-PERP', side: 'BUY', type: 'LIMIT', price: 42500, amount: 0.25, filled: 0, status: 'OPEN', timestamp: Date.now() - 3600000, platform: 'Hyperliquid', chain: 'Hyperliquid' },
+    { id: 'o2', symbol: 'SOL-PERP', side: 'SELL', type: 'STOP', price: 95.00, stopPrice: 95.00, amount: 5, filled: 0, status: 'PENDING', timestamp: Date.now() - 7200000, platform: 'Solana', chain: 'Solana' },
+    { id: 'o3', symbol: 'ETH-PERP', side: 'BUY', type: 'MARKET', price: 2289.75, amount: 1, filled: 1, status: 'FILLED', timestamp: Date.now() - 86400000, platform: 'Hyperliquid', chain: 'Hyperliquid' },
+    { id: 'o4', symbol: 'ARB-PERP', side: 'SELL', type: 'LIMIT', price: 1.05, amount: 500, filled: 200, status: 'OPEN', timestamp: Date.now() - 1800000, platform: 'Hyperliquid', chain: 'Hyperliquid' },
+    { id: 'o5', symbol: 'DOGE-PERP', side: 'BUY', type: 'STOP', price: 0.075, stopPrice: 0.075, amount: 10000, filled: 0, status: 'PENDING', timestamp: Date.now() - 14400000, platform: 'Solana', chain: 'Solana' },
+  ];
+}
+
+function generateMockTradeHistory(): TradeHistoryItem[] {
+  const now = Date.now();
+  return [
+    { id: 't1', symbol: 'BTC-PERP', side: 'BUY', type: 'MARKET', price: 43251.50, amount: 0.5, fee: 10.81, pnl: 0, timestamp: now - 86400000, chain: 'Hyperliquid', status: 'FILLED' },
+    { id: 't2', symbol: 'ETH-PERP', side: 'SELL', type: 'LIMIT', price: 2290.00, amount: 1, fee: 2.29, pnl: 45.50, timestamp: now - 72000000, chain: 'Hyperliquid', status: 'FILLED' },
+    { id: 't3', symbol: 'SOL-PERP', side: 'BUY', type: 'MARKET', price: 102.50, amount: 10, fee: 1.03, pnl: 17.30, timestamp: now - 57600000, chain: 'Solana', status: 'FILLED' },
+    { id: 't4', symbol: 'ARB-PERP', side: 'SELL', type: 'LIMIT', price: 0.98, amount: 200, fee: 0.20, pnl: 0, timestamp: now - 43200000, chain: 'Hyperliquid', status: 'CANCELLED' },
+    { id: 't5', symbol: 'BTC-PERP', side: 'SELL', type: 'MARKET', price: 42800.00, amount: 0.25, fee: 10.70, pnl: -126.25, timestamp: now - 36000000, chain: 'Hyperliquid', status: 'FILLED' },
+    { id: 't6', symbol: 'DOGE-PERP', side: 'BUY', type: 'MARKET', price: 0.0823, amount: 5000, fee: 0.41, pnl: 2.15, timestamp: now - 28800000, chain: 'Solana', status: 'FILLED' },
+    { id: 't7', symbol: 'ETH-PERP', side: 'BUY', type: 'STOP', price: 2350.00, amount: 0.5, fee: 0.59, pnl: 0, timestamp: now - 14400000, chain: 'Hyperliquid', status: 'CANCELLED' },
+    { id: 't8', symbol: 'SOL-PERP', side: 'BUY', type: 'LIMIT', price: 100.00, amount: 15, fee: 1.50, pnl: 63.45, timestamp: now - 7200000, chain: 'Solana', status: 'FILLED' },
+  ];
+}
+
+// ========== API FUNCTIONS ==========
+export async function fetchTickers(): Promise<TickerPrice[]> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/market/tickers`);
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return [
+      { symbol: 'BTC-PERP', price: 43251.50, change24h: 2.34, volume24h: 1250000000, high24h: 43800.00, low24h: 42100.00 },
+      { symbol: 'ETH-PERP', price: 2289.75, change24h: -1.12, volume24h: 890000000, high24h: 2340.00, low24h: 2250.00 },
+      { symbol: 'SOL-PERP', price: 104.23, change24h: 5.67, volume24h: 450000000, high24h: 106.50, low24h: 98.70 },
+      { symbol: 'ARB-PERP', price: 0.9234, change24h: -0.45, volume24h: 120000000, high24h: 0.9450, low24h: 0.9100 },
+      { symbol: 'DOGE-PERP', price: 0.0823, change24h: 3.21, volume24h: 78000000, high24h: 0.0850, low24h: 0.0790 },
+    ];
+  }
+}
+
+export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promise<Candle[]> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/market/candles?symbol=${symbol}&interval=${interval}`);
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return generateCandles(200, symbol.startsWith('ETH') ? 2289 : symbol.startsWith('SOL') ? 104 : 43251);
+  }
+}
+
+export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/market/orderbook?symbol=${symbol}`);
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    const price = symbol.startsWith('BTC') ? 43251 : symbol.startsWith('ETH') ? 2289 : 104;
+    return {
+      symbol,
+      timestamp: Date.now(),
+      bids: generateOrderBookBids(price),
+      asks: generateOrderBookAsks(price),
+    };
+  }
+}
+
+export async function fetchPositions(): Promise<Position[]> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/positions`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    });
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return [
+      { id: 'p1', symbol: 'BTC-PERP', side: 'LONG', size: 0.5, entryPrice: 42800, markPrice: 43251.50, pnl: 225.75, pnlPct: 1.05, leverage: 5, platform: 'Hyperliquid' },
+      { id: 'p2', symbol: 'SOL-PERP', side: 'LONG', size: 10, entryPrice: 98.50, markPrice: 104.23, pnl: 57.30, pnlPct: 5.82, leverage: 3, platform: 'Solana' },
+      { id: 'p3', symbol: 'ETH-PERP', side: 'SHORT', size: 2, entryPrice: 2350.00, markPrice: 2289.75, pnl: 120.50, pnlPct: 2.56, leverage: 2, platform: 'Hyperliquid' },
+    ];
+  }
+}
+
+export async function fetchBalance(): Promise<Balance> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/balance`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    });
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return { total: 25430.50, available: 18250.00, inPositions: 6780.50, unrealizedPnl: 403.55 };
+  }
+}
+
+export async function fetchOrders(): Promise<Order[]> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/orders`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    });
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return generateMockOrders();
+  }
+}
+
+export async function placeOrder(order: { symbol: string; side: 'BUY' | 'SELL'; type: 'LIMIT' | 'MARKET'; price: number; amount: number; leverage?: number }): Promise<{ ok: boolean; orderId?: string; error?: string }> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+      body: JSON.stringify(order),
+    });
+    return res.json();
+  } catch {
+    return { ok: true, orderId: `mock-${Date.now()}` };
+  }
+}
+
+export async function cancelOrder(id: string): Promise<{ ok: boolean }> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/api/orders/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    });
+    return res.json();
+  } catch {
+    return { ok: true };
+  }
+}
+
+// ========== T6 EXECUTION API ENDPOINTS ==========
+export async function postTrade(order: {
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  type: 'LIMIT' | 'MARKET' | 'STOP';
+  price?: number;
+  stopPrice?: number;
+  amount: number;
+  leverage?: number;
+  chain?: 'Hyperliquid' | 'Solana';
+}): Promise<{ ok: boolean; orderId?: string; error?: string }> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/trades/place`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+      body: JSON.stringify(order),
+    });
+    return res.json();
+  } catch {
+    return { ok: true, orderId: `mock-t6-${Date.now()}` };
+  }
+}
+
+export async function deleteTradeOrderId(id: string): Promise<{ ok: boolean }> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/trades/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+      body: JSON.stringify({ orderId: id }),
+    });
+    return res.json();
+  } catch {
+    return { ok: true };
+  }
+}
+
+export async function fetchTradeOrders(): Promise<Order[]> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/trades/orders`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    });
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return generateMockOrders();
+  }
+}
+
+export async function modifyOrder(id: string, updates: { price?: number; amount?: number; stopPrice?: number }): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/trades/orders/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+      body: JSON.stringify(updates),
+    });
+    return res.json();
+  } catch {
+    return { ok: true };
+  }
+}
+
+export async function fetchTradeHistory(limit = 50): Promise<TradeHistoryItem[]> {
+  try {
+    const res = await fetch(`${EXEC_BASE}/trades/history?limit=${limit}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    });
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return generateMockTradeHistory();
+  }
+}
+
+export async function fetchNews(limit = 20): Promise<NewsArticle[]> {
+  try {
+    const res = await fetch(`${NEWS_BASE}/api/articles?limit=${limit}`);
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return [
+      { id: 'n1', title: 'Bitcoin Breaks $43K as ETF Momentum Continues', summary: 'Institutional inflows into spot Bitcoin ETFs pushed prices to new yearly highs.', url: '#', source: 'CryptoDesk', publishedAt: '2025-01-15T09:30:00Z', sentiment: 'bullish', sentimentScore: 0.82, tickers: ['BTC'], signal: 'STRONG_BUY' },
+      { id: 'n2', title: 'Solana DeFi TVL Surges Past $5B', summary: 'Growing adoption of Jupiter DEX and Marinade staking drives record total value locked.', url: '#', source: 'DeFi Daily', publishedAt: '2025-01-15T08:15:00Z', sentiment: 'bullish', sentimentScore: 0.75, tickers: ['SOL'], signal: 'BUY' },
+      { id: 'n3', title: 'Fed Signals Potential Rate Cuts in Q2', summary: 'Federal Reserve hints at easing monetary policy, boosting risk assets including crypto.', url: '#', source: 'Macro Watch', publishedAt: '2025-01-15T07:00:00Z', sentiment: 'bullish', sentimentScore: 0.68, tickers: ['BTC', 'ETH'], signal: 'BUY' },
+      { id: 'n4', title: 'Ethereum Layer 2 Settlement Costs Hit Record Lows', summary: 'OP Stack and zkSync reductions bring gas costs below $0.001 per transaction.', url: '#', source: 'Chain Analytics', publishedAt: '2025-01-14T22:00:00Z', sentiment: 'neutral', sentimentScore: 0.12, tickers: ['ETH', 'ARB', 'OP'] },
+      { id: 'n5', title: 'Major Exchange Suspends Withdrawals for Maintenance', summary: 'Binance temporarily halts withdrawals across 8 chains during network upgrade.', url: '#', source: 'CryptoDesk', publishedAt: '2025-01-14T18:30:00Z', sentiment: 'bearish', sentimentScore: -0.45, tickers: ['BTC', 'ETH', 'BNB'], signal: 'SELL' },
+      { id: 'n6', title: 'Arbitrum Governance Approves $50M Ecosystem Grant', summary: 'AIP-3 passes with 94% approval, allocating funds to DeFi and infrastructure projects.', url: '#', source: 'DeFi Daily', publishedAt: '2025-01-14T15:00:00Z', sentiment: 'bullish', sentimentScore: 0.60, tickers: ['ARB'] },
+      { id: 'n7', title: 'Dogecoin Rallying on Social Media Buzz', summary: 'DOGE volume spikes 340% as meme sentiment reaches 3-month highs on social platforms.', url: '#', source: 'Sentiment Tracker', publishedAt: '2025-01-14T12:00:00Z', sentiment: 'bullish', sentimentScore: 0.55, tickers: ['DOGE'] },
+      { id: 'n8', title: 'SEC Delays Decision on Ether Futures ETF Again', summary: 'Regulatory body pushes deadline to March, causing ETH to dip 2% on the news.', url: '#', source: 'Regulatory Watch', publishedAt: '2025-01-14T10:00:00Z', sentiment: 'bearish', sentimentScore: -0.35, tickers: ['ETH'], signal: 'SELL' },
+    ];
+  }
+}
+
+export async function fetchNewsSignals(): Promise<{ signal: string; ticker: string; confidence: number; timestamp: string }[]> {
+  try {
+    const res = await fetch(`${NEWS_BASE}/api/signals`);
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return [
+      { signal: 'STRONG_BUY', ticker: 'BTC', confidence: 0.82, timestamp: '2025-01-15T09:30:00Z' },
+      { signal: 'BUY', ticker: 'SOL', confidence: 0.75, timestamp: '2025-01-15T08:15:00Z' },
+      { signal: 'BUY', ticker: 'ETH', confidence: 0.68, timestamp: '2025-01-15T07:00:00Z' },
+      { signal: 'SELL', ticker: 'BNB', confidence: 0.45, timestamp: '2025-01-14T18:30:00Z' },
+    ];
+  }
+}
+
+export async function fetchNewsSentiment(tickers?: string): Promise<{ overall: number; bullish: number; bearish: number; neutral: number }> {
+  try {
+    const params = tickers ? `?tickers=${tickers}` : '';
+    const res = await fetch(`${NEWS_BASE}/api/analysis/sentiment${params}`);
+    if (!res.ok) throw new Error();
+    return res.json();
+  } catch {
+    return { overall: 0.42, bullish: 62, bearish: 18, neutral: 20 };
+  }
+}
+
+// ========== AUTH FUNCTIONS (via Next.js api proxy) ==========
+export async function getAuthNonce(walletAddress: string, chain: 'ethereum' | 'solana' | 'base'): Promise<AuthNonce> {
+  const res = await fetch('/api/auth/nonces', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ wallet_address: walletAddress, chain }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to get nonce');
+  }
+  return res.json();
+}
+
+export async function verifyAuthSig(
+  chain: 'ethereum' | 'solana' | 'base',
+  walletAddress: string,
+  message: string,
+  signature: string,
+): Promise<AuthVerifyResponse> {
+  const res = await fetch('/api/auth/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chain, wallet_address: walletAddress, message, signature }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Signature verification failed');
+  }
+  return res.json();
+}
+
+export async function refreshAuthToken(): Promise<{ access_token: string; expires_in: number }> {
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Refresh failed');
+  return res.json();
+}
+
+// ========== MOCK ADDRESS GENERATOR (for dev without backend) ==========
+const MOCK_ADDRESSES: Record<string, string> = {
+  ethereum: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18',
+  solana: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+  base: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18',
+};
+
+export async function simulateWalletConnect(chain: 'ethereum' | 'solana' | 'base'): Promise<{ ok: boolean; address: string; message?: string }> {
+  try {
+    const nonce = await getAuthNonce(MOCK_ADDRESSES[chain], chain);
+    return { ok: true, address: MOCK_ADDRESSES[chain] };
+  } catch {
+    return { ok: true, address: MOCK_ADDRESSES[chain] };
+  }
+}
