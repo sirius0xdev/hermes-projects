@@ -1,0 +1,243 @@
+// Protobuf definitions for the trading platform data pipeline.
+// Architecture decision: Protobuf chosen for serialization (per architecture-reference.md)
+// because it offers the best balance of speed (~1.4us ser+deser), size (~60-120 bytes/tick),
+// and multi-language support (Go, Rust, Python, Java).
+//
+// Compile: python -m grpc_tools.protoc -I. --python_out=. --pyi_out=. proto/*.proto
+
+syntax = "proto3";
+
+package trading.v1;
+
+// ============================================================
+// Shared Enum Definitions (top-level for cross-message reuse)
+// ============================================================
+
+enum OrderSide {
+  ORDER_SIDE_UNSPECIFIED = 0;
+  BUY = 1;
+  SELL = 2;
+}
+
+enum OrderType {
+  ORDER_TYPE_UNSPECIFIED = 0;
+  MARKET = 1;
+  LIMIT = 2;
+  STOP = 3;
+  STOP_MARKET = 4;
+}
+
+enum TimeInForce {
+  TIME_IN_FORCE_UNSPECIFIED = 0;
+  GTC = 1;  // Good-til-canceled
+  IOC = 2;  // Immediate-or-cancel
+  FOK = 3;  // Fill-or-kill
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  SUBMITTED = 2;
+  PARTIALLY_FILLED = 3;
+  FILLED = 4;
+  CANCELLED = 5;
+  REJECTED = 6;
+  EXPIRED = 7;
+}
+
+enum PositionSide {
+  POSITION_SIDE_UNSPECIFIED = 0;
+  LONG = 1;
+  SHORT = 2;
+  FLAT = 3;
+}
+
+enum PnLType {
+  PNL_TYPE_UNSPECIFIED = 0;
+  REALIZED = 1;
+  MARK_TO_MARKET = 2;
+}
+
+enum UpdateType {
+  UPDATE_TYPE_UNSPECIFIED = 0;
+  SNAPSHOT = 1;
+  DELTA = 2;
+}
+
+enum CommandType {
+  COMMAND_TYPE_UNSPECIFIED = 0;
+  PAUSE_INGESTION = 1;
+  RESUME_INGESTION = 2;
+  FORCE_REPLAY = 3;
+  SHUTDOWN = 4;
+}
+
+// ============================================================
+// Market Data Messages
+// ============================================================
+
+// Raw tick / price update from exchange feed
+message TickData {
+  string symbol = 1;
+  double price = 2;
+  double quantity = 3;
+  int64  timestamp_us = 4;    // Microsecond Unix timestamp
+  string source = 5;          // e.g., "binance", "finnhub"
+  bool   is_buyer_maker = 6;  // true = sell (taker is seller), false = buy
+  string trade_id = 7;        // Exchange-specific trade identifier
+}
+
+// Best bid/offer snapshot
+message BBOQuote {
+  string symbol = 1;
+  double bid_price = 2;
+  double bid_size = 3;
+  double ask_price = 4;
+  double ask_size = 5;
+  int64  timestamp_us = 6;
+  string source = 7;
+}
+
+// Order book level (single price point)
+message OrderBookLevel {
+  double price = 1;
+  double quantity = 2;
+  int32  order_count = 3;
+}
+
+// Full order book snapshot or delta
+message OrderBookUpdate {
+  string symbol = 1;
+  int64  sequence = 2;              // Monotonically increasing sequence number
+  repeated OrderBookLevel bids = 3;
+  repeated OrderBookLevel asks = 4;
+  int64  timestamp_us = 5;
+  string source = 6;
+  UpdateType type = 7;              // Full snapshot or delta update
+}
+
+// OHLCV candle
+message CandleData {
+  string symbol = 1;
+  string interval = 2;          // "1m", "5m", "1h", etc.
+  double open = 3;
+  double high = 4;
+  double low = 5;
+  double close = 6;
+  double volume = 7;
+  double quote_volume = 8;
+  int32  trade_count = 9;
+  int64  open_time_us = 10;
+  int64  close_time_us = 11;
+}
+
+// Batch of ticks for efficient Kafka message compression
+message TickBatch {
+  string symbol = 1;
+  string source = 2;
+  repeated TickData ticks = 3;
+}
+
+// ============================================================
+// Order & Execution Messages
+// ============================================================
+
+// New order submission
+message NewOrder {
+  string client_order_id = 1;
+  string wallet_address = 2;
+  string chain = 3;             // "hyperliquid", "solana"
+  string symbol = 4;
+  OrderSide side = 5;
+  OrderType order_type = 6;
+  double quantity = 7;
+  optional double price = 8;    // Required for limit orders
+  optional double stop_price = 9;
+  bool reduce_only = 10;
+  TimeInForce time_in_force = 11;
+  int64 submitted_at_us = 12;
+}
+
+// Fill/execution report
+message FillReport {
+  string fill_id = 1;
+  string client_order_id = 2;
+  string order_id = 3;
+  string symbol = 4;
+  OrderSide side = 5;
+  double fill_price = 6;
+  double fill_quantity = 7;
+  double fee = 8;
+  string fee_currency = 9;
+  bool is_maker = 10;
+  string external_fill_id = 11;
+  string external_order_id = 12;
+  int64 filled_at_us = 13;
+}
+
+// Order status update
+message OrderStatusUpdate {
+  string client_order_id = 1;
+  string external_order_id = 2;
+  OrderStatus status = 3;
+  optional double fill_price = 4;
+  optional double fill_quantity = 5;
+  optional string error_message = 6;
+  int64 updated_at_us = 7;
+}
+
+// ============================================================
+// Position & PnL Messages
+// ============================================================
+
+// Position state update
+message PositionUpdate {
+  string wallet_address = 1;
+  string chain = 2;
+  string symbol = 3;
+  PositionSide side = 4;
+  double size = 5;
+  double entry_price = 6;
+  double unrealized_pnl = 7;
+  double mark_price = 8;
+  double liquidation_price = 9;
+  double leverage = 10;
+  double margin = 11;
+  bool is_open = 12;
+  int64 updated_at_us = 13;
+}
+
+// PnL event
+message PnLEvent {
+  string wallet_address = 1;
+  string chain = 2;
+  string symbol = 3;
+  PnLType pnl_type = 4;       // realized or mark
+  double realized_pnl = 5;
+  double unrealized_pnl = 6;
+  double fees = 7;
+  string currency = 8;
+  int64 event_time_us = 9;
+}
+
+// ============================================================
+// Health & Control Messages
+// ============================================================
+
+// Producer/consumer heartbeat
+message ServiceHeartbeat {
+  string service_name = 1;
+  int64 timestamp_us = 2;
+  double cpu_usage = 3;
+  double memory_mb = 4;
+  int64 messages_processed = 5;
+}
+
+// Control command for pipeline management
+message ControlCommand {
+  string command_id = 1;
+  CommandType type = 2;
+  string target_symbol = 3;  // Optional symbol filter
+  bytes  payload = 4;        // Command-specific data
+  int64 issued_at_us = 5;
+}

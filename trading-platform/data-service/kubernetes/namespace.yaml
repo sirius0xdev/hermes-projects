@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: customer1
+  labels:
+    name: customer1
+    environment: production
