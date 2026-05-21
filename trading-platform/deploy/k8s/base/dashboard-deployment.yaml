@@ -27,7 +27,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: dashboard
-          image: "trading-platform/dashboard:v${VERSION}"
+          image: "ghcr.io/sirius0xdev/trading-dashboard:latest"
           ports:
             - containerPort: 3000
               protocol: TCP

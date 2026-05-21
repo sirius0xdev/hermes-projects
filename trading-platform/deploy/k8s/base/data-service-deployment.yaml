@@ -27,7 +27,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: data-service
-          image: "trading-platform/data-service:v${VERSION}"
+          image: "ghcr.io/sirius0xdev/trading-data-service:latest"
           ports:
             - containerPort: 8001
               protocol: TCP

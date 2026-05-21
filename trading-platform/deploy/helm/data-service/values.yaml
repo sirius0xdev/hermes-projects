@@ -3,9 +3,9 @@
 replicaCount: 2
 
 image:
-  repository: trading-platform/data-service
+  repository: ghcr.io/sirius0xdev/trading-data-service
   pullPolicy: IfNotPresent
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 

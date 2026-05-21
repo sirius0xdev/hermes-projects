@@ -1,4 +1,7 @@
 # SOPS configuration for trading platform secrets
+# WARNING: The age public key below is a placeholder with an invalid checksum.
+# Generate a real key with: age-keygen -o age.key
+# Then update this file with the real public key and encrypt secrets with: sops -e -i trading-secrets.yaml
 # Usage: sops -e -i trading-secrets.yaml && kubectl apply -f trading-secrets.yaml
 creation_rules:
   # Production secrets - encrypted with Age key

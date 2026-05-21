@@ -3,9 +3,9 @@
 replicaCount: 2
 
 image:
-  repository: trading-platform/api-gateway
+  repository: ghcr.io/sirius0xdev/trading-api-gateway
   pullPolicy: IfNotPresent
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 

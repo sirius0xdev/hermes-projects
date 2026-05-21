@@ -3,9 +3,9 @@
 replicaCount: 2
 
 image:
-  repository: trading-platform/execute-service
+  repository: ghcr.io/sirius0xdev/trading-execute-service
   pullPolicy: IfNotPresent
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 

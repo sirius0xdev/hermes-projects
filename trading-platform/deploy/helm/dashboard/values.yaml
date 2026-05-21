@@ -3,9 +3,9 @@
 replicaCount: 2
 
 image:
-  repository: trading-platform/dashboard
+  repository: ghcr.io/sirius0xdev/trading-dashboard
   pullPolicy: IfNotPresent
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 
