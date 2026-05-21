@@ -1,5 +1,5 @@
-# Build and push container images to Artifact Registry
-name: Build & Push Images
+# Build and push container images to GitHub Container Registry (GHCR)
+name: Build & Push Images to GHCR
 
 on:
   push:
@@ -13,30 +13,24 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GCP_PROJECT_ID: customer1-gke
-  GCP_REGION: us-central1
-  ARTIFACT_REGISTRY: us-central1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/trading
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: sirius0xdev
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          workload_identity_provider: projects/${{ env.GCP_PROJECT_ID }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: ci-builder@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -58,8 +52,8 @@ jobs:
           file: trading-platform/infra/dockerfiles/execute-service/Dockerfile
           push: true
           tags: |
-            ${{ env.ARTIFACT_REGISTRY }}/execute-service:${{ steps.tags.outputs.tag_sha }}
-            ${{ env.ARTIFACT_REGISTRY }}/execute-service:${{ steps.tags.outputs.tag_branch }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-execute-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-execute-service:${{ steps.tags.outputs.tag_branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -71,8 +65,8 @@ jobs:
           file: trading-platform/infra/dockerfiles/news-service/Dockerfile
           push: true
           tags: |
-            ${{ env.ARTIFACT_REGISTRY }}/news-service:${{ steps.tags.outputs.tag_sha }}
-            ${{ env.ARTIFACT_REGISTRY }}/news-service:${{ steps.tags.outputs.tag_branch }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-news-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-news-service:${{ steps.tags.outputs.tag_branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -84,8 +78,8 @@ jobs:
           file: trading-platform/infra/dockerfiles/data-service/Dockerfile
           push: true
           tags: |
-            ${{ env.ARTIFACT_REGISTRY }}/data-service:${{ steps.tags.outputs.tag_sha }}
-            ${{ env.ARTIFACT_REGISTRY }}/data-service:${{ steps.tags.outputs.tag_branch }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-data-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-data-service:${{ steps.tags.outputs.tag_branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -97,8 +91,8 @@ jobs:
           file: trading-platform/infra/dockerfiles/dashboard/Dockerfile
           push: true
           tags: |
-            ${{ env.ARTIFACT_REGISTRY }}/dashboard:${{ steps.tags.outputs.tag_sha }}
-            ${{ env.ARTIFACT_REGISTRY }}/dashboard:${{ steps.tags.outputs.tag_branch }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-dashboard:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/trading-dashboard:${{ steps.tags.outputs.tag_branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

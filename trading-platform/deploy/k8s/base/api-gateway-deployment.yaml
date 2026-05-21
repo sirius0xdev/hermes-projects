@@ -27,7 +27,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: api-gateway
-          image: "trading-platform/api-gateway:v${VERSION}"
+          image: "ghcr.io/sirius0xdev/trading-api-gateway:latest"
           ports:
             - containerPort: 8080
               protocol: TCP
