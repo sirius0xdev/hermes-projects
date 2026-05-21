@@ -9,7 +9,7 @@ env:
   IMAGE_OWNER: sirius0xdev
 
 jobs:
-  # Discover which subdirectories contain a Dockerfile
+  # Discover ALL Dockerfiles recursively (top-level + nested)
   discover:
     runs-on: ubuntu-latest
     outputs:
@@ -19,16 +19,15 @@ jobs:
       - id: set-matrix
         run: |
           dirs=""
-          for dir in */; do
-            dir="${dir%/}"
-            if [ -f "$dir/Dockerfile" ]; then
-              if [ -n "$dirs" ]; then
-                dirs="$dirs,\"$dir\""
-              else
-                dirs="\"$dir\""
-              fi
+          while IFS= read -r dockerfile; do
+            # Get the directory containing the Dockerfile (relative path minus /Dockerfile)
+            dir="${dockerfile%/Dockerfile}"
+            if [ -n "$dirs" ]; then
+              dirs="$dirs,\"$dir\""
+            else
+              dirs="\"$dir\""
             fi
-          done
+          done < <(find . -name 'Dockerfile' -not -path './.git/*' | sed 's|^\./||' | sort)
           echo "matrix={\"project\":[$dirs]}" >> "$GITHUB_OUTPUT"
 
   build:
@@ -47,7 +46,13 @@ jobs:
       - name: Docker meta
         id: meta
         run: |
-          IMG_NAME=$(echo "${{ matrix.project }}" | tr '[:upper:]' '[:lower:]')
+          DIR="${{ matrix.project }}"
+          # Path-to-image-name mapping:
+          #   trading-platform/execute-service -> trading-execute-service
+          #   trading-platform/news-service    -> trading-news-service
+          #   trading-platform/data-service    -> trading-data-service
+          #   paaas                            -> paaas
+          IMG_NAME=$(echo "$DIR" | sed 's|^trading-platform/|trading-|' | tr '/' '-' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA="${GITHUB_SHA::7}"
           echo "name=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME" >> "$GITHUB_OUTPUT"
           echo "tag_latest=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME:latest" >> "$GITHUB_OUTPUT"
