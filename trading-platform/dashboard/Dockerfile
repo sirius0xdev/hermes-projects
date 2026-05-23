@@ -5,6 +5,7 @@ WORKDIR /app
 COPY trading-platform/dashboard/package.json trading-platform/dashboard/package-lock.json ./
 RUN npm ci
 COPY trading-platform/dashboard/ .
+RUN mkdir -p public
 RUN npm run build
 
 # ---- Production ----
