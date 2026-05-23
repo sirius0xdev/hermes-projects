@@ -13,37 +13,31 @@ env:
   IMAGE_OWNER: sirius0xdev
 
 jobs:
-  # Discover ALL Dockerfiles recursively (top-level + nested)
-  discover:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: set-matrix
-        run: |
-          dockerfiles=$(find . -name 'Dockerfile' -not -path './.git/*' | sed 's|^./||' | sort | jq -R -s -c 'split("\n")[:-1]')
-          echo "matrix={\"dockerfile\":$dockerfiles}" >> "$GITHUB_OUTPUT"
-
   build:
-    needs: discover
-    if: ${{ needs.discover.outputs.matrix != '{"dockerfile":[]}' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+      matrix:
+        project:
+          - paaas
+          - waitlist-api
+          - trade-dashboard
+          - trading-platform/data-service
+          - trading-platform/news-service
+          - trading-platform/execute-service
+          - trading-platform/dashboard
     steps:
       - uses: actions/checkout@v4
 
       - name: Docker meta
         id: meta
         run: |
-          DIR=$(dirname "${{ matrix.dockerfile }}")
-          # Path-to-image-name mapping for consistent naming
-          # trading-platform/xxx -> trading-xxx
-          # paaas -> paaas
-          IMG_NAME=$(echo "$DIR" | sed 's|^trading-platform/|trading-|' | tr '/' '-' | tr '[:upper:]' '[:lower:]')
-          if [ "$IMG_NAME" = "." ] || [ "$IMG_NAME" = "paaas" ]; then IMG_NAME="paaas"; fi
+          PROJECT="${{ matrix.project }}"
+          if [[ "$PROJECT" == trading-platform/* ]]; then
+            IMG_NAME="trading-$(basename "$PROJECT")"
+          else
+            IMG_NAME="$PROJECT"
+          fi
           SHORT_SHA="${GITHUB_SHA::7}"
           echo "name=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME" >> "$GITHUB_OUTPUT"
           echo "tag_latest=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME:latest" >> "$GITHUB_OUTPUT"
@@ -60,6 +54,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ${{ matrix.dockerfile }}
+          file: ${{ matrix.project }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tag_latest }},${{ steps.meta.outputs.tag_sha }}
+          build-args: |
+            PROJECT=${{ matrix.project }}
