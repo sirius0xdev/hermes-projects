@@ -75,7 +75,7 @@ async def create_position(payload: PositionCreate):
     async with async_session() as session:
         values = payload.model_dump()
         result = await session.execute(positions.insert().values(**values))
-        session.commit()
+        await session.commit()
         pk = result.inserted_primary_key[0]
     return {"id": str(pk)}
 
@@ -107,7 +107,7 @@ async def update_position(position_id: UUID, payload: PositionUpdate):
         await session.execute(
             positions.update().where(positions.c.id == position_id).values(**updates)
         )
-        session.commit()
+        await session.commit()
 
     return {"ok": True}
 
@@ -140,7 +140,7 @@ async def close_position(position_id: UUID, exit_price: Decimal = Query(None)):
             .where(positions.c.id == position_id)
             .values(exit_price=exit_p, closed_at=datetime.now(timezone.utc), pnl=pnl)
         )
-        session.commit()
+        await session.commit()
 
     return {"ok": True, "pnl": pnl, "exit_price": float(exit_p)}
 
@@ -224,7 +224,7 @@ async def webhook_trade(payload: WebhookTrade):
             "exchange": payload.exchange,
             "metadata": meta,
         }))
-        session.commit()
+        await session.commit()
         pk = result.inserted_primary_key[0]
     return {"id": str(pk)}
 
@@ -247,6 +247,8 @@ async def startup():
     alembic_cfg = Config(
         str(Path(__file__).parent.parent / "alembic.ini")
     )
+    command.upgrade(alembic_cfg, "head")
+
 
 if __name__ == "__main__":
     import uvicorn
