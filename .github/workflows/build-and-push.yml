@@ -22,25 +22,13 @@ jobs:
       - uses: actions/checkout@v4
       - id: set-matrix
         run: |
-          dirs=""
-          while IFS= read -r dockerfile; do
-            # Get the directory containing the Dockerfile (relative path minus /Dockerfile)
-            dir="${dockerfile%/Dockerfile}"
-            if [ -n "$dirs" ]; then
-              dirs="$dirs,\"$dir\""
-            else
-              dirs="\"$dir\""
-            fi
-          done < <(find . -name 'Dockerfile' -not -path './.git/*' | sed 's|^\./||' | sort)
-          echo "matrix={\"project\":[$dirs]}" >> "$GITHUB_OUTPUT"
+          dockerfiles=$(find . -name 'Dockerfile' -not -path './.git/*' | sed 's|^./||' | sort | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix={\"dockerfile\":$dockerfiles}" >> "$GITHUB_OUTPUT"
 
   build:
     needs: discover
-    if: ${{ needs.discover.outputs.matrix != '{}' }}
+    if: ${{ needs.discover.outputs.matrix != '{"dockerfile":[]}' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
@@ -50,13 +38,12 @@ jobs:
       - name: Docker meta
         id: meta
         run: |
-          DIR="${{ matrix.project }}"
-          # Path-to-image-name mapping:
-          #   trading-platform/execute-service -> trading-execute-service
-          #   trading-platform/news-service    -> trading-news-service
-          #   trading-platform/data-service    -> trading-data-service
-          #   paaas                            -> paaas
+          DIR=$(dirname "${{ matrix.dockerfile }}")
+          # Path-to-image-name mapping for consistent naming
+          # trading-platform/xxx -> trading-xxx
+          # paaas -> paaas
           IMG_NAME=$(echo "$DIR" | sed 's|^trading-platform/|trading-|' | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+          if [ "$IMG_NAME" = "." ] || [ "$IMG_NAME" = "paaas" ]; then IMG_NAME="paaas"; fi
           SHORT_SHA="${GITHUB_SHA::7}"
           echo "name=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME" >> "$GITHUB_OUTPUT"
           echo "tag_latest=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME:latest" >> "$GITHUB_OUTPUT"
@@ -72,6 +59,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.project }}
+          context: .
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tag_latest }},${{ steps.meta.outputs.tag_sha }}
