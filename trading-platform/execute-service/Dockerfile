@@ -1,7 +1,7 @@
 # Multi-stage build for execute-service (Hyperliquid + Solana trading engine)
 FROM python:3.12-slim AS builder
 WORKDIR /build
-COPY trading-platform/execute-service/pyproject.toml ./
+COPY trading-platform/execute-service/ ./
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim

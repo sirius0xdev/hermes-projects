@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: SITE_NAME-svc
+  namespace: SITE_NAMESPACE
+  annotations:
+    networking.gke.io/healthcheck-policy: SITE_NAME-healthcheck
+spec:
+  selector:
+    app: SITE_NAME
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

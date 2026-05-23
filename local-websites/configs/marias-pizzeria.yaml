@@ -1,0 +1,66 @@
+# Local Business Website Configuration
+# One config file = one deployed website on the cluster
+# Run: python scripts/generate.py configs/this-file.yaml
+# Then: python scripts/deploy.py overlays/<business-name>
+
+business:
+  name: marias-pizzeria
+  namespace: marias-pizzeria
+  domain_base: siriusdevops.com
+  title: "Maria's Pizzeria"
+  tagline: "Authentic Neapolitan Pizza Since 1983"
+  phone: "(555) 987-6543"
+  email: "orders@mariaspizzeria.com"
+  address: "456 Elm Street, Springfield, IL 62701"
+  colors:
+    primary: "#C62828"
+    secondary: "#FFF8E1"
+    accent: "#FF8F00"
+    text: "#3E2723"
+  logo_text: "Maria's 🍕"
+
+pages:
+  home:
+    hero:
+      headline: "Taste Real Neapolitan Pizza"
+      subheadline: "Wood-fired, hand-tossed, made with love — just like Nonna used to make"
+      cta: "Order Online"
+    sections:
+      - type: services
+        title: "Our Menu"
+        items:
+          - title: "Margherita"
+            description: "San Marzano tomatoes, fresh mozzarella, basil, extra virgin olive oil"
+            icon: "🍕"
+          - title: "Diavola"
+            description: "Spicy salami, chili flakes, mozzarella, tomato sauce"
+            icon: "🌶️"
+          - title: "Quattro Formaggi"
+            description: "Mozzarella, gorgonzola, parmesan, fontina — cheese heaven"
+            icon: "🧀"
+          - title: "Pasta"
+            description: "House-made pasta with fresh seasonal ingredients"
+            icon: "🍝"
+          - title: "Wine"
+            description: "Curated Italian wine selection — reds, whites, and sparkling"
+            icon: "🍷"
+          - title: "Desserts"
+            description: "Tiramisu, panna cotta, and our famous cannoli"
+            icon: "🍰"
+      - type: about
+        title: "Our Story"
+        content: "Maria's Pizzeria opened in 1983 when Maria Rossi brought her grandmother's recipes from Naples to Springfield. Three generations later, we still make everything from scratch — dough that ferments for 48 hours, sauce from San Marzano tomatoes, and mozzarella we stretch by hand each morning. Every pizza is fired at 900°F in our imported Italian wood-fired oven."
+      - type: contact
+        title: "Visit Us"
+        show_phone: true
+        show_email: true
+        show_address: true
+        show_hours: true
+        hours:
+          monday: "Closed"
+          tuesday: "11:00 AM – 10:00 PM"
+          wednesday: "11:00 AM – 10:00 PM"
+          thursday: "11:00 AM – 10:00 PM"
+          friday: "11:00 AM – 11:00 PM"
+          saturday: "12:00 PM – 11:00 PM"
+          sunday: "12:00 PM – 9:00 PM"
