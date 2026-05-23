@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+# Required for GHCR push. If builds still fail with "unauthenticated" or "unauthorized":
+# 1. Create a classic PAT at https://github.com/settings/tokens (scopes: repo, write:packages, read:packages)
+# 2. Add it as a repository secret named PAT
 permissions:
   contents: read
   packages: write
@@ -48,7 +51,9 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # Prefer PAT (classic token with repo + write:packages scopes) stored as secret "PAT".
+          # Falls back to GITHUB_TOKEN if PAT not set.
+          password: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -57,5 +62,3 @@ jobs:
           file: ${{ matrix.project }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tag_latest }},${{ steps.meta.outputs.tag_sha }}
-          build-args: |
-            PROJECT=${{ matrix.project }}
