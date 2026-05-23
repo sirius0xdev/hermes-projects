@@ -2,6 +2,7 @@
 FROM python:3.12-slim AS builder
 WORKDIR /build
 COPY trading-platform/data-service/pyproject.toml .
+COPY trading-platform/data-service/data_service/ ./data_service/
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim
@@ -19,4 +20,4 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 CMD pytho
 
 EXPOSE 8000
 
-CMD ["uvicorn", "data_service.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "data_service.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
