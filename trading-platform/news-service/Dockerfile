@@ -1,7 +1,7 @@
 # Multi-stage build for news-service (CNPG connector + Kafka producer)
 FROM python:3.12-slim AS builder
 WORKDIR /build
-COPY requirements.txt .
+COPY trading-platform/news-service/requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.12-slim
@@ -11,19 +11,18 @@ RUN useradd -m --system appuser
 COPY --from=builder /install /usr/local
 
 # Install system deps for NLTK
-RUN apt-get update && \\
-    apt-get install -y --no-install-recommends gcc libpq-dev && \\
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Download NLTK data as root before switching user
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('averaged_perceptron_tagger')"
 
 WORKDIR /app
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser trading-platform/news-service/ .
 USER appuser
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \\
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 EXPOSE 8000
 

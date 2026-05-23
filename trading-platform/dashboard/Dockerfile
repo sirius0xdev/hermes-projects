@@ -2,9 +2,9 @@
 # ---- Builder ----
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY trading-platform/dashboard/package.json trading-platform/dashboard/package-lock.json ./
 RUN npm ci
-COPY . .
+COPY trading-platform/dashboard/ .
 RUN npm run build
 
 # ---- Production ----
@@ -25,7 +25,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \\
-    CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/ || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/ || exit 1
 
 CMD ["node", "server.js"]

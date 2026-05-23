@@ -1,7 +1,7 @@
 FROM python:3.12-slim AS builder
 RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
-COPY requirements.txt .
+COPY waitlist-api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.12-slim
@@ -10,7 +10,7 @@ RUN groupadd --system --gid 1000 appuser && \
 WORKDIR /app
 
 COPY --from=builder /venv /venv
-COPY main.py .
+COPY waitlist-api/main.py .
 
 ENV PATH="/venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1

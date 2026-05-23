@@ -1,7 +1,7 @@
 # Multi-stage build for data-service (Postgres + Redis + Kafka consumers)
 FROM python:3.12-slim AS builder
 WORKDIR /build
-COPY pyproject.toml .
+COPY trading-platform/data-service/pyproject.toml .
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim
@@ -10,13 +10,12 @@ RUN useradd -m --system appuser
 COPY --from=builder /install /usr/local
 
 WORKDIR /app
-COPY --chown=appuser:appuser data_service/ ./data_service/
-COPY --chown=appuser:appuser pyproject.toml alembic.ini ./
+COPY --chown=appuser:appuser trading-platform/data-service/data_service/ ./data_service/
+COPY --chown=appuser:appuser trading-platform/data-service/pyproject.toml trading-platform/data-service/alembic.ini ./
 
 USER appuser
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \\
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 EXPOSE 8000
 

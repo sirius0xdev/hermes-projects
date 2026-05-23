@@ -4,9 +4,13 @@ on:
   push:
     branches: [main]
 
-# Required for GHCR push. If builds still fail with "unauthenticated" or "unauthorized":
-# 1. Create a classic PAT at https://github.com/settings/tokens (scopes: repo, write:packages, read:packages)
-# 2. Add it as a repository secret named PAT
+# GHCR authentication for docker/build-push-action.
+# The built-in GITHUB_TOKEN is used (granted packages:write via the permissions block below).
+# If you previously added a secret named "PAT" that is now invalid/expired/limited-scope:
+#   - Go to https://github.com/sirius0xdev/hermes-projects/settings/secrets/actions
+#   - Delete the "PAT" secret (or rename it).
+# Then re-run the workflow. The GITHUB_TOKEN will be used automatically.
+# (Optional: you can still add a fresh classic PAT as secret "CR_PAT" and update the login step if preferred.)
 permissions:
   contents: read
   packages: write
@@ -50,10 +54,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
-          # Prefer PAT (classic token with repo + write:packages scopes) stored as secret "PAT".
-          # Falls back to GITHUB_TOKEN if PAT not set.
-          password: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
