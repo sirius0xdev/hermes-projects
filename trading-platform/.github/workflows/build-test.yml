@@ -109,27 +109,27 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: trading-platform/execute-service
-          file: trading-platform/infra/dockerfiles/execute-service/Dockerfile
+          file: trading-platform/dockerfiles/execute-service/Dockerfile
           push: false
           load: false
       - name: Build news-service
         uses: docker/build-push-action@v5
         with:
           context: trading-platform/news-service
-          file: trading-platform/infra/dockerfiles/news-service/Dockerfile
+          file: trading-platform/dockerfiles/news-service/Dockerfile
           push: false
           load: false
       - name: Build data-service
         uses: docker/build-push-action@v5
         with:
           context: trading-platform/data-service
-          file: trading-platform/infra/dockerfiles/data-service/Dockerfile
+          file: trading-platform/dockerfiles/data-service/Dockerfile
           push: false
           load: false
       - name: Build dashboard
         uses: docker/build-push-action@v5
         with:
           context: trading-platform/dashboard
-          file: trading-platform/infra/dockerfiles/dashboard/Dockerfile
+          file: trading-platform/dockerfiles/dashboard/Dockerfile
           push: false
           load: false
