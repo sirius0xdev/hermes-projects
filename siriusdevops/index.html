@@ -7,231 +7,758 @@
 <meta name="description" content="Production cloud infrastructure engineering — GKE, AI/ML platforms, GitOps pipelines, and database fleets. I build and manage the infrastructure so your team ships features.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#08080c;
-  --surface:#0d0d14;
-  --surface-raised:#111118;
-  --border:#1e1e2a;
-  --border-hover:#2a2a3c;
-  --text:#d4d4dc;
-  --text-heading:#ededf5;
-  --text-muted:#70708c;
-  --accent:#5b9cf5;
-  --accent-dim:#3b6cb5;
-  --accent-glow:#5b9cf518;
-  --green:#4ade80;
-  --purple:#a78bfa;
-  --radius:12px;
-  --radius-sm:8px;
-  --radius-lg:16px;
+  --bg: #09090b;
+  --surface: #0f0f12;
+  --surface-raised: #16161a;
+  --border: #1e1e24;
+  --border-light: rgba(255,255,255,0.06);
+  --text: #c8c8d0;
+  --text-heading: #e8e8ed;
+  --text-muted: #6b6b7b;
+  --text-faint: #44445a;
+  --accent: #d4882a;
+  --accent-dim: rgba(212,136,42,0.12);
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.12);
+  --red: #f85149;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0}
-html{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
-body{max-width:1040px;margin:0 auto;padding:80px 24px 120px}
 
-/* Header */
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:80px}
-header .logo{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--accent);letter-spacing:-0.3px}
-header nav{display:flex;gap:28px}
-header nav a{color:var(--text-muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
-header nav a:hover{color:var(--text)}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Hero */
-.hero{margin-bottom:96px}
-.hero .overline{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
-.hero h1{font-size:clamp(32px,5.5vw,56px);font-weight:800;line-height:1.08;letter-spacing:-1.2px;margin-bottom:24px;color:var(--text-heading)}
-.hero h1 em{font-style:normal;color:var(--accent)}
-.hero p{font-size:18px;line-height:1.7;color:var(--text-muted);max-width:600px;margin-bottom:36px}
-.hero .actions{display:flex;gap:14px;flex-wrap:wrap}
-.hero .actions a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;text-decoration:none;transition:all .2s}
-.hero .actions .primary{background:var(--accent);color:#fff}
-.hero .actions .primary:hover{background:#4a8ae5;transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
-.hero .actions .secondary{border:1px solid var(--border);color:var(--text)}
-.hero .actions .secondary:hover{border-color:var(--border-hover);background:var(--surface-raised)}
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
 
-/* Stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:96px;background:var(--border);border-radius:var(--radius-lg);overflow:hidden}
-.stat{padding:28px 24px;background:var(--surface);text-align:center}
-.stat .value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600;color:var(--accent);margin-bottom:6px}
-.stat .label{font-size:13px;color:var(--text-muted);line-height:1.4}
-@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
+body {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
 
-/* Section headings */
-.section-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px}
-.section-heading{font-size:28px;font-weight:700;color:var(--text-heading);letter-spacing:-0.5px;margin-bottom:16px}
-.section-sub{font-size:16px;color:var(--text-muted);line-height:1.6;max-width:560px;margin-bottom:48px}
+/* ─── Header ─── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
 
-/* Services grid */
-.services{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:96px}
-.service-card{padding:32px;background:var(--surface);transition:background .2s}
-.service-card:hover{background:var(--surface-raised)}
-.service-card .icon{font-size:22px;margin-bottom:16px}
-.service-card h3{font-size:16px;font-weight:600;color:var(--text-heading);margin-bottom:8px}
-.service-card p{font-size:14px;line-height:1.6;color:var(--text-muted)}
+.logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-heading);
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-/* Proof section */
-.proof{margin-bottom:96px}
-.proof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.proof-card{display:flex;flex-direction:column;padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);transition:border-color .2s,background .2s;text-decoration:none;color:inherit}
-.proof-card:hover{border-color:var(--border-hover);background:var(--surface-raised)}
-.proof-card .proof-icon{font-size:18px;margin-bottom:12px}
-.proof-card .proof-url{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:8px;word-break:break-all}
-.proof-card .proof-desc{font-size:14px;color:var(--text-muted);line-height:1.5}
-.proof-card .proof-arrow{font-size:13px;color:var(--text-muted);margin-top:auto;padding-top:16px;transition:color .2s}
-.proof-card:hover .proof-arrow{color:var(--accent)}
+.logo .star {
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1;
+}
 
-/* CTA */
-.cta{position:relative;padding:64px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;margin-bottom:96px;overflow:hidden}
-.cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,var(--accent-glow),transparent);pointer-events:none}
-.cta h2{position:relative;font-size:clamp(24px,4vw,36px);font-weight:700;color:var(--text-heading);letter-spacing:-0.5px;margin-bottom:12px}
-.cta p{position:relative;font-size:16px;color:var(--text-muted);margin-bottom:32px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6}
-.cta .cta-links{position:relative;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.cta .cta-links a{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;text-decoration:none;transition:all .2s}
-.cta .cta-links .cta-primary{background:var(--accent);color:#fff}
-.cta .cta-links .cta-primary:hover{background:#4a8ae5;transform:translateY(-1px)}
-.cta .cta-links .cta-secondary{border:1px solid var(--border);color:var(--text)}
-.cta .cta-links .cta-secondary:hover{border-color:var(--border-hover);background:var(--surface-raised)}
+header nav { display: flex; gap: 32px; }
 
-/* Footer */
-footer{padding-top:32px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-footer .brand{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)}
-footer .links{display:flex;gap:24px}
-footer .links a{color:var(--text-muted);text-decoration:none;font-size:14px;transition:color .2s}
-footer .links a:hover{color:var(--accent)}
+header nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 0.15s;
+}
+header nav a:hover { color: var(--text-heading); }
 
-@media(max-width:720px){
-  body{padding:48px 16px 80px}
-  header{margin-bottom:56px;flex-direction:column;align-items:flex-start;gap:16px}
-  header nav{gap:20px}
-  .hero{margin-bottom:64px}
-  .hero .actions{flex-direction:column}
-  .hero .actions a{justify-content:center}
-  .cta{padding:40px 24px}
-  .proof-grid{grid-template-columns:1fr}
-  footer{flex-direction:column;align-items:flex-start}
+/* ─── Hero ─── */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding: 80px 0 64px;
+  align-items: start;
+}
+
+.hero-left { padding-top: 8px; }
+
+.hero h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -1.2px;
+  color: var(--text-heading);
+  margin-bottom: 20px;
+}
+
+.hero h1 .accent-word {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hero-description {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 480px;
+  margin-bottom: 28px;
+}
+
+.hero-description strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #09090b;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: #e0963a; transform: translateY(-1px); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: var(--text-faint); }
+
+/* ─── Terminal (hero right) ─── */
+.terminal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.terminal-dot.red { background: #f85149; }
+.terminal-dot.yellow { background: #d4882a; }
+.terminal-dot.green { background: #3fb950; }
+
+.terminal-title {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: 8px;
+}
+
+.terminal-body {
+  padding: 16px;
+  color: var(--text-muted);
+}
+
+.terminal-body .prompt { color: var(--accent); }
+.terminal-body .cmd { color: var(--text-heading); }
+.terminal-body .flag { color: var(--green); }
+.terminal-body .value { color: var(--text); }
+.terminal-body .dim { color: var(--text-faint); }
+.terminal-body .status-ok { color: var(--green); }
+
+/* Blinking cursor */
+.cursor-blink {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── Section dividers ─── */
+.section-divider {
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+
+/* ─── Capabilities (numbered list, not cards) ─── */
+.capabilities {
+  padding: 80px 0;
+}
+
+.section-overline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-heading);
+  margin-bottom: 48px;
+}
+
+.cap-list {
+  list-style: none;
+  counter-reset: cap;
+}
+
+.cap-item {
+  counter-increment: cap;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 0 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.cap-item:first-child { border-top: 1px solid var(--border-light); }
+
+.cap-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  padding-top: 2px;
+}
+
+.cap-content h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+}
+
+.cap-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 640px;
+}
+
+.cap-content .tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  background: rgba(255,255,255,0.03);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ─── Deployment Log ─── */
+.deploy-log {
+  padding: 0 0 80px;
+}
+
+.deploy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.deploy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  transition: border-color 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.deploy-card:hover { border-color: var(--text-faint); }
+
+.deploy-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.deploy-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(63,185,80,0.4);
+}
+
+.deploy-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-heading);
+  font-weight: 500;
+}
+
+.deploy-env {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-left: auto;
+  background: var(--green-dim);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.deploy-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.deploy-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  display: flex;
+  gap: 16px;
+}
+
+/* ─── Contact ─── */
+.contact {
+  padding: 0 0 80px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.contact-text h2 {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-heading);
+  margin-bottom: 12px;
+}
+
+.contact-text p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.contact-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.contact-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.contact-panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 16px;
+  letter-spacing: -0.1px;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.contact-row:last-child { border-bottom: none; }
+
+.contact-row .label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.contact-row .value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.contact-row .value:hover { color: var(--accent); }
+
+/* ─── Footer ─── */
+footer {
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+footer .brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+footer .links { display: flex; gap: 24px; }
+
+footer .links a {
+  color: var(--text-faint);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.15s;
+}
+footer .links a:hover { color: var(--text-muted); }
+
+/* ─── Responsive ─── */
+@media (max-width: 800px) {
+  body { padding: 0 20px; }
+
+  header { padding: 20px 0; }
+  header nav { gap: 20px; }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 48px 0 40px;
+  }
+
+  .capabilities { padding: 48px 0; }
+
+  .deploy-grid { grid-template-columns: 1fr; }
+
+  .contact {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 0 0 48px;
+  }
+
+  .cap-item { grid-template-columns: 24px 1fr; gap: 0 16px; }
+}
+
+@media (max-width: 520px) {
+  header { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  .hero h1 { letter-spacing: -0.8px; }
+
+  .hero-cta { flex-direction: column; align-items: flex-start; }
+  .btn-primary, .btn-ghost { width: 100%; justify-content: center; }
+
+  .deploy-meta { flex-direction: column; gap: 4px; }
+
+  footer { flex-direction: column; gap: 12px; align-items: flex-start; }
 }
 </style>
 </head>
 <body>
 
+<!-- ─── Header ─── -->
 <header>
-  <div class="logo">siriusdevops.com</div>
+  <div class="logo"><span class="star">&#9733;</span> siriusdevops.com</div>
   <nav>
-    <a href="#services">Services</a>
-    <a href="#proof">Work</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#deployments">Deployments</a>
     <a href="#contact">Contact</a>
   </nav>
 </header>
 
+<!-- ─── Hero ─── -->
 <section class="hero">
-  <div class="overline">Cloud Infrastructure Engineering</div>
-  <h1>Your infrastructure,<br><em>production-ready.</em></h1>
-  <p>I design, build, and manage cloud infrastructure for teams that need it to just work — GPU clusters for AI inference, multi-cloud Kubernetes, automated GitOps pipelines, and hardened database fleets. You ship features; I handle everything underneath.</p>
-  <div class="actions">
-    <a href="#contact" class="primary">Work with me</a>
-    <a href="#services" class="secondary">See what I do</a>
+  <div class="hero-left">
+    <h1>Infrastructure that<br>runs <span class="accent-word">without drama.</span></h1>
+    <p class="hero-description">
+      I design and operate production cloud infrastructure for teams who'd rather ship features than debug cluster networking. <strong>GKE clusters, AI/ML platforms, GitOps pipelines, hardened database fleets.</strong> Everything versioned, everything automated.
+    </p>
+    <div class="hero-cta">
+      <a href="#contact" class="btn-primary">Get in touch</a>
+      <a href="#deployments" class="btn-ghost">See what's running</a>
+    </div>
   </div>
-</section>
 
-<div class="stats">
-  <div class="stat"><div class="value">2</div><div class="label">Production GKE Clusters</div></div>
-  <div class="stat"><div class="value">370+</div><div class="label">Data Feeds Automated</div></div>
-  <div class="stat"><div class="value">GPU</div><div class="label">L4 &amp; A100 Inference</div></div>
-  <div class="stat"><div class="value">24/7</div><div class="label">GitOps Deployments</div></div>
-</div>
-
-<section id="services" class="services-section">
-  <div class="section-label">Capabilities</div>
-  <h2 class="section-heading">What I can do for your team</h2>
-  <p class="section-sub">Specialized infrastructure engineering across the stack — from cluster bootstrap to day-two operations and cost optimization.</p>
-
-  <div class="services">
-    <div class="service-card">
-      <div class="icon">&#9881;</div>
-      <h3>GKE Cluster Design &amp; Management</h3>
-      <p>Production-grade GKE clusters with node auto-provisioning, workload identity, and multi-region topologies. Built to run reliably from day one.</p>
+  <div class="terminal" aria-label="Terminal showing cluster status">
+    <div class="terminal-bar">
+      <span class="terminal-dot red"></span>
+      <span class="terminal-dot yellow"></span>
+      <span class="terminal-dot green"></span>
+      <span class="terminal-title">kubectl — gke-production</span>
     </div>
-    <div class="service-card">
-      <div class="icon">&#9670;</div>
-      <h3>CloudNativePG Database Fleets</h3>
-      <p>HA PostgreSQL on Kubernetes with automated backups, point-in-time recovery, and connection pooling. No more managed DB lock-in.</p>
-    </div>
-    <div class="service-card">
-      <div class="icon">&#8644;</div>
-      <h3>CI/CD &amp; GitOps Pipelines</h3>
-      <p>GitHub Actions workflows, Flux CD reconciliation, Renovate dependency automation. Every commit to cluster — auditable, repeatable, fast.</p>
-    </div>
-    <div class="service-card">
-      <div class="icon">&#9654;</div>
-      <h3>Gateway API &amp; HTTP Routing</h3>
-      <p>Advanced traffic routing with Gateway API, automatic TLS via cert-manager, and granular request matching. Ingress, but actually good.</p>
-    </div>
-    <div class="service-card">
-      <div class="icon">&#9737;</div>
-      <h3>Cost Optimization</h3>
-      <p>SPOT instance orchestration, KEDA scale-to-zero, right-sizing node pools, and committed-use discount planning. Infrastructure that respects your budget.</p>
-    </div>
-    <div class="service-card">
-      <div class="icon">&#9874;</div>
-      <h3>Security Hardening</h3>
-      <p>NetworkPolicy micro-segmentation, non-root containers, SOPS-encrypted secrets, and CIS benchmark compliance. Defense in depth, by default.</p>
-    </div>
-    <div class="service-card">
-      <div class="icon">&#9883;</div>
-      <h3>AI/ML Infrastructure</h3>
-      <p>vLLM serving on GPU node pools, KEDA-driven scale-to-zero for inference, and multi-tier model routing. L4 for dispatch, A100 for heavy lifting.</p>
-    </div>
-    <div class="service-card">
-      <div class="icon">&#9878;</div>
-      <h3>Infrastructure as Code</h3>
-      <p>Terraform for cloud resources, Kustomize for Kubernetes manifests, all versioned in Git. Nothing is click-ops. Everything is reproducible.</p>
+    <div class="terminal-body">
+      <div><span class="prompt">%</span> <span class="cmd">kubectl</span> <span class="flag">get nodes</span></div>
+      <div><span class="value">NAME</span> <span class="dim">STATUS</span> <span class="dim">ROLES</span> <span class="dim">AGE</span></div>
+      <div><span class="value">gke-prod-pool-1-7xk2</span> <span class="status-ok">Ready</span> <span class="dim">general</span> <span class="dim">142d</span></div>
+      <div><span class="value">gke-prod-pool-2-m9z1</span> <span class="status-ok">Ready</span> <span class="dim">general</span> <span class="dim">142d</span></div>
+      <div><span class="value">gke-gpu-pool-l4-a3f8</span> <span class="status-ok">Ready</span> <span class="dim">gpu</span> <span class="dim">89d</span></div>
+      <div><span class="value">gke-gpu-pool-a100-b2k1</span> <span class="status-ok">Ready</span> <span class="dim">gpu</span> <span class="dim">89d</span></div>
+      <br>
+      <div><span class="prompt">%</span> <span class="cmd">flux</span> <span class="flag">get kustomizations</span></div>
+      <div><span class="value">NAME</span> <span class="dim">READY</span> <span class="dim">MESSAGE</span> <span class="dim">AGE</span></div>
+      <div><span class="value">infra</span> <span class="status-ok">True</span> <span class="dim">reconciled successfully</span> <span class="dim">2m</span></div>
+      <div><span class="value">apps</span> <span class="status-ok">True</span> <span class="dim">reconciled successfully</span> <span class="dim">2m</span></div>
+      <br>
+      <div><span class="prompt">%</span> <span class="cursor-blink"></span></div>
     </div>
   </div>
 </section>
 
-<section id="proof" class="proof">
-  <div class="section-label">Live Work</div>
-  <h2 class="section-heading">Not just talk &mdash; here's what's running</h2>
-  <p class="section-sub">Production infrastructure you can inspect. These are live projects, not portfolio pieces.</p>
+<div class="section-divider" role="separator"></div>
 
-  <div class="proof-grid">
-    <a href="https://github.com/sirius0xdev/gcloud-lab" target="_blank" rel="noopener" class="proof-card">
-      <div class="proof-icon">&#128187;</div>
-      <div class="proof-url">github.com/sirius0xdev/gcloud-lab</div>
-      <div class="proof-desc">Full GKE cluster config — Terraform, Flux CD, GPU node pools, CloudNativePG, Cilium CNI. The infrastructure behind the AI inference and data pipelines described above.</div>
-      <div class="proof-arrow">&rarr; View repository</div>
+<!-- ─── Capabilities ─── -->
+<section class="capabilities" id="capabilities">
+  <div class="section-overline">Capabilities</div>
+  <h2 class="section-title">What I build and run</h2>
+
+  <ol class="cap-list">
+    <li class="cap-item">
+      <span class="cap-num">01</span>
+      <div class="cap-content">
+        <h3>GKE cluster design and management</h3>
+        <p>Production-grade clusters with node auto-provisioning, workload identity federation, and multi-region topologies. Built to run reliably from day one, not patched into shape.</p>
+        <div class="tags">
+          <span class="tag">GKE Autopilot</span>
+          <span class="tag">Workload Identity</span>
+          <span class="tag">Multi-region</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">02</span>
+      <div class="cap-content">
+        <h3>AI/ML inference platforms</h3>
+        <p>vLLM serving on GPU node pools with KEDA scale-to-zero. L4 instances for lightweight dispatch, A100 for heavy lifting. Model routing, multi-tenant isolation, and cost tracking baked in.</p>
+        <div class="tags">
+          <span class="tag">vLLM</span>
+          <span class="tag">KEDA</span>
+          <span class="tag">GPU Pools</span>
+          <span class="tag">L4 / A100</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">03</span>
+      <div class="cap-content">
+        <h3>CloudNativePG database fleets</h3>
+        <p>High-availability PostgreSQL on Kubernetes with automated backups, point-in-time recovery, and PgBouncer connection pooling. No managed database lock-in, full observability.</p>
+        <div class="tags">
+          <span class="tag">CloudNativePG</span>
+          <span class="tag">PgBouncer</span>
+          <span class="tag">PITR</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">04</span>
+      <div class="cap-content">
+        <h3>GitOps and CI/CD pipelines</h3>
+        <p>Flux CD reconciliation, GitHub Actions workflows, Renovate dependency automation. Every commit propagates to cluster — auditable, repeatable, fast. No click-ops.</p>
+        <div class="tags">
+          <span class="tag">Flux CD</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Renovate</span>
+          <span class="tag">Kustomize</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">05</span>
+      <div class="cap-content">
+        <h3>Security hardening</h3>
+        <p>NetworkPolicy micro-segmentation, non-root containers, SOPS-encrypted secrets with Age/KMS unsealing, and CIS benchmark compliance. Defense in depth applied by default, not retrofitted.</p>
+        <div class="tags">
+          <span class="tag">NetworkPolicy</span>
+          <span class="tag">SOPS</span>
+          <span class="tag">mTLS</span>
+          <span class="tag">CIS Benchmarks</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">06</span>
+      <div class="cap-content">
+        <h3>Gateway API and HTTP routing</h3>
+        <p>Advanced traffic routing with Gateway API, automatic TLS via cert-manager, and granular request matching. Blue-green and canary deployments with automatic rollbacks.</p>
+        <div class="tags">
+          <span class="tag">Gateway API</span>
+          <span class="tag">cert-manager</span>
+          <span class="tag">Cilium</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">07</span>
+      <div class="cap-content">
+        <h3>Cost optimization</h3>
+        <p>SPOT instance orchestration with graceful eviction, KEDA scale-to-zero for batch workloads, right-sized node pools, and committed-use discount planning. Infrastructure that respects your budget.</p>
+        <div class="tags">
+          <span class="tag">SPOT Instances</span>
+          <span class="tag">Scale-to-Zero</span>
+          <span class="tag">CUD Planning</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── Deployments ─── -->
+<section class="deploy-log" id="deployments">
+  <div class="section-overline">Live Infrastructure</div>
+  <h2 class="section-title">Not portfolio pieces — this is running</h2>
+
+  <div class="deploy-grid">
+    <a class="deploy-card" href="https://github.com/sirius0xdev/gcloud-lab" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-status"></span>
+        <span class="deploy-name">gcloud-lab</span>
+        <span class="deploy-env">production</span>
+      </div>
+      <p class="deploy-desc">Full GKE cluster config — Terraform, Flux CD, GPU node pools, CloudNativePG, Cilium CNI. The infrastructure behind the AI inference platform.</p>
+      <div class="deploy-meta">
+        <span>4 nodes</span>
+        <span>2 clusters</span>
+        <span>142 days uptime</span>
+      </div>
     </a>
-    <a href="https://github.com/sirius0xdev/lab" target="_blank" rel="noopener" class="proof-card">
-      <div class="proof-icon">&#9881;</div>
-      <div class="proof-url">github.com/sirius0xdev/lab</div>
-      <div class="proof-desc">Multi-cloud Kubernetes lab — kubeadm clusters, BGP load balancing, Minecraft server orchestration, Zcash full nodes. Real workloads on real clusters.</div>
-      <div class="proof-arrow">&rarr; View repository</div>
+
+    <a class="deploy-card" href="https://github.com/sirius0xdev/lab" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-status"></span>
+        <span class="deploy-name">lab</span>
+        <span class="deploy-env">multi-cloud</span>
+      </div>
+      <p class="deploy-desc">Multi-cloud Kubernetes lab — kubeadm clusters, BGP load balancing, Minecraft server orchestration, Zcash full nodes. Real workloads on real clusters.</p>
+      <div class="deploy-meta">
+        <span>kubeadm</span>
+        <span>BGP</span>
+        <span>mixed workloads</span>
+      </div>
     </a>
-    <a href="https://github.com/sirius0xdev/hermes-projects" target="_blank" rel="noopener" class="proof-card">
-      <div class="proof-icon">&#129302;</div>
-      <div class="proof-url">github.com/sirius0xdev/hermes-projects</div>
-      <div class="proof-desc">Multi-agent AI team running on Hermes — autonomous coding, research, and operations agents orchestrated via kanban. AI infrastructure in practice.</div>
-      <div class="proof-arrow">&rarr; View repository</div>
+
+    <a class="deploy-card" href="https://github.com/sirius0xdev/hermes-projects" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-status"></span>
+        <span class="deploy-name">hermes-projects</span>
+        <span class="deploy-env">gke</span>
+      </div>
+      <p class="deploy-desc">Multi-agent AI team on Hermes — autonomous coding, research, and operations agents orchestrated via kanban. AI infrastructure in practice, not a demo.</p>
+      <div class="deploy-meta">
+        <span>multi-agent</span>
+        <span>kanban-orchestrated</span>
+      </div>
     </a>
+
+    <div class="deploy-card" style="cursor: default;">
+      <div class="deploy-card-header">
+        <span class="deploy-status"></span>
+        <span class="deploy-name">trading-platform</span>
+        <span class="deploy-env">production</span>
+      </div>
+      <p class="deploy-desc">Real-time trading infrastructure — 370+ automated data feeds, Solana whale tracking, gold position scanners. Low-latency pipelines running 24/7.</p>
+      <div class="deploy-meta">
+        <span>370+ feeds</span>
+        <span>24/7 uptime</span>
+      </div>
+    </div>
   </div>
 </section>
 
-<section id="contact" class="cta">
-  <h2>Let's build something reliable.</h2>
-  <p>Whether you need a production cluster designed, an existing setup hardened, or an AI inference platform stood up — I'm available for consulting and contract work.</p>
-  <div class="cta-links">
-    <a href="mailto:sirius@siriusdevops.com" class="cta-primary">Get in touch</a>
-    <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="cta-secondary">GitHub &rarr;</a>
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── Contact ─── -->
+<section class="contact" id="contact">
+  <div class="contact-text">
+    <h2>Available for consulting and contracts</h2>
+    <p>Whether you need a production cluster designed from scratch, an existing setup hardened for security, or an AI inference platform stood up — reach out. I work remotely and communicate in code reviews and commit messages.</p>
+    <div class="contact-links">
+      <a href="mailto:sirius@siriusdevops.com" class="btn-primary">Email me</a>
+      <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="btn-ghost">GitHub</a>
+    </div>
+  </div>
+
+  <div class="contact-panel">
+    <h3>Quick reference</h3>
+    <div class="contact-row">
+      <span class="label">Email</span>
+      <a href="mailto:sirius@siriusdevops.com" class="value">sirius@siriusdevops.com</a>
+    </div>
+    <div class="contact-row">
+      <span class="label">GitHub</span>
+      <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="value">sirius0xdev</a>
+    </div>
+    <div class="contact-row">
+      <span class="label">Availability</span>
+      <span class="value">Open for Q3 2026</span>
+    </div>
+    <div class="contact-row">
+      <span class="label">Location</span>
+      <span class="value">Remote / Async-first</span>
+    </div>
   </div>
 </section>
 
+<!-- ─── Footer ─── -->
 <footer>
   <div class="brand">siriusdevops.com</div>
   <div class="links">
     <a href="https://github.com/sirius0xdev">GitHub</a>
-    <a href="mailto:sirius@siriusdevops.com">sirius@siriusdevops.com</a>
+    <a href="mailto:sirius@siriusdevops.com">Email</a>
   </div>
 </footer>
 
