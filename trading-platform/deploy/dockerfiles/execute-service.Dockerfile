@@ -28,8 +28,7 @@ RUN mkdir -p /tmp /app/data && chown -R appuser:appuser /tmp /app/data
 USER appuser
 
 # Health check using Python (curl not in slim)
-HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 EXPOSE 8000
 

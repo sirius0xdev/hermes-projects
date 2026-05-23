@@ -24,8 +24,7 @@ COPY --chown=appuser:appuser trading-platform/data-service/pyproject.toml ./
 USER appuser
 
 # Health check
-HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')" || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')" || exit 1
 
 EXPOSE 8001
 
