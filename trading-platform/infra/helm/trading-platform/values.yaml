@@ -3,12 +3,12 @@
 
 # Global settings
 global:
-  namespace: trading
+  namespace: customer1
   replicaCount: 2
   imagePullSecrets: []
   clusterName: customer1-gke
   environment: staging
-  registry: ghcr.io/sirius0xdev
+  registry: us-central1-docker.pkg.dev/customer1-gke/trading
 
 # Resource defaults for all microservices
 resources:
@@ -43,8 +43,8 @@ executeService:
   enabled: true
   name: execute-service
   image:
-    repository: "trading-execute-service"
-    tag: "latest"
+    repository: ""
+    tag: "0.1.0"
     pullPolicy: IfNotPresent
   port: 8000
   resources:
@@ -77,8 +77,8 @@ newsService:
   enabled: true
   name: news-service
   image:
-    repository: "trading-news-service"
-    tag: "latest"
+    repository: ""
+    tag: "0.1.0"
     pullPolicy: IfNotPresent
   port: 8000
   resources:
@@ -114,8 +114,8 @@ dataService:
   enabled: true
   name: data-service
   image:
-    repository: "trading-data-service"
-    tag: "latest"
+    repository: ""
+    tag: "0.1.0"
     pullPolicy: IfNotPresent
   port: 8000
   resources:
@@ -147,8 +147,8 @@ dashboard:
   enabled: true
   name: dashboard
   image:
-    repository: "trading-dashboard"
-    tag: "latest"
+    repository: ""
+    tag: "0.1.0"
     pullPolicy: IfNotPresent
   port: 3000
   resources:
@@ -262,7 +262,7 @@ kafka:
   enabled: true
   image:
     repository: apache/kafka
-tag: "latest"
+    tag: "3.9.0"
   replicaCount: 3
   resources:
     requests:
