@@ -16,3 +16,8 @@ data:
   REDIS_URL: "redis://redis-master:6379/0"
   LOG_LEVEL: "info"
   TRADING_ENV: "production"
+  # Database (shared PostgreSQL for execute-service)
+  DB_HOST: "postgres-primary.customer1.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "execute_db"
+  DB_USER: "execute"
