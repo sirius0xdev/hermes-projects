@@ -1,6 +1,6 @@
 """
 Solana SDK integration for on-chain trade execution.
-Uses solana-py for chain-level transaction construction and signing.
+Uses solders + solana-py for chain-level transaction construction and signing.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed
 from solana.rpc.types import TxOpts
-from solana.transaction import Transaction
+from solders.transaction import Transaction, VersionedTransaction
 
 from app.config import settings
 
@@ -88,7 +88,6 @@ class SolanaExecutor:
         # Fetch swap transaction from Jupiter
         import httpx
         import base64
-        from solders.transaction import VersionedTransaction
 
         async with httpx.AsyncClient() as client:
             swap_resp = await client.post(
@@ -146,7 +145,7 @@ class SolanaExecutor:
     @staticmethod
     def _create_transfer_instruction(to: Pubkey, lamports: int):
         """Create a system transfer instruction (manual to avoid full Program import)."""
-        from solana.system_program import TransferParams, transfer
+        from solders.system_program import TransferParams, transfer
         params = TransferParams(
             from_pubkey=Pubkey.from_string(""),  # placeholder, set by SDK
             to_pubkey=to,
