@@ -119,11 +119,15 @@ services:
     container_name: trading-execute-service-dev
     environment:
       <<: *common-env
-      EXECUTE_DATABASE_URL: sqlite+aiosqlite:////tmp/execute.db
-      EXECUTE_JWT_SECRET_KEY: dev-secret-change-me
-      EXECUTE_HYPERLIQUID_TESTNET: "true"
-      EXECUTE_MTLS_ENABLED: "false"
-      EXECUTE_MARKET_DATA_SERVICE_URL: http://data-service:8001
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_NAME: "execute_db"
+      DB_USER: "trading"
+      DB_PASSWORD: "trading_dev_password"
+      JWT_SECRET_KEY: dev-secret-change-me
+      HYPERLIQUID_TESTNET: "true"
+      MTLS_ENABLED: "false"
+      MARKET_DATA_SERVICE_URL: http://data-service:8001
       LOG_LEVEL: debug
     ports:
       - "8000:8000"

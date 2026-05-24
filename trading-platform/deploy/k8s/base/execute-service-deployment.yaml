@@ -35,10 +35,18 @@ spec:
             - configMapRef:
                 name: trading-platform-config
           env:
-            # Force safe SQLite path under the writable emptyDir /tmp mount.
-            # Overrides any bad value (e.g. ./execute.db) that may be in the shared ConfigMap.
-            - name: EXECUTE_DATABASE_URL
-              value: "sqlite+aiosqlite:////tmp/execute.db"
+            # DB password from Secret
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: execute-service-secret
+                  key: DB_PASSWORD
+            # JWT secret key from Secret
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: execute-service-secret
+                  key: JWT_SECRET_KEY
           resources:
             limits:
               cpu: "500m"
