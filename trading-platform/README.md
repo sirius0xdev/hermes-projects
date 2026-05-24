@@ -9,7 +9,7 @@ trading-platform/
 ├── dockerfiles/           # Multi-stage Dockerfiles for each service
 │   ├── dashboard/         # Next.js frontend (port 3000)
 │   ├── data-service/      # Data pipeline service (port 8000)
-│   ├── execute-service/   # Trading engine: Hyperliquid + Solana (port 8000)
+│   ├── execute-service/   # Trading engine: Hyperliquid + Solana (port 8002)
 │   └── news-service/      # CNPG connector + Kafka producer (port 8000)
 ├── helm/                  # Helm chart for full platform deployment
 │   ├── Chart.yaml         # Chart metadata
