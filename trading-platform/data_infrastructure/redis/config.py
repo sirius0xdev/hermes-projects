@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class RedisSettings(BaseSettings):
     # Connection
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://redis-master:6379/0"
 
     # Hot cache TTLs (seconds)
     hot_orderbook_ttl: int = 60        # Order book snapshot validity

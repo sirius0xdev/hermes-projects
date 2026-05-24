@@ -226,7 +226,7 @@ class TestRedisConfig:
     def test_default_settings(self):
         from data_infrastructure.redis.config import redis_settings
 
-        assert redis_settings.redis_url == "redis://localhost:6379/0"
+        assert redis_settings.redis_url == "redis://redis-master:6379/0"
         assert redis_settings.hot_orderbook_ttl == 60
         assert redis_settings.max_stream_length == 100_000
 

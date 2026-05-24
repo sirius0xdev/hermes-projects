@@ -19,7 +19,7 @@ class DataInfrastructureSettings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./trading.db"
 
     # Redis
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://redis-master:6379/0"
 
     # Kafka
     kafka_bootstrap_servers: str = "localhost:9092"

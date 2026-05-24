@@ -72,7 +72,15 @@ class RedisClient:
         retry_on_timeout: bool = True,
         health_check_interval: int = 30,
     ):
-        self.url = url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        # Read Redis connection from env vars (populated by ConfigMap).
+        # Supports both REDIS_URL and REDIS_HOST/REDIS_PORT patterns.
+        redis_url = url or os.getenv("REDIS_URL")
+        if not redis_url:
+            redis_host = os.getenv("REDIS_HOST", "redis-master")
+            redis_port = os.getenv("REDIS_PORT", "6379")
+            redis_db = os.getenv("REDIS_DB", "0")
+            redis_url = f"redis://{redis_host}:{redis_port}/{redis_db}"
+        self.url = redis_url
         self.max_connections = max_connections
         self.decode_responses = decode_responses
         self.retry_on_timeout = retry_on_timeout
