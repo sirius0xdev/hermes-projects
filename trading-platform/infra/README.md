@@ -153,9 +153,9 @@ sops -d trading-secrets.yaml | kubectl apply -f -
 
 | Service | Port | Description | Replicas |
 |---------|------|-------------|----------|
-| execute-service | 8000 | Hyperliquid + Solana trading engine | 2-10 (HPA) |
-| news-service | 8000 | CNPG connector + Kafka producer | 2-6 (HPA) |
-| data-service | 8000 | PostgreSQL + Redis + Kafka consumers | 2-6 (HPA) |
+| execute-service | 8002 | Hyperliquid + Solana trading engine | 2-10 (HPA) |
+| news-service | 8002 | CNPG connector + Kafka producer | 2-6 (HPA) |
+| data-service | 8001 | PostgreSQL + Redis + Kafka consumers | 2-6 (HPA) |
 | dashboard | 3000 | Next.js frontend | 2-8 (HPA) |
 
 ## Infrastructure Components

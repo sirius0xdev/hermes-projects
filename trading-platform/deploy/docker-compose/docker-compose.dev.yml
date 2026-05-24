@@ -130,7 +130,7 @@ services:
       MARKET_DATA_SERVICE_URL: http://data-service:8001
       LOG_LEVEL: debug
     ports:
-      - "8000:8000"
+      - "8002:8002"
     depends_on:
       data-service:
         condition: service_healthy
