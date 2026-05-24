@@ -50,7 +50,7 @@ spec:
             initialDelaySeconds: 0
       containers:
         - name: ingester
-          image: gcr.io/customer1/data-service:latest
+          image: ghcr.io/sirius0xdev/trading-data-service:latest
           command: ["python", "-m", "data_service.app.kafka.ingester"]
           env:
             # Kafka
@@ -160,7 +160,7 @@ spec:
               memory: 256Mi
       containers:
         - name: consumer
-          image: gcr.io/customer1/data-service:latest
+          image: ghcr.io/sirius0xdev/trading-data-service:latest
           command: ["python", "-m", "data_service.app.kafka.consumer_service"]
           env:
             # Kafka
