@@ -19,3 +19,4 @@ trading-platform/**/.venv
 trading-platform/**/venv
 trading-platform/**/node_modules
 trading-platform/**/.next
+trading-platform/**/tsconfig.tsbuildinfo
