@@ -119,7 +119,7 @@ services:
     container_name: trading-execute-service-dev
     environment:
       <<: *common-env
-      EXECUTE_DATABASE_URL: sqlite+aiosqlite:///./execute.db
+      EXECUTE_DATABASE_URL: sqlite+aiosqlite:////tmp/execute.db
       EXECUTE_JWT_SECRET_KEY: dev-secret-change-me
       EXECUTE_HYPERLIQUID_TESTNET: "true"
       EXECUTE_MTLS_ENABLED: "false"

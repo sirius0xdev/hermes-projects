@@ -34,6 +34,11 @@ spec:
           envFrom:
             - configMapRef:
                 name: trading-platform-config
+          env:
+            # Force safe SQLite path under the writable emptyDir /tmp mount.
+            # Overrides any bad value (e.g. ./execute.db) that may be in the shared ConfigMap.
+            - name: EXECUTE_DATABASE_URL
+              value: "sqlite+aiosqlite:////tmp/execute.db"
           resources:
             limits:
               cpu: "500m"

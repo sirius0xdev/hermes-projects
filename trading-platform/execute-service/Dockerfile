@@ -5,7 +5,7 @@ COPY trading-platform/execute-service/ ./
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim
-RUN useradd -m --system appuser && mkdir -p /data && chown appuser:appuser /data
+RUN useradd -m --uid 1000 --system appuser && mkdir -p /data && chown appuser:appuser /data
 
 COPY --from=builder /install /usr/local
 

@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir --prefix=/install .
 # Production stage
 FROM python:3.12-slim AS production
 
-# Security: non-root user
-RUN useradd -m --system appuser
+# Security: non-root user (UID 1000 to match K8s runAsUser/fsGroup)
+RUN useradd -m --uid 1000 --system appuser
 
 # Copy dependencies from builder
 COPY --from=builder /install /usr/local
@@ -22,7 +22,7 @@ WORKDIR /app
 COPY --chown=appuser:appuser trading-platform/execute-service/app/ ./app/
 COPY --chown=appuser:appuser trading-platform/execute-service/pyproject.toml ./
 
-# Create required directories with proper permissions
+# Create required directories with proper permissions (for dev/compose; K8s uses emptyDir)
 RUN mkdir -p /tmp /app/data && chown -R appuser:appuser /tmp /app/data
 
 USER appuser
