@@ -16,9 +16,6 @@ from app.database import get_session
 from app.models.order_models import OrderRecord
 from app.auth.service import decode_access_token
 from app.dependencies import get_order_manager, get_hyperliquid_executor, get_solana_executor
-from app.order.manager import OrderManager
-from app.executors.hyperliquid import HyperliquidExecutor
-from app.executors.solana import SolanaExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -116,9 +113,9 @@ def _wallet_compat(user: dict) -> str:
 @router.post("/place", response_model=PlaceOrderResponse)
 async def place_order(
     req: PlaceOrderRequest,
-    order_mgr: Annotated[OrderManager, Depends(get_order_manager)],
-    user: Annotated[dict, Depends(get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_session)],
+    order_mgr=Depends(get_order_manager),
+    user=Depends(get_current_user),
+    session=Depends(get_session),
 ) -> PlaceOrderResponse:
     """Place a new trading order."""
     order = await order_mgr.place_order(
@@ -151,9 +148,9 @@ async def place_order(
 @router.post("/cancel")
 async def cancel_order(
     req: CancelOrderRequest,
-    order_mgr: Annotated[OrderManager, Depends(get_order_manager)],
-    user: Annotated[dict, Depends(get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_session)],
+    order_mgr=Depends(get_order_manager),
+    user=Depends(get_current_user),
+    session=Depends(get_session),
 ) -> dict:
     """Cancel an existing order."""
     try:
@@ -170,11 +167,11 @@ async def cancel_order(
 
 @router.get("/orders", response_model=list[OrderStatusResponse])
 async def get_orders(
-    user: Annotated[dict, Depends(get_current_user)],
-    order_mgr: Annotated[OrderManager, Depends(get_order_manager)],
-    session: Annotated[AsyncSession, Depends(get_session)],
-    chain: Annotated[str | None, Query()] = None,
-    status: Annotated[str | None, Query()] = None,
+    user=Depends(get_current_user),
+    order_mgr=Depends(get_order_manager),
+    session=Depends(get_session),
+    chain: str | None = Query(None),
+    status: str | None = Query(None),
 ) -> list[OrderStatusResponse]:
     """Get all orders for the current user."""
     orders = await order_mgr.get_orders(
@@ -189,9 +186,9 @@ async def get_orders(
 @router.get("/orders/{client_order_id}", response_model=OrderStatusResponse)
 async def get_order(
     client_order_id: str,
-    user: Annotated[dict, Depends(get_current_user)],
-    order_mgr: Annotated[OrderManager, Depends(get_order_manager)],
-    session: Annotated[AsyncSession, Depends(get_session)],
+    user=Depends(get_current_user),
+    order_mgr=Depends(get_order_manager),
+    session=Depends(get_session),
 ) -> OrderStatusResponse:
     """Get a specific order by ID."""
     order = await order_mgr.get_order(session, client_order_id)
@@ -216,10 +213,10 @@ async def get_order(
 
 @router.get("/positions", response_model=list[PositionResponse])
 async def get_positions(
-    user: Annotated[dict, Depends(get_current_user)],
-    order_mgr: Annotated[OrderManager, Depends(get_order_manager)],
-    session: Annotated[AsyncSession, Depends(get_session)],
-    chain: Annotated[str | None, Query()] = None,
+    user=Depends(get_current_user),
+    order_mgr=Depends(get_order_manager),
+    session=Depends(get_session),
+    chain: str | None = Query(None),
 ) -> list[PositionResponse]:
     """Get current positions for the user."""
     positions = await order_mgr.get_positions(
@@ -232,11 +229,11 @@ async def get_positions(
 
 @router.get("/account", response_model=AccountStateResponse)
 async def get_account_state(
-    user: Annotated[dict, Depends(get_current_user)],
-    hl_exec: Annotated[HyperliquidExecutor, Depends(get_hyperliquid_executor)],
-    sol_exec: Annotated[SolanaExecutor, Depends(get_solana_executor)],
-    order_mgr: Annotated[OrderManager, Depends(get_order_manager)],
-    session: Annotated[AsyncSession, Depends(get_session)],
+    user=Depends(get_current_user),
+    hl_exec=Depends(get_hyperliquid_executor),
+    sol_exec=Depends(get_solana_executor),
+    order_mgr=Depends(get_order_manager),
+    session=Depends(get_session),
 ) -> AccountStateResponse:
     """Get combined account state across chains."""
     positions = await order_mgr.get_positions(

@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from fastapi import Depends
+
 from app.executors.hyperliquid import HyperliquidExecutor
 from app.executors.solana import SolanaExecutor
 from app.order.manager import OrderManager
@@ -23,8 +25,8 @@ def get_solana_executor() -> SolanaExecutor:
 
 
 def get_order_manager(
-    hl: HyperliquidExecutor = get_hyperliquid_executor(),
-    sol: SolanaExecutor = get_solana_executor(),
+    hl: HyperliquidExecutor = Depends(get_hyperliquid_executor),
+    sol: SolanaExecutor = Depends(get_solana_executor),
 ) -> OrderManager:
-    """Order manager wired with both executors."""
+    """Order manager wired with both executors via FastAPI DI."""
     return OrderManager(hl_exec=hl, sol_exec=sol)
