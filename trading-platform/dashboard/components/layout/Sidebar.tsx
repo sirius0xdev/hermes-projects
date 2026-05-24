@@ -6,6 +6,7 @@ const navItems = [
   { label: 'Market', path: '/market', icon: '📊' },
   { label: 'Portfolio', path: '/portfolio', icon: '💼' },
   { label: 'Trades', path: '/trades', icon: '⚡' },
+  { label: 'Autonomous Bot', path: '/bot', icon: '🧠' },
   { label: 'News Feed', path: '/news', icon: '📰' },
 ];
 
