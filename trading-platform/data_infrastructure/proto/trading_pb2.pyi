@@ -201,6 +201,36 @@ class TickBatch(_message.Message):
     ticks: _containers.RepeatedCompositeFieldContainer[TickData]
     def __init__(self, symbol: _Optional[str] = ..., source: _Optional[str] = ..., ticks: _Optional[_Iterable[_Union[TickData, _Mapping]]] = ...) -> None: ...
 
+class WhaleAlert(_message.Message):
+    __slots__ = ("signature", "slot", "amount", "token_symbol", "token_decimals", "usd_value", "from_address", "to_address", "from_label", "to_label", "tx_type", "timestamp_us", "source")
+    SIGNATURE_FIELD_NUMBER: _ClassVar[int]
+    SLOT_FIELD_NUMBER: _ClassVar[int]
+    AMOUNT_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_SYMBOL_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_DECIMALS_FIELD_NUMBER: _ClassVar[int]
+    USD_VALUE_FIELD_NUMBER: _ClassVar[int]
+    FROM_ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    TO_ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    FROM_LABEL_FIELD_NUMBER: _ClassVar[int]
+    TO_LABEL_FIELD_NUMBER: _ClassVar[int]
+    TX_TYPE_FIELD_NUMBER: _ClassVar[int]
+    TIMESTAMP_US_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    signature: str
+    slot: int
+    amount: float
+    token_symbol: str
+    token_decimals: int
+    usd_value: float
+    from_address: str
+    to_address: str
+    from_label: str
+    to_label: str
+    tx_type: str
+    timestamp_us: int
+    source: str
+    def __init__(self, signature: _Optional[str] = ..., slot: _Optional[int] = ..., amount: _Optional[float] = ..., token_symbol: _Optional[str] = ..., token_decimals: _Optional[int] = ..., usd_value: _Optional[float] = ..., from_address: _Optional[str] = ..., to_address: _Optional[str] = ..., from_label: _Optional[str] = ..., to_label: _Optional[str] = ..., tx_type: _Optional[str] = ..., timestamp_us: _Optional[int] = ..., source: _Optional[str] = ...) -> None: ...
+
 class NewOrder(_message.Message):
     __slots__ = ("client_order_id", "wallet_address", "chain", "symbol", "side", "order_type", "quantity", "price", "stop_price", "reduce_only", "time_in_force", "submitted_at_us")
     CLIENT_ORDER_ID_FIELD_NUMBER: _ClassVar[int]

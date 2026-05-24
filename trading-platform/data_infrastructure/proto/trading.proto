@@ -138,6 +138,23 @@ message TickBatch {
   repeated TickData ticks = 3;
 }
 
+// Whale alert — large on-chain transaction
+message WhaleAlert {
+  string signature = 1;
+  int64 slot = 2;
+  double amount = 3;
+  string token_symbol = 4;
+  int32 token_decimals = 5;
+  double usd_value = 6;
+  string from_address = 7;
+  string to_address = 8;
+  string from_label = 9;
+  string to_label = 10;
+  string tx_type = 11;
+  int64 timestamp_us = 12;
+  string source = 13;
+}
+
 // ============================================================
 // Order & Execution Messages
 // ============================================================

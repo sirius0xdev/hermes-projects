@@ -167,6 +167,16 @@ NEWS_SENTIMENT = TopicDef(
     retention_hours=720,
 )
 
+# ── Whale alerts ─────────────────────────────────────────────────
+
+WHALE_ALERTS = TopicDef(
+    name="market-data.whale.alerts",
+    description="Whale alert events from Solana on-chain monitoring",
+    partitions=6,
+    retention_hours=720,  # 30 days
+    key_field="token_symbol",
+)
+
 # ── System ─────────────────────────────────────────────────────────
 
 SYSTEM_HEALTH = TopicDef(
@@ -188,6 +198,7 @@ SYSTEM_ERRORS = TopicDef(
 ALL_TOPICS = [
     TICKS, TRADES, QUOTES, ORDERBOOK_L2,
     OHLCV_1M, OHLCV_5M, OHLCV_1H,
+    WHALE_ALERTS,
     SECURITIES,
     ORDERS_NEW, ORDER_STATUS, FILLS,
     POSITIONS, PNL,

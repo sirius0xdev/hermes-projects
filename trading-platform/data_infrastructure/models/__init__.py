@@ -4,6 +4,7 @@ These models define the PostgreSQL schema for:
 - Trade data (orders, fills, positions)
 - PnL history and accounting
 - Market data storage (candles, ticks)
+- Whale alerts (large on-chain transactions)
 """
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase
@@ -30,3 +31,16 @@ def _get_base():
 
 
 Base = _get_base()
+
+
+def __getattr__(name: str):
+    """Lazy-import whale models to avoid circular imports.
+
+    Individual model modules import `Base` from this package, but importing
+    those modules at module level would create a cycle since this __init__
+    defines Base at runtime.  So we only load WhaleAlert when requested.
+    """
+    if name == "WhaleAlert":
+        from data_infrastructure.models.whale_models import WhaleAlert
+        return WhaleAlert
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
