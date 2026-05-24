@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     jwt_refresh_days: int = 7
 
     # Database (SQLite default for dev, asyncpg for prod)
-    database_url: str = "sqlite+aiosqlite:////data/execute.db"
+    database_url: str = "sqlite+aiosqlite:////tmp/execute.db"
 
     # Hyperliquid
     hyperliquid_private_key: str = ""
