@@ -33,7 +33,6 @@ export default function TradeHistory({ trades, loading }: TradeHistoryProps) {
     return true;
   });
 
-  // Calculate stats
   const totalPnl = filtered
     .filter(t => t.status === 'FILLED')
     .reduce((sum, t) => sum + t.pnl, 0);
@@ -47,7 +46,10 @@ export default function TradeHistory({ trades, loading }: TradeHistoryProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-text-muted animate-pulse">Loading trade history...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+          <div className="text-text-dim text-sm">Loading trade history...</div>
+        </div>
       </div>
     );
   }
@@ -56,26 +58,18 @@ export default function TradeHistory({ trades, loading }: TradeHistoryProps) {
     <div className="space-y-4">
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-bg-card rounded-xl border border-border p-3">
-          <div className="text-xs text-text-secondary mb-1">Total P&L</div>
-          <div className={`text-lg font-bold font-mono ${totalPnl >= 0 ? 'text-up' : 'text-down'}`}>
-            {totalPnl >= 0 ? '+' : ''}${fmt(totalPnl)}
+        {[
+          { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${fmt(totalPnl)}`, cls: totalPnl >= 0 ? 'text-long' : 'text-short' },
+          { label: 'Win Rate', value: `${winRate}%`, cls: 'text-text', sub: `${winCount}W / ${filledCount - winCount}L` },
+          { label: 'Total Fees', value: `$${fmt(totalFees)}`, cls: 'text-text-dim' },
+          { label: 'Total Trades', value: `${filtered.length}`, cls: 'text-text', sub: `${filtered.filter(t => t.status === 'CANCELLED').length} cancelled` },
+        ].map(stat => (
+          <div key={stat.label} className="card-hover p-4">
+            <div className="text-[11px] text-text-dim mb-1.5 font-medium">{stat.label}</div>
+            <div className={`text-lg font-bold font-mono tracking-tight ${stat.cls}`}>{stat.value}</div>
+            {'sub' in stat && stat.sub && <div className="text-[10px] text-text-dim mt-1">{stat.sub}</div>}
           </div>
-        </div>
-        <div className="bg-bg-card rounded-xl border border-border p-3">
-          <div className="text-xs text-text-secondary mb-1">Win Rate</div>
-          <div className="text-lg font-bold font-mono text-text-primary">{winRate}%</div>
-          <div className="text-xs text-text-muted">{winCount}W / {filledCount - winCount}L</div>
-        </div>
-        <div className="bg-bg-card rounded-xl border border-border p-3">
-          <div className="text-xs text-text-secondary mb-1">Total Fees</div>
-          <div className="text-lg font-bold font-mono text-text-muted">${fmt(totalFees)}</div>
-        </div>
-        <div className="bg-bg-card rounded-xl border border-border p-3">
-          <div className="text-xs text-text-secondary mb-1">Total Trades</div>
-          <div className="text-lg font-bold font-mono text-text-primary">{filtered.length}</div>
-          <div className="text-xs text-text-muted">{filtered.filter(t => t.status === 'CANCELLED').length} cancelled</div>
-        </div>
+        ))}
       </div>
 
       {/* Filters */}
@@ -83,94 +77,92 @@ export default function TradeHistory({ trades, loading }: TradeHistoryProps) {
         <div className="flex gap-1">
           {(['All', 'Hyperliquid', 'Solana'] as const).map(c => (
             <button key={c} onClick={() => setChainFilter(c)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${chainFilter === c
-                ? 'bg-accent/20 text-accent border-accent'
-                : 'bg-bg-secondary text-text-muted border-border hover:text-text-secondary'}`}>
-              {c}
-            </button>
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                chainFilter === c
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border_light'
+              }`}>{c}</button>
           ))}
         </div>
         <div className="flex gap-1">
           {(['ALL', 'FILLED', 'CANCELLED'] as const).map(s => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${statusFilter === s
-                ? 'bg-accent/20 text-accent border-accent'
-                : 'bg-bg-secondary text-text-muted border-border hover:text-text-secondary'}`}>
-              {s === 'ALL' ? 'All Status' : s}
-            </button>
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                statusFilter === s
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border_light'
+              }`}>{s === 'ALL' ? 'All Status' : s}</button>
           ))}
         </div>
         <div className="flex gap-1">
           {['ALL', ...uniqueSymbols].map(s => (
             <button key={s} onClick={() => setSymbolFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${symbolFilter === s
-                ? 'bg-accent/20 text-accent border-accent'
-                : 'bg-bg-secondary text-text-muted border-border hover:text-text-secondary'}`}>
-              {s === 'ALL' ? 'All Symbols' : s}
-            </button>
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                symbolFilter === s
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border_light'
+              }`}>{s === 'ALL' ? 'All Symbols' : s}</button>
           ))}
         </div>
         <div className="flex gap-1 ml-auto">
           {(['ALL', 'BUY', 'SELL'] as const).map(s => (
             <button key={s} onClick={() => setSideFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${sideFilter === s ? 'bg-accent/20 text-accent border-accent' : 'bg-bg-secondary text-text-muted border-border hover:text-text-secondary'}`}>
-              {s === 'ALL' ? 'All Sides' : s}
-            </button>
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                sideFilter === s
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border_light'
+              }`}>{s === 'ALL' ? 'All Sides' : s}</button>
           ))}
         </div>
       </div>
 
-      {/* Responsive table */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Date</th>
-              <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Symbol</th>
-              <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Side</th>
-              <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Type</th>
-              <th className="text-right py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Price</th>
-              <th className="text-right py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Amount</th>
-              <th className="text-right py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Fee</th>
-              <th className="text-right py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">P&L</th>
-              <th className="text-center py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Chain</th>
-              <th className="text-center py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Status</th>
+            <tr className="border-b border-bg-border text-[10px] text-text-dim uppercase tracking-wider">
+              <th className="text-left py-2.5 px-3 font-semibold">Date</th>
+              <th className="text-left py-2.5 px-3 font-semibold">Symbol</th>
+              <th className="text-left py-2.5 px-3 font-semibold">Side</th>
+              <th className="text-left py-2.5 px-3 font-semibold">Type</th>
+              <th className="text-right py-2.5 px-3 font-semibold">Price</th>
+              <th className="text-right py-2.5 px-3 font-semibold">Amount</th>
+              <th className="text-right py-2.5 px-3 font-semibold">Fee</th>
+              <th className="text-right py-2.5 px-3 font-semibold">P&L</th>
+              <th className="text-center py-2.5 px-3 font-semibold">Chain</th>
+              <th className="text-center py-2.5 px-3 font-semibold">Status</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} className="text-center py-8 text-text-muted">
-                  No trades found
-                </td>
+                <td colSpan={10} className="text-center py-8 text-text-dim text-sm">No trades found</td>
               </tr>
             )}
             {filtered.map(t => (
-              <tr key={t.id} className="border-b border-border/50 hover:bg-bg-card/50 transition-colors">
-                <td className="py-2.5 px-3 text-xs text-text-secondary whitespace-nowrap">
-                  {formatTimestamp(t.timestamp)}
-                </td>
-                <td className="py-2.5 px-3 font-mono font-medium text-text-primary">{t.symbol}</td>
-                <td className={`py-2.5 px-3 font-semibold ${t.side === 'BUY' ? 'text-up' : 'text-down'}`}>{t.side}</td>
-                <td className="py-2.5 px-3 text-text-secondary">{t.type}</td>
-                <td className="py-2.5 px-3 text-right font-mono text-text-primary">${fmt(t.price)}</td>
-                <td className="py-2.5 px-3 text-right font-mono text-text-primary">{t.amount}</td>
-                <td className="py-2.5 px-3 text-right font-mono text-text-muted">${fmt(t.fee)}</td>
+              <tr key={t.id} className="border-b border-bg-border/50 hover:bg-bg-hover transition-colors">
+                <td className="py-2.5 px-3 text-[11px] text-text-dim whitespace-nowrap">{formatTimestamp(t.timestamp)}</td>
+                <td className="py-2.5 px-3 font-mono font-semibold text-text">{t.symbol}</td>
+                <td className={`py-2.5 px-3 font-bold ${t.side === 'BUY' ? 'text-long' : 'text-short'}`}>{t.side}</td>
+                <td className="py-2.5 px-3 text-text-dim">{t.type}</td>
+                <td className="py-2.5 px-3 text-right font-mono text-text">${fmt(t.price)}</td>
+                <td className="py-2.5 px-3 text-right font-mono text-text">{t.amount}</td>
+                <td className="py-2.5 px-3 text-right font-mono text-text-dim">${fmt(t.fee)}</td>
                 <td className={`py-2.5 px-3 text-right font-mono font-semibold ${
-                  t.pnl > 0 ? 'text-up' : t.pnl < 0 ? 'text-down' : 'text-text-muted'
+                  t.pnl > 0 ? 'text-long' : t.pnl < 0 ? 'text-short' : 'text-text-dim'
                 }`}>
                   {t.pnl !== 0 ? `${t.pnl >= 0 ? '+' : ''}$${fmt(t.pnl)}` : '—'}
                 </td>
-                <td className="py-2.5 px-3 text-center text-xs">
-                  <span className={`px-1.5 py-0.5 rounded ${t.chain === 'Hyperliquid' ? 'bg-accent/10 text-accent' : 'bg-purple-500/10 text-purple-400'}`}>
-                    {t.chain === 'Hyperliquid' ? '⬡' : '◎'}
-                  </span>
+                <td className="py-2.5 px-3 text-center">
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                    t.chain === 'Hyperliquid' ? 'bg-accent/10 text-accent' : 'bg-warm-muted text-warm'
+                  }`}>{t.chain === 'Hyperliquid' ? 'HL' : 'SOL'}</span>
                 </td>
                 <td className="py-2.5 px-3 text-center">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    t.status === 'FILLED' ? 'bg-green-500/20 text-green-400' :
-                    t.status === 'CANCELLED' ? 'bg-text-muted/20 text-text-muted' :
-                    'bg-amber-500/20 text-amber-400'
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    t.status === 'FILLED' ? 'bg-long-muted text-long' :
+                    t.status === 'CANCELLED' ? 'bg-bg-elevated text-text-dim' :
+                    'bg-warm-muted text-warm'
                   }`}>{t.status === 'FILLED' ? 'Filled' : t.status === 'CANCELLED' ? 'Cancelled' : 'Partial'}</span>
                 </td>
               </tr>

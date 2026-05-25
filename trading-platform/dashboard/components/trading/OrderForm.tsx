@@ -67,12 +67,11 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
     }
   };
 
-  // Percentage presets based on available balance mock
   const pctValues = [25, 50, 75, 100];
   const handlePctClick = (pct: number) => {
     const mockBalance = 18250;
     const currentPrice = parseFloat(price || '0') || 43250;
-    const total = (mockBalance * pct / 100) * leverage.length;
+    const total = (mockBalance * pct / 100) * parseInt(leverage);
     const calculatedAmount = total / currentPrice;
     setAmount(calculatedAmount.toFixed(6));
   };
@@ -85,39 +84,42 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
     <>
       <form onSubmit={handlePreSubmit} className="space-y-3">
         {/* Chain selector */}
-        <div className="flex gap-1 mb-2">
+        <div className="flex gap-1.5 mb-2">
           {(['Hyperliquid', 'Solana'] as const).map(c => (
             <button key={c} type="button" onClick={() => setChain(c)}
-              className={chain === c
-                ? 'bg-accent/20 text-accent border border-accent'
-                : 'bg-bg-tertiary text-text-muted border border-border'}
-              style={{ flex: 1, padding: '5px 0', fontSize: '12px', fontWeight: 600, borderRadius: '6px' }}>
-              {c === 'Hyperliquid' ? '⬡ Hyperliquid Futures' : '◎ Solana Swaps'}
+              className={`flex-1 py-2 text-[11px] font-semibold rounded-lg border transition-all ${
+                chain === c
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border_light'
+              }`}>
+              {c === 'Hyperliquid' ? '⬡ Hyperliquid' : '◎ Solana'}
             </button>
           ))}
         </div>
 
         {/* Buy/Sell toggle */}
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {(['BUY', 'SELL'] as const).map(s => (
             <button key={s} type="button" onClick={() => setSide(s)}
-              className={side === s
-                ? (s === 'BUY' ? 'bg-up text-bg-primary' : 'bg-down text-white')
-                : 'bg-bg-tertiary text-text-secondary'}
-              style={{ flex: 1, padding: '8px 0', fontSize: '14px', fontWeight: 700, borderRadius: '8px' }}>
+              className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
+                side === s
+                  ? (s === 'BUY' ? 'bg-long text-bg shadow-sm shadow-long/20' : 'bg-short text-white shadow-sm shadow-short/20')
+                  : 'bg-bg-elevated text-text-dim hover:text-text-secondary'
+              }`}>
               {s}
             </button>
           ))}
         </div>
 
         {/* Order type toggle */}
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {(['MARKET', 'LIMIT', 'STOP'] as const).map(t => (
             <button key={t} type="button" onClick={() => setType(t)}
-              className={type === t
-                ? 'border-accent text-accent bg-accent/10'
-                : 'border-border text-text-muted bg-bg-tertiary'}
-              style={{ flex: 1, padding: '5px 0', fontSize: '12px', fontWeight: 500, borderRadius: '6px', borderStyle: 'solid', borderWidth: '1px' }}>
+              className={`flex-1 py-2 text-[11px] font-semibold rounded-lg border transition-all ${
+                type === t
+                  ? 'border-accent/30 text-accent bg-accent/10'
+                  : 'border-bg-border text-text-dim bg-bg-elevated'
+              }`}>
               {t}
             </button>
           ))}
@@ -126,9 +128,9 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         {/* Price input */}
         {showPriceInput && (
           <label className="block">
-            <span className="text-xs text-text-secondary">{showStopInput ? 'Limit Price' : 'Price (USDC)'}</span>
+            <span className="text-[11px] text-text-dim">{showStopInput ? 'Limit Price' : 'Price (USDC)'}</span>
             <input type="number" step="any" value={price} onChange={e => setPrice(e.target.value)}
-              className="w-full mt-1 px-3 py-2.5 bg-bg-tertiary border border-border rounded-lg text-sm font-mono text-text-primary focus:outline-none focus:border-accent"
+              className="input-field mt-1.5"
               placeholder="0.00" />
           </label>
         )}
@@ -136,26 +138,26 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         {/* Stop price input */}
         {showStopInput && (
           <label className="block">
-            <span className="text-xs text-text-secondary">Trigger Price (USDC)</span>
+            <span className="text-[11px] text-text-dim">Trigger Price (USDC)</span>
             <input type="number" step="any" value={stopPrice} onChange={e => setStopPrice(e.target.value)}
-              className="w-full mt-1 px-3 py-2.5 bg-bg-tertiary border border-border rounded-lg text-sm font-mono text-text-primary focus:outline-none focus:border-amber-500"
+              className="input-field mt-1.5 focus:ring-warm/50 focus:border-warm"
               placeholder="0.00" />
           </label>
         )}
 
         {/* Amount input */}
         <label className="block">
-          <span className="text-xs text-text-secondary">Amount ({symbol.split('-')[0]})</span>
+          <span className="text-[11px] text-text-dim">Amount ({symbol.split('-')[0]})</span>
           <input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)}
-            className="w-full mt-1 px-3 py-2.5 bg-bg-tertiary border border-border rounded-lg text-sm font-mono text-text-primary focus:outline-none focus:border-accent"
+            className="input-field mt-1.5"
             placeholder="0.00" />
         </label>
 
         {/* Percentage presets */}
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {pctValues.map(pct => (
             <button key={pct} type="button" onClick={() => handlePctClick(pct)}
-              className="flex-1 py-1 text-xs font-medium bg-bg-tertiary text-text-muted border border-border rounded hover:text-accent hover:border-accent/50 transition-colors">
+              className="flex-1 py-1.5 text-[11px] font-medium bg-bg-elevated text-text-dim border border-bg-border rounded-lg hover:text-accent hover:border-accent/30 transition-colors">
               {pct}%
             </button>
           ))}
@@ -163,34 +165,43 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
 
         {/* Leverage */}
         <label className="block">
-          <span className="text-xs text-text-secondary">Leverage: <span className="text-accent font-semibold">{leverage}x</span></span>
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] text-text-dim">Leverage</span>
+            <span className="text-xs font-mono font-bold text-accent">{leverage}x</span>
+          </div>
           <input type="range" min="1" max="50" value={leverage} onChange={e => setLeverage(e.target.value)}
-            className="w-full mt-1 accent-accent" />
-          <div className="flex justify-between text-xs text-text-muted mt-0.5">
+            className="w-full mt-2 accent-accent" />
+          <div className="flex justify-between text-[10px] text-text-dim mt-0.5">
             <span>1x</span><span>25x</span><span>50x</span>
           </div>
         </label>
 
         {/* Estimated cost */}
-        <div className="text-xs text-text-secondary space-y-1 pt-2 border-t border-border">
+        <div className="text-[11px] text-text-dim space-y-1.5 pt-3 border-t border-bg-border">
           <div className="flex justify-between">
             <span>Price</span>
-            <span className="font-mono">{typeof effectivePrice === 'string' && effectivePrice === 'Market' ? 'Market' : `$${Number(effectivePrice).toLocaleString()}`}</span>
+            <span className="font-mono text-text-secondary">
+              {typeof effectivePrice === 'string' && effectivePrice === 'Market' ? 'Market' : `$${Number(effectivePrice).toLocaleString()}`}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>Amount</span>
-            <span className="font-mono">{amount || '0'}</span>
+            <span className="font-mono text-text-secondary">{amount || '0'}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Est. Total</span>
-            <span className="font-mono text-text-primary font-semibold">
-              ${(amount && effectivePrice !== 'Market') ? (parseFloat(amount) * parseFloat(effectivePrice as string)).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '—'}
+          <div className="flex justify-between font-semibold">
+            <span className="text-text-secondary">Est. Total</span>
+            <span className="font-mono text-text">
+              ${amount && effectivePrice !== 'Market' ? (parseFloat(amount) * parseFloat(effectivePrice as string)).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '—'}
             </span>
           </div>
         </div>
 
         <button type="submit" disabled={loading}
-          className={`w-full py-3 rounded-lg text-sm font-semibold ${side === 'BUY' ? 'bg-up hover:bg-up/90' : 'bg-down hover:bg-down/90'} text-bg-primary disabled:opacity-50 transition-colors`}>
+          className={`w-full py-3 rounded-lg text-sm font-bold ${
+            side === 'BUY'
+              ? 'bg-long hover:bg-long/90 text-bg shadow-sm shadow-long/20'
+              : 'bg-short hover:bg-short/90 text-white shadow-sm shadow-short/20'
+          } disabled:opacity-50 transition-all active:scale-[0.98]`}>
           {loading ? 'Submitting...' : `Place ${side === 'BUY' ? 'Buy' : 'Sell'} ${type}`}
         </button>
       </form>
@@ -198,60 +209,57 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
       {/* Confirmation modal */}
       {confirmOpen && confirmOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
-          <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Confirm Order</h3>
+          <div className="card p-6 w-full max-w-sm mx-4 shadow-2xl border-bg-border_light">
+            <h3 className="text-base font-bold text-text mb-4">Confirm Order</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Side</span>
-                <span className={`font-semibold ${confirmOrder.side === 'BUY' ? 'text-up' : 'text-down'}`}>{confirmOrder.side}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Type</span>
-                <span className="text-text-primary font-semibold">{confirmOrder.type}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Symbol</span>
-                <span className="text-text-primary font-mono">{confirmOrder.symbol}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Chain</span>
-                <span className="text-text-primary">{confirmOrder.chain === 'Hyperliquid' ? '⬡ Hyperliquid' : '◎ Solana'}</span>
-              </div>
+              {[
+                { label: 'Side', value: confirmOrder.side, cls: confirmOrder.side === 'BUY' ? 'text-long' : 'text-short' },
+                { label: 'Type', value: confirmOrder.type, cls: 'text-text' },
+                { label: 'Symbol', value: confirmOrder.symbol, cls: 'text-text font-mono' },
+                { label: 'Chain', value: confirmOrder.chain === 'Hyperliquid' ? '⬡ Hyperliquid' : '◎ Solana', cls: 'text-text' },
+              ].map(row => (
+                <div key={row.label} className="flex justify-between">
+                  <span className="text-text-dim">{row.label}</span>
+                  <span className={`font-semibold ${row.cls}`}>{row.value}</span>
+                </div>
+              ))}
               {confirmOrder.price && (
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Price</span>
-                  <span className="text-text-primary font-mono">${Number(confirmOrder.price).toLocaleString()}</span>
+                  <span className="text-text-dim">Price</span>
+                  <span className="text-text font-mono font-semibold">${Number(confirmOrder.price).toLocaleString()}</span>
                 </div>
               )}
               {confirmOrder.stopPrice && (
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Trigger</span>
-                  <span className="text-amber-400 font-mono">${Number(confirmOrder.stopPrice).toLocaleString()}</span>
+                  <span className="text-text-dim">Trigger</span>
+                  <span className="text-warm font-mono font-semibold">${Number(confirmOrder.stopPrice).toLocaleString()}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-text-secondary">Amount</span>
-                <span className="text-text-primary font-mono">{confirmOrder.amount}</span>
+                <span className="text-text-dim">Amount</span>
+                <span className="text-text font-mono font-semibold">{confirmOrder.amount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">Leverage</span>
-                <span className="text-accent font-semibold">{confirmOrder.leverage}x</span>
+                <span className="text-text-dim">Leverage</span>
+                <span className="text-accent font-bold">{confirmOrder.leverage}x</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-border">
+              <div className="flex justify-between pt-2 border-t border-bg-border">
                 <span className="text-text-secondary font-semibold">Total</span>
-                <span className="text-text-primary font-mono font-bold">
+                <span className="text-text font-mono font-bold">
                   ${confirmOrder.price ? (confirmOrder.amount * confirmOrder.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'Market'}
                 </span>
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-5">
               <button onClick={() => setConfirmOpen(false)}
-                className="flex-1 py-2.5 rounded-lg border border-border text-text-secondary hover:text-text-primary transition-colors font-medium">
+                className="flex-1 py-2.5 rounded-lg border border-bg-border text-text-secondary hover:text-text transition-colors font-medium text-sm">
                 Cancel
               </button>
               <button onClick={handleConfirm}
-                className={`flex-1 py-2.5 rounded-lg ${confirmOrder.side === 'BUY' ? 'bg-up' : 'bg-down'} text-bg-primary font-semibold hover:opacity-90 transition-colors`}>
+                className={`flex-1 py-2.5 rounded-lg text-bg font-bold text-sm ${
+                  confirmOrder.side === 'BUY' ? 'bg-long hover:bg-long/90' : 'bg-short hover:bg-short/90'
+                } transition-colors`}>
                 Confirm {confirmOrder.side}
               </button>
             </div>
