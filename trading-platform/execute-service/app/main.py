@@ -47,12 +47,15 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("Skipping table creation (production - relies on CNPG init jobs / migrations)")
     
-    # Initialize executors
+    # Initialize executors (non-blocking — service starts even if executors fail)
     hl_exec = get_hyperliquid_executor()
     sol_exec = get_solana_executor()
-    await hl_exec.initialize()
-    await sol_exec.initialize()
-    logger.info("All executors initialized")
+    try:
+        await hl_exec.initialize()
+        await sol_exec.initialize()
+        logger.info("All executors initialized")
+    except Exception as exc:
+        logger.warning("Executor init failed (non-fatal): %s — /health/ready will reflect status", exc)
 
     yield
 
