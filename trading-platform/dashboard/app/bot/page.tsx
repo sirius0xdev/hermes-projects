@@ -140,7 +140,7 @@ function EquityCurve({ data }: { data?: { time: string; value: number }[] }) {
   }).join(' ');
 
   const isUp = chartData[chartData.length - 1].value > chartData[0].value;
-  const lineColor = isUp ? '#10b981' : '#ef4444';
+  const lineColor = isUp ? '#22c55e' : '#f43f5e';
 
   return (
     <div className="relative">
@@ -158,7 +158,7 @@ function EquityCurve({ data }: { data?: { time: string; value: number }[] }) {
             y1={padding + pct * (height - 2 * padding)}
             x2={width - padding}
             y2={padding + pct * (height - 2 * padding)}
-            stroke="#1e293b"
+            stroke="rgba(28, 34, 51, 0.8)"
             strokeWidth="1"
           />
         ))}

@@ -50,7 +50,7 @@ function generatePositionHistory(): {
   ];
 }
 
-const ALLOCATION_COLORS = ['#06b6d4', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#3b82f6'];
+const ALLOCATION_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#8b5cf6', '#f43f5e', '#3b82f6'];
 
 export default function PortfolioPage() {
   const [balance, setBalance] = useState<Balance | null>(null);
@@ -438,7 +438,7 @@ function PnLChart({ data }: { data: { time: string; value: number }[] }) {
   const startVal = data[0].value;
   const endVal = data[data.length - 1].value;
   const isPositive = endVal >= startVal;
-  const lineColor = isPositive ? '#10b981' : '#ef4444';
+  const lineColor = isPositive ? '#22c55e' : '#f43f5e';
 
   return (
     <div className="w-full">
@@ -463,7 +463,7 @@ function PnLChart({ data }: { data: { time: string; value: number }[] }) {
             y1={padding + pct * (svgHeight - 2 * padding)}
             x2={svgWidth - padding}
             y2={padding + pct * (svgHeight - 2 * padding)}
-            stroke="#1e293b"
+            stroke="rgba(28, 34, 51, 0.8)"
             strokeWidth="1"
           />
         ))}

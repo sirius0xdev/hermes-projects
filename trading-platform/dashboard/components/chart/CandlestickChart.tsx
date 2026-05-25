@@ -13,15 +13,14 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
   const [containerWidth, setContainerWidth] = useState(800);
 
   const colors = useMemo(() => ({
-    bull: '#10b981',
-    bear: '#ef4444',
-    bullAlpha: 'rgba(16, 185, 129, 0.12)',
-    bearAlpha: 'rgba(239, 68, 68, 0.12)',
-    grid: '#1e293b',
-    text: '#64748b',
-    bg: '#0f1117',
-    crosshair: '#475569',
-    crosshairDash: '#1e293b',
+    bull: '#22c55e',
+    bear: '#f43f5e',
+    bullAlpha: 'rgba(34, 197, 94, 0.12)',
+    bearAlpha: 'rgba(244, 63, 94, 0.12)',
+    grid: 'rgba(28, 34, 51, 0.8)',
+    text: '#565d73',
+    bg: '#0d1017',
+    crosshair: '#3d4356',
   }), []);
 
   useEffect(() => {
@@ -44,7 +43,7 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
     if (!ctx || data.length === 0) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const padding = { top: 16, right: 60, bottom: 30, left: 12 };
+    const padding = { top: 20, right: 64, bottom: 32, left: 12 };
 
     canvas.width = containerWidth * dpr;
     canvas.height = height * dpr;
@@ -69,17 +68,16 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
     // Volume range
     const volumes = data.map(d => d.volume);
     const maxVol = Math.max(...volumes) * 1.2;
-    const volH = chartH * 0.2;
+    const volH = chartH * 0.18;
 
     // Clear
     ctx.fillStyle = colors.bg;
     ctx.fillRect(0, 0, containerWidth, height);
 
     // Grid lines
-    const gridLines = 6;
+    const gridLines = 5;
     ctx.strokeStyle = colors.grid;
     ctx.lineWidth = 0.5;
-    ctx.setLineDash([]);
     for (let i = 0; i <= gridLines; i++) {
       const y = padding.top + (chartH / gridLines) * i;
       ctx.beginPath();
@@ -89,11 +87,11 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
 
       const price = maxPrice - (adjRange / gridLines) * i;
       ctx.fillStyle = colors.text;
-      ctx.font = '10px ui-monospace, monospace';
+      ctx.font = '10px "JetBrains Mono", ui-monospace, monospace';
       ctx.textAlign = 'left';
       ctx.fillText(
         price < 1 ? price.toFixed(6) : price < 1000 ? price.toFixed(2) : price.toFixed(0),
-        containerWidth - padding.right + 8,
+        containerWidth - padding.right + 10,
         y + 3
       );
     }
@@ -105,7 +103,7 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
     const bodyW = Math.max(candleW * 0.65, 2);
 
     ctx.fillStyle = colors.text;
-    ctx.font = '9px ui-monospace, monospace';
+    ctx.font = '9px "JetBrains Mono", ui-monospace, monospace';
     ctx.textAlign = 'center';
     const labelStep = Math.max(1, Math.floor(visibleCount / 6));
     for (let i = 0; i < visibleCount; i += labelStep) {
@@ -113,9 +111,9 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
       const x = padding.left + i * candleW + candleW / 2;
       const d = new Date(candle.time);
       const label = d.getHours() > 0
-        ? `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`
+        ? `${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`
         : `${d.getMonth()+1}/${d.getDate()}`;
-      ctx.fillText(label, x, height - 6);
+      ctx.fillText(label, x, height - 8);
     }
 
     // Volume bars
@@ -139,7 +137,7 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
 
       // Wick
       ctx.strokeStyle = color;
-      ctx.lineWidth = Math.max(candleW > 12 ? 1.5 : 1, 0.5);
+      ctx.lineWidth = candleW > 8 ? 1.2 : 0.8;
       ctx.beginPath();
       ctx.moveTo(x, yScale(candle.high));
       ctx.lineTo(x, yScale(candle.low));
@@ -161,8 +159,8 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
   }, [draw]);
 
   return (
-    <div ref={containerRef} className="w-full">
-      <canvas ref={canvasRef} className="rounded-lg" />
+    <div ref={containerRef} className="w-full rounded-lg overflow-hidden border border-bg-border">
+      <canvas ref={canvasRef} />
     </div>
   );
 }
