@@ -32,6 +32,7 @@ jobs:
           - trading-platform/data-service
           - trading-platform/news-service
           - trading-platform/execute-service
+          - trading-platform/embedding-service
           - trading-platform/dashboard
     steps:
       - uses: actions/checkout@v4
