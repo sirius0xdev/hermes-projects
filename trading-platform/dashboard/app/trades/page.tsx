@@ -102,7 +102,7 @@ export default function TradesPage() {
             <button
               key={t.symbol}
               onClick={() => setSymbol(t.symbol)}
-              className={`px-3.5 py-2 rounded-lg border text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all duration-150 ${
                 symbol === t.symbol
                   ? 'bg-accent/10 border-accent/30 text-accent'
                   : 'bg-bg-card border-bg-border text-text-secondary hover:text-text hover:border-bg-border_light'
@@ -115,7 +115,7 @@ export default function TradesPage() {
 
         {/* Selected ticker info */}
         {selected && (
-          <div className="bg-bg-card rounded-xl border border-bg-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-bg-card rounded-lg border border-bg-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-4">
               <span className="text-lg font-bold text-text">{selected.symbol}</span>
               <span className={`text-lg font-mono font-bold ${selected.change24h >= 0 ? 'text-long' : 'text-short'}`}>
@@ -135,7 +135,7 @@ export default function TradesPage() {
         )}
 
         {/* Tab navigation */}
-        <div className="flex gap-0 bg-bg-card rounded-xl border border-bg-border p-1">
+        <div className="flex gap-0 bg-bg-card rounded-lg border border-bg-border p-1">
           {([
             { key: 'order' as Tab, label: 'Place Order', icon: Activity },
             { key: 'active' as Tab, label: `Active (${activeOrders.length})`, icon: null },
@@ -144,9 +144,9 @@ export default function TradesPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-150 ${
                 activeTab === tab.key
-                  ? 'bg-bg-surface text-accent shadow-sm'
+                  ? 'bg-bg-elevated text-accent shadow-sm'
                   : 'text-text-dim hover:text-text-secondary'
               }`}
             >

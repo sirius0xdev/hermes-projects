@@ -170,9 +170,9 @@ export default function MarketPage() {
             <button
               key={t.symbol}
               onClick={() => setSelected(t.symbol)}
-              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm transition-all duration-150 whitespace-nowrap ${
                 selected === t.symbol
-                  ? 'bg-accent/10 border-accent/30 shadow-sm shadow-accent/5'
+                  ? 'bg-accent/10 border-accent/30'
                   : 'bg-bg-card border-bg-border hover:border-bg-border_light'
               }`}
             >
@@ -195,11 +195,11 @@ export default function MarketPage() {
         {/* Main Content: Chart + Order Book */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
           {/* Chart Area */}
-          <div className="xl:col-span-3 bg-bg-card rounded-xl border border-bg-border">
+          <div className="xl:col-span-3 bg-bg-card rounded-lg border border-bg-border">
             {/* Chart Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 pb-0 gap-3">
               <div className="flex items-baseline gap-3">
-                <span className="text-lg font-bold text-text">{selected}</span>
+                <span className="text-base font-semibold text-text tracking-tight">{selected}</span>
                 {current && (
                   <span className={`font-mono text-2xl font-bold transition-colors tracking-tight ${
                     priceFlash === 'up' ? 'text-long' :
@@ -223,7 +223,7 @@ export default function MarketPage() {
                   <button
                     key={tf.value}
                     onClick={() => setIntervalState(tf.value)}
-                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
+                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors duration-150 ${
                       interval === tf.value
                         ? 'bg-accent/20 text-accent'
                         : 'text-text-dim hover:text-text-secondary'
@@ -248,9 +248,9 @@ export default function MarketPage() {
           </div>
 
           {/* Order Book */}
-          <div className="bg-bg-card rounded-xl border border-bg-border">
+          <div className="bg-bg-card rounded-lg border border-bg-border">
             <div className="px-4 py-3 border-b border-bg-border flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-text">Order Book</h3>
+              <h3 className="text-sm font-semibold text-text tracking-tight">Order Book</h3>
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-long opacity-60"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-long"></span>

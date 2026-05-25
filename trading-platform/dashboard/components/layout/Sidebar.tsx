@@ -23,7 +23,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
   return (
     <>
-      {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden backdrop-blur-sm" onClick={onClose} />}
       <aside className={`fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-bg-secondary border-r border-bg-border flex flex-col transition-transform duration-200 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Brand */}
         <div className="h-16 flex items-center px-5 border-b border-bg-border shrink-0">
@@ -48,7 +48,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                 key={item.path}
                 href={item.path}
                 onClick={onClose}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors duration-150 ${
                   active
                     ? 'bg-accent/[0.08] text-accent font-medium'
                     : 'text-text-dim hover:text-text-primary hover:bg-bg-tertiary'
@@ -66,7 +66,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           <Link
             href="/auth"
             onClick={onClose}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-dim hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-dim hover:text-text-primary hover:bg-bg-tertiary transition-colors duration-150"
           >
             <Wallet className="w-4 h-4 shrink-0" strokeWidth={1.5} />
             Wallet

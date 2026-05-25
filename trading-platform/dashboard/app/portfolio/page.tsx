@@ -149,7 +149,7 @@ export default function PortfolioPage() {
                     <Icon className="w-3.5 h-3.5 opacity-70" />
                     {item.label}
                   </div>
-                  <div className={`text-xl font-bold font-mono tracking-tight ${item.cls}`}>{item.value}</div>
+                  <div className={`text-lg font-bold font-mono tracking-tight ${item.cls}`}>{item.value}</div>
                 </div>
               );
             })}

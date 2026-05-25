@@ -19,7 +19,7 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
     bearAlpha: 'rgba(244, 63, 94, 0.12)',
     grid: 'rgba(28, 34, 51, 0.8)',
     text: '#565d73',
-    bg: '#0d1017',
+    bg: '#090b10',
     crosshair: '#3d4356',
   }), []);
 

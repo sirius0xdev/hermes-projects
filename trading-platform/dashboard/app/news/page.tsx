@@ -324,7 +324,7 @@ export default function NewsPage() {
         <div className="space-y-3">
           {filtered.length === 0 ? (
             <div className="text-center py-16 card">
-              <div className="text-3xl mb-3">📭</div>
+              <Newspaper className="w-8 h-8 text-text-dim mx-auto mb-3 opacity-50" />
               <p className="text-text-dim text-sm">No articles match your filters.</p>
               <button
                 onClick={() => { setSentimentFilter('all'); setSelectedTicker(''); }}

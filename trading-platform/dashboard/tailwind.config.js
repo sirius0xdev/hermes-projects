@@ -37,11 +37,18 @@ module.exports = {
       },
       fontFamily: {
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: '0.375rem',
         xl: '0.5rem',
+      },
+      spacing: {
+        'sidebar': '16rem',
+        'header': '4rem',
+      },
+      transitionDuration: {
+        '150': '150ms',
       },
     },
   },

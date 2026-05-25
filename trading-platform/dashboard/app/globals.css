@@ -26,7 +26,7 @@ html, body {
   height: 100%;
   background: var(--bg-primary);
   color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
