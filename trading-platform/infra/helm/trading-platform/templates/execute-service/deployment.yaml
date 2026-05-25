@@ -89,6 +89,13 @@ spec:
             - name: mtls-certs
               mountPath: /etc/mtls
               readOnly: true
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 30  # Allow time for executor/DB init
           livenessProbe:
             httpGet:
               path: /health

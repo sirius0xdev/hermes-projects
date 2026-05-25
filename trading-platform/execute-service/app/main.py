@@ -39,12 +39,20 @@ logger = logging.getLogger(__name__)
 # Timeout for each executor initialization (seconds)
 EXECUTOR_INIT_TIMEOUT = 10
 
+# Global readiness flag set once all executors init
+_service_ready = False
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Service startup and shutdown lifecycle."""
     logger.info("Starting execution service...")
-    await init_db()
+
+    if settings.db_auto_create_tables:
+        logger.info("Auto-creating tables (dev mode)")
+        await init_db()
+    else:
+        logger.info("Skipping table creation (production - relies on CNPG init jobs / migrations)")
 
     # Initialize executors with timeout and graceful fallback
     # If one hangs, the service still serves /health so K8s probes pass
@@ -76,7 +84,9 @@ async def lifespan(app: FastAPI):
         ", ".join(f"{k}={v}" for k, v in executor_status.items()),
     )
 
-    # Expose executor readiness on the app state for the /health/ready endpoint
+    # Set readiness flag and expose detailed status on app state
+    global _service_ready
+    _service_ready = all(v == "ready" for v in executor_status.values())
     app.state.executor_status = executor_status
 
     yield

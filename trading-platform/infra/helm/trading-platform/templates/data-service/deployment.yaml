@@ -65,6 +65,13 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 30  # Allow up to ~5min for Redis/DB/Kafka init
           livenessProbe:
             httpGet:
               path: /health

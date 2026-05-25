@@ -18,6 +18,21 @@ from data_service.app.cache.client import RedisClient, get_redis_client, shutdow
 from data_service.app.cache.service import CacheService
 from data_service.app.routes.market_data import set_cache_service
 
+# Health check router (required for K8s liveness/readiness probes)
+from fastapi import APIRouter
+health_router = APIRouter(tags=["health"])
+
+
+@health_router.get("/health", status_code=200)
+async def health_check():
+    """Health check endpoint for Kubernetes probes and Docker HEALTHCHECK."""
+    return {
+        "status": "healthy",
+        "service": "trading-data-service",
+        "version": "0.1.0",
+    }
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,6 +73,7 @@ def create_app() -> FastAPI:
     from data_service.app.routes.market_data import router
 
     app.include_router(router)
+    app.include_router(health_router)  # /health for K8s probes + Docker HEALTHCHECK
     return app
 
 

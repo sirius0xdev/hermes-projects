@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pathlib import Path
+import os
+from typing import Any
 
 
 class Settings(BaseSettings):
@@ -18,9 +20,10 @@ class Settings(BaseSettings):
     # Database (individual fields for ConfigMap compatibility)
     db_host: str = "localhost"
     db_port: int = 5432
-    db_name: str = "execute_db"
+    db_name: str = "trading_db"
     db_user: str = "execute"
     db_password: str = ""
+    db_auto_create_tables: bool = False  # False in prod (use separate CNPG init/migration jobs)
 
     # Hyperliquid
     hyperliquid_private_key: str = ""
@@ -41,12 +44,88 @@ class Settings(BaseSettings):
     # Service discovery
     market_data_service_url: str = "http://market-data:8001"
 
+    @model_validator(mode="before")
+    @classmethod
+    def map_production_env_vars(cls, data: Any) -> Any:
+        """Map production env vars from trading-execute-service-config + secrets.
+
+        The live ConfigMap uses EXECUTE_DB_* keys and hermes-pgdb-rw service.
+        Secrets provide the password (mapped from EXECUTE_DB_PASSWORD / POSTGRES_PASSWORD).
+        """
+        if isinstance(data, dict):
+            # DB password
+            if not data.get("db_password"):
+                data["db_password"] = (
+                    data.get("DB_PASSWORD")
+                    or data.get("POSTGRES_PASSWORD")
+                    or data.get("EXECUTE_DB_PASSWORD")
+                    or os.getenv("DB_PASSWORD")
+                    or os.getenv("POSTGRES_PASSWORD")
+                    or os.getenv("EXECUTE_DB_PASSWORD")
+                    or ""
+                )
+
+            # Auto-create flag (can be set in ConfigMap)
+            if "db_auto_create_tables" not in data:
+                auto_create = data.get("DB_AUTO_CREATE_TABLES") or data.get("EXECUTE_DB_AUTO_CREATE_TABLES") or os.getenv("DB_AUTO_CREATE_TABLES")
+                if auto_create is not None:
+                    data["db_auto_create_tables"] = auto_create.lower() in ("true", "1", "yes")
+
+            # JWT secret
+            if not data.get("jwt_secret_key"):
+                data["jwt_secret_key"] = (
+                    data.get("JWT_SECRET_KEY")
+                    or data.get("EXECUTE_JWT_SECRET_KEY")
+                    or os.getenv("JWT_SECRET_KEY")
+                    or os.getenv("EXECUTE_JWT_SECRET_KEY")
+                    or ""
+                )
+
+            # Private keys
+            if not data.get("hyperliquid_private_key"):
+                data["hyperliquid_private_key"] = (
+                    data.get("HYPERLIQUID_PRIVATE_KEY")
+                    or data.get("EXECUTE_HYPERLIQUID_PRIVATE_KEY")
+                    or os.getenv("HYPERLIQUID_PRIVATE_KEY")
+                    or os.getenv("EXECUTE_HYPERLIQUID_PRIVATE_KEY")
+                    or ""
+                )
+            if not data.get("solana_private_key_base58"):
+                data["solana_private_key_base58"] = (
+                    data.get("SOLANA_PRIVATE_KEY_BASE58")
+                    or data.get("EXECUTE_SOLANA_PRIVATE_KEY_BASE58")
+                    or os.getenv("SOLANA_PRIVATE_KEY_BASE58")
+                    or os.getenv("EXECUTE_SOLANA_PRIVATE_KEY_BASE58")
+                    or ""
+                )
+
+            # DB connection - prioritize EXECUTE_DB_* from your ConfigMap
+            if data.get("db_host") in (None, "", "localhost"):
+                data["db_host"] = (
+                    data.get("EXECUTE_DB_HOST")
+                    or data.get("DB_HOST")
+                    or data.get("POSTGRES_HOST")
+                    or os.getenv("EXECUTE_DB_HOST")
+                    or os.getenv("DB_HOST")
+                    or os.getenv("POSTGRES_HOST")
+                    or "hermes-pgdb-rw.customer1.svc.cluster.local"
+                )
+            if data.get("db_name") in (None, "", "execute_db", "trading_db"):
+                data["db_name"] = (
+                    data.get("EXECUTE_DB_NAME")
+                    or data.get("DB_NAME")
+                    or os.getenv("EXECUTE_DB_NAME")
+                    or os.getenv("DB_NAME")
+                    or "trading_data"
+                )
+
+        return data
+
     @property
     def database_url(self) -> str:
         """Construct database URL from individual fields.
-        
-        Falls back to SQLite on /tmp/execute.db when no password is set
-        (local dev mode). Uses PostgreSQL+asyncpg when DB_PASSWORD is provided.
+
+        Uses the real pgdb (hermes-pgdb-rw) when password is provided.
         """
         if self.db_password:
             return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
