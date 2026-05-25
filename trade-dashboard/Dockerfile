@@ -1,11 +1,10 @@
-FROM python:3.13-slim AS base
+FROM python:3.12-slim AS base
 
 WORKDIR /app
 
+# Minimal build deps (asyncpg doesn't require libpq-dev)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
-    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY trade-dashboard/app/requirements.txt .
@@ -15,6 +14,16 @@ COPY trade-dashboard/app/ ./app/
 COPY trade-dashboard/alembic.ini .
 COPY trade-dashboard/alembic/ ./alembic/
 
+# Non-root user + writable dir for any local state
+RUN adduser --system --uid 1001 --group appuser && \
+    mkdir -p /data && chown -R appuser:appuser /app /data
+
+USER appuser
+
 EXPOSE 8000
 ENV PYTHONPATH=/app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/health || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
