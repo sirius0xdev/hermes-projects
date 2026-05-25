@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pathlib import Path
+import os
+from typing import Any
 
 
 class Settings(BaseSettings):
@@ -18,7 +20,7 @@ class Settings(BaseSettings):
     # Database (individual fields for ConfigMap compatibility)
     db_host: str = "localhost"
     db_port: int = 5432
-    db_name: str = "execute_db"
+    db_name: str = "trading_db"
     db_user: str = "execute"
     db_password: str = ""
 
@@ -41,12 +43,92 @@ class Settings(BaseSettings):
     # Service discovery
     market_data_service_url: str = "http://market-data:8001"
 
+    @model_validator(mode="before")
+    @classmethod
+    def map_production_env_vars(cls, data: Any) -> Any:
+        """Map production Helm chart + trading-secrets env vars to pydantic fields.
+
+        gcloud-lab Helm uses:
+        - envFrom: trading-secrets (POSTGRES_PASSWORD, EXECUTE_JWT_SECRET_KEY, EXECUTE_*)
+        - ConfigMap keys like POSTGRES_HOST, EXECUTE_DB_*
+        - values.yaml DB_* for executeService
+
+        This prevents fallback to SQLite (which was causing the aiosqlite
+        "unable to open database file" error under readOnlyRootFilesystem).
+
+        What was tried:
+        - Relying only on DB_PASSWORD field: failed in prod (no matching env).
+        - Updating only Helm values.yaml: violates "gcloud-lab is source of truth".
+        - SQLite ensure_dir: helped but root cause was wrong connection mode.
+        """
+        if isinstance(data, dict):
+            # DB password: accept from shared secret or explicit
+            if not data.get("db_password"):
+                data["db_password"] = (
+                    data.get("DB_PASSWORD")
+                    or data.get("POSTGRES_PASSWORD")
+                    or os.getenv("DB_PASSWORD")
+                    or os.getenv("POSTGRES_PASSWORD")
+                    or ""
+                )
+
+            # JWT secret: map EXECUTE_JWT_SECRET_KEY from secret
+            if not data.get("jwt_secret_key"):
+                data["jwt_secret_key"] = (
+                    data.get("JWT_SECRET_KEY")
+                    or data.get("EXECUTE_JWT_SECRET_KEY")
+                    or os.getenv("JWT_SECRET_KEY")
+                    or os.getenv("EXECUTE_JWT_SECRET_KEY")
+                    or ""
+                )
+
+            # Private keys used in Helm
+            if not data.get("hyperliquid_private_key"):
+                data["hyperliquid_private_key"] = (
+                    data.get("HYPERLIQUID_PRIVATE_KEY")
+                    or data.get("EXECUTE_HYPERLIQUID_PRIVATE_KEY")
+                    or os.getenv("HYPERLIQUID_PRIVATE_KEY")
+                    or os.getenv("EXECUTE_HYPERLIQUID_PRIVATE_KEY")
+                    or ""
+                )
+            if not data.get("solana_private_key_base58"):
+                data["solana_private_key_base58"] = (
+                    data.get("SOLANA_PRIVATE_KEY_BASE58")
+                    or data.get("EXECUTE_SOLANA_PRIVATE_KEY_BASE58")
+                    or os.getenv("SOLANA_PRIVATE_KEY_BASE58")
+                    or os.getenv("EXECUTE_SOLANA_PRIVATE_KEY_BASE58")
+                    or ""
+                )
+
+            # DB connection - support multiple naming conventions from Helm/config
+            if data.get("db_host") in (None, "", "localhost"):
+                data["db_host"] = (
+                    data.get("DB_HOST")
+                    or data.get("EXECUTE_DB_HOST")
+                    or data.get("POSTGRES_HOST")
+                    or os.getenv("DB_HOST")
+                    or os.getenv("EXECUTE_DB_HOST")
+                    or os.getenv("POSTGRES_HOST")
+                    or "localhost"
+                )
+            if data.get("db_name") in (None, "", "execute_db"):
+                data["db_name"] = (
+                    data.get("DB_NAME")
+                    or data.get("EXECUTE_DB_NAME")
+                    or data.get("POSTGRES_DB")
+                    or os.getenv("DB_NAME")
+                    or "trading_db"
+                )
+
+        return data
+
     @property
     def database_url(self) -> str:
         """Construct database URL from individual fields.
-        
-        Falls back to SQLite on /tmp/execute.db when no password is set
-        (local dev mode). Uses PostgreSQL+asyncpg when DB_PASSWORD is provided.
+
+        Uses PostgreSQL+asyncpg when a password is available (prod via trading-secrets).
+        Falls back to SQLite ONLY for local dev. The model_validator ensures prod
+        always gets a password, preventing the previous SQLite regression.
         """
         if self.db_password:
             return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
