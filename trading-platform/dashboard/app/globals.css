@@ -1,4 +1,3 @@
-/*** @type {import('tailwindcss').Config} */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,18 +5,97 @@
 :root {
   --bg-primary: #0a0e17;
   --bg-secondary: #111827;
-  --bg-card: #1a1f2e;
-  --border: #2a3548;
-  --accent: #00d4aa;
-  --text: #f1f5f9;
+  --bg-card: #151b2b;
+  --border: #1e2a3a;
+  --accent: #06b6d4;
+  --text: #e2e8f0;
   --text-secondary: #94a3b8;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 html, body {
   height: 100%;
   background: var(--bg-primary);
   color: var(--text);
   font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3548;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4d66;
+}
+
+/* Card container — subtle border, dark background */
+.card {
+  @apply bg-bg-card rounded-xl border border-bg-border;
+}
+
+/* Card with hover effect */
+.card-hover {
+  @apply bg-bg-card rounded-xl border border-bg-border;
+}
+
+.card-hover:hover {
+  @apply border-bg-border_light;
+}
+
+/* Input field */
+.input-field {
+  @apply w-full px-3 py-2 bg-bg-elevated border border-bg-border rounded-lg text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent transition-all;
+}
+
+/* Tab button */
+.tab-btn {
+  @apply px-4 py-2.5 text-sm font-medium text-text-dim hover:text-text-secondary border-b-2 border-transparent transition-colors;
+}
+
+.tab-btn-active {
+  @apply text-accent border-accent;
+}
+
+/* Number input remove arrows */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Range slider */
+input[type='range'] {
+  @apply h-1 rounded-full appearance-none bg-bg-elevated;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg-primary);
+}
+
+/* Focus visible */
+:focus-visible {
+  @apply outline-none ring-2 ring-accent/40 ring-offset-1 ring-offset-bg-primary;
 }
