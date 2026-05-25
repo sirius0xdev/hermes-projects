@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 _model = None
 _tokenizer = None
 _dimensions = 768  # nomic-embed-text-v1.5 output dimensions
-_model_name = "nomic-embed-text-v1.5"
+_model_name = "nomic-ai/nomic-embed-text-v1.5"
 
 
 def load_model():
