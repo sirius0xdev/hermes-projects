@@ -3,13 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #0a0e17;
-  --bg-secondary: #111827;
-  --bg-card: #151b2b;
-  --border: #1e2a3a;
-  --accent: #06b6d4;
-  --text: #e2e8f0;
-  --text-secondary: #94a3b8;
+  --bg-primary: #090b10;
+  --bg-secondary: #0f1219;
+  --bg-card: #131620;
+  --bg-elevated: #181c28;
+  --border: #1c2233;
+  --border-light: #262f44;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --text: #e4e7ef;
+  --text-secondary: #8b92a5;
+  --text-dim: #565d73;
 }
 
 * {
@@ -29,42 +33,41 @@ html, body {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3548;
-  border-radius: 3px;
+  background: #1e2640;
+  border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b4d66;
+  background: #2a3552;
 }
 
-/* Card container — subtle border, dark background */
+/* Card */
 .card {
-  @apply bg-bg-card rounded-xl border border-bg-border;
+  @apply bg-bg-card rounded-lg border border-bg-border;
 }
 
-/* Card with hover effect */
 .card-hover {
-  @apply bg-bg-card rounded-xl border border-bg-border;
+  @apply bg-bg-card rounded-lg border border-bg-border transition-colors;
 }
 
 .card-hover:hover {
-  @apply border-bg-border_light;
+  @apply border-bg-border-light;
 }
 
-/* Input field */
+/* Input */
 .input-field {
-  @apply w-full px-3 py-2 bg-bg-elevated border border-bg-border rounded-lg text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent transition-all;
+  @apply w-full px-3 py-2 bg-bg-elevated border border-bg-border rounded-md text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/60 transition-all;
 }
 
-/* Tab button */
+/* Tab */
 .tab-btn {
-  @apply px-4 py-2.5 text-sm font-medium text-text-dim hover:text-text-secondary border-b-2 border-transparent transition-colors;
+  @apply px-3 py-2 text-sm font-medium text-text-dim hover:text-text-secondary border-b-2 border-transparent transition-colors;
 }
 
 .tab-btn-active {
@@ -83,19 +86,26 @@ input[type='number'] {
 
 /* Range slider */
 input[type='range'] {
-  @apply h-1 rounded-full appearance-none bg-bg-elevated;
+  @apply h-0.5 rounded-full appearance-none bg-bg-elevated;
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
   border: 2px solid var(--bg-primary);
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 /* Focus visible */
 :focus-visible {
-  @apply outline-none ring-2 ring-accent/40 ring-offset-1 ring-offset-bg-primary;
+  @apply outline-none ring-2 ring-accent/30 ring-offset-1 ring-offset-bg-primary;
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--text);
 }

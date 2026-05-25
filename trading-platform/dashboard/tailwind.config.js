@@ -7,39 +7,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Surfaces
         bg: {
-          primary: '#0a0e17',
-          secondary: '#111827',
-          tertiary: '#1e293b',
-          card: '#151b2b',
-          elevated: '#1c2337',
-          surface: '#1a2035',
-          border: '#1e2a3a',
-          border_light: '#2a3548',
-          hover: '#1e2740',
+          primary: '#090b10',
+          secondary: '#0f1219',
+          tertiary: '#161a26',
+          card: '#131620',
+          elevated: '#181c28',
+          surface: '#141825',
+          border: '#1c2233',
+          'border-light': '#262f44',
+          hover: '#181c28',
         },
-        // Long (buy/green)
-        long: '#10b981',
-        long_muted: 'rgba(16, 185, 129, 0.12)',
-        // Short (sell/red)
-        short: '#ef4444',
-        short_muted: 'rgba(239, 68, 68, 0.12)',
-        // Accent (teal/brand)
-        accent: { DEFAULT: '#06b6d4', hover: '#22d3ee', muted: 'rgba(6, 182, 212, 0.12)' },
-        // Warm (amber/amber accent for Solana, stop orders)
+        long: '#22c55e',
+        long_muted: 'rgba(34, 197, 94, 0.1)',
+        short: '#f43f5e',
+        short_muted: 'rgba(244, 63, 94, 0.1)',
+        accent: { DEFAULT: '#6366f1', hover: '#818cf8', muted: 'rgba(99, 102, 241, 0.1)' },
         warm: '#f59e0b',
-        warm_muted: 'rgba(245, 158, 11, 0.12)',
-        // Up/down (legacy aliases)
-        up: '#10b981',
-        down: '#ef4444',
-        // Text
+        warm_muted: 'rgba(245, 158, 11, 0.1)',
+        up: '#22c55e',
+        down: '#f43f5e',
         text: {
-          DEFAULT: '#e2e8f0',
-          primary: '#f1f5f9',
-          secondary: '#94a3b8',
-          dim: '#64748b',
-          muted: '#4b5563',
+          DEFAULT: '#e4e7ef',
+          primary: '#f0f1f5',
+          secondary: '#8b92a5',
+          dim: '#565d73',
+          muted: '#3d4356',
         },
       },
       fontFamily: {
@@ -47,8 +40,8 @@ module.exports = {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        lg: '0.5rem',
-        xl: '0.625rem',
+        lg: '0.375rem',
+        xl: '0.5rem',
       },
     },
   },
