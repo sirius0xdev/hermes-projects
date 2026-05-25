@@ -108,7 +108,19 @@ class Settings(BaseSettings):
                     or os.getenv("EXECUTE_DB_HOST")
                     or os.getenv("DB_HOST")
                     or os.getenv("POSTGRES_HOST")
-                    or "hermes-pgdb-rw.customer1.svc.cluster.local"
+                    or "siriusdevops-pgdb-rw.customer1.svc.cluster.local"
+                )
+            if data.get("db_port") in (None, 0):
+                data["db_port"] = (
+                    int(data.get("EXECUTE_DB_PORT") or data.get("DB_PORT") or os.getenv("EXECUTE_DB_PORT") or os.getenv("DB_PORT") or "5432")
+                )
+            if data.get("db_user") in (None, "", "execute"):
+                data["db_user"] = (
+                    data.get("EXECUTE_DB_USER")
+                    or data.get("DB_USER")
+                    or os.getenv("EXECUTE_DB_USER")
+                    or os.getenv("DB_USER")
+                    or "trading"
                 )
             if data.get("db_name") in (None, "", "execute_db", "trading_db"):
                 data["db_name"] = (

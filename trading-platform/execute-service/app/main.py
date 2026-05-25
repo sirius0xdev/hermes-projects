@@ -79,14 +79,12 @@ async def lifespan(app: FastAPI):
                 "%s executor initialization failed — will retry on first request", name
             )
 
+    # Service is ready once DB is connected — executors can initialize lazily
+    _service_ready = True
     logger.info(
         "Service ready. Executor status: %s",
         ", ".join(f"{k}={v}" for k, v in executor_status.items()),
     )
-
-    # Set readiness flag and expose detailed status on app state
-    global _service_ready
-    _service_ready = all(v == "ready" for v in executor_status.values())
     app.state.executor_status = executor_status
 
     yield

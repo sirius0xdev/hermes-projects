@@ -10,16 +10,16 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # PostgreSQL (CNPG news database)
-    db_user: str = "postgres"
+    db_user: str = "trading"
     db_password: str = ""
-    db_host: str = "customer1-cnpg"
+    db_host: str = "siriusdevops-pgdb-rw.customer1.svc.cluster.local"
     db_port: int = 5432
-    db_name: str = "news"
+    db_name: str = "trading_data"
     db_pool_size: int = 5
     db_max_overflow: int = 10
 
     # Kafka
-    kafka_bootstrap_servers: str = "localhost:9092"
+    kafka_bootstrap_servers: str = "trading-kafka.customer1.svc.cluster.local:9092"
     kafka_group_id: str = "news-analyzer"
     kafka_topic_articles: str = "news.articles"
     kafka_topic_analysis: str = "news.analysis"
