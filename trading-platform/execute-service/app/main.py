@@ -35,6 +35,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+_service_ready = False
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,6 +55,8 @@ async def lifespan(app: FastAPI):
     try:
         await hl_exec.initialize()
         await sol_exec.initialize()
+        global _service_ready
+        _service_ready = True
         logger.info("All executors initialized")
     except Exception as exc:
         logger.warning("Executor init failed (non-fatal): %s — /health/ready will reflect status", exc)
@@ -88,13 +92,8 @@ async def health() -> dict:
 
 @app.get("/health/ready")
 async def readiness() -> dict:
-    """Check if all executors are initialized. Triggers initialization if needed."""
-    hl = get_hyperliquid_executor()
-    sol = get_solana_executor()
-    await hl.initialize()
-    await sol.initialize()
-    ready = hl._initialized and sol._initialized
-    return {"status": "ready" if ready else "initializing"}
+    """Cached readiness state. Fast probe — does not re-run initialize() every time."""
+    return {"status": "ready" if _service_ready else "initializing"}
 
 
 @app.get("/health/live")
