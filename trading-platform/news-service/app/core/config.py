@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     nlp_min_relevance_score: float = 0.3
 
     # API
+    port: int = 8003
     api_prefix: str = "/api/v1"
     cors_origins: list[str] = ["*"]
 
