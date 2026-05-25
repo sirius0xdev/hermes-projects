@@ -85,9 +85,11 @@ async def health() -> dict:
 
 @app.get("/health/ready")
 async def readiness() -> dict:
-    """Check if all executors are initialized."""
+    """Check if all executors are initialized. Triggers initialization if needed."""
     hl = get_hyperliquid_executor()
     sol = get_solana_executor()
+    await hl.initialize()
+    await sol.initialize()
     ready = hl._initialized and sol._initialized
     return {"status": "ready" if ready else "initializing"}
 
