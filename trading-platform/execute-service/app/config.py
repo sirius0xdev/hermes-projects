@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     db_name: str = "trading_db"
     db_user: str = "execute"
     db_password: str = ""
+    db_auto_create_tables: bool = False  # False in prod (use separate CNPG init/migration jobs)
 
     # Hyperliquid
     hyperliquid_private_key: str = ""
@@ -48,13 +49,11 @@ class Settings(BaseSettings):
     def map_production_env_vars(cls, data: Any) -> Any:
         """Map production env vars from trading-execute-service-config + secrets.
 
-        The live ConfigMap (trading-execute-service-config) uses EXECUTE_DB_HOST,
-        EXECUTE_DB_NAME, EXECUTE_DB_PASSWORD style keys. Secrets provide JWT and DB creds.
-
-        This ensures we never fall back to SQLite in the GKE environment (hermes-pgdb-rw).
+        The live ConfigMap uses EXECUTE_DB_* keys and hermes-pgdb-rw service.
+        Secrets provide the password (mapped from EXECUTE_DB_PASSWORD / POSTGRES_PASSWORD).
         """
         if isinstance(data, dict):
-            # DB password - the ConfigMap/secrets use EXECUTE_DB_PASSWORD or POSTGRES_PASSWORD
+            # DB password
             if not data.get("db_password"):
                 data["db_password"] = (
                     data.get("DB_PASSWORD")
@@ -65,6 +64,12 @@ class Settings(BaseSettings):
                     or os.getenv("EXECUTE_DB_PASSWORD")
                     or ""
                 )
+
+            # Auto-create flag (can be set in ConfigMap)
+            if "db_auto_create_tables" not in data:
+                auto_create = data.get("DB_AUTO_CREATE_TABLES") or data.get("EXECUTE_DB_AUTO_CREATE_TABLES") or os.getenv("DB_AUTO_CREATE_TABLES")
+                if auto_create is not None:
+                    data["db_auto_create_tables"] = auto_create.lower() in ("true", "1", "yes")
 
             # JWT secret
             if not data.get("jwt_secret_key"):
@@ -94,7 +99,7 @@ class Settings(BaseSettings):
                     or ""
                 )
 
-            # DB connection - prioritize EXECUTE_DB_* from the ConfigMap you are using
+            # DB connection - prioritize EXECUTE_DB_* from your ConfigMap
             if data.get("db_host") in (None, "", "localhost"):
                 data["db_host"] = (
                     data.get("EXECUTE_DB_HOST")
@@ -120,8 +125,7 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         """Construct database URL from individual fields.
 
-        Now correctly maps the EXECUTE_* keys from trading-execute-service-config
-        and the DB credentials secret. This eliminates the SQLite fallback in prod.
+        Uses the real pgdb (hermes-pgdb-rw) when password is provided.
         """
         if self.db_password:
             return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"

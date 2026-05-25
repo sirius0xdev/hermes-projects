@@ -40,8 +40,13 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Service startup and shutdown lifecycle."""
     logger.info("Starting execution service...")
-    await init_db()
-
+    
+    if settings.db_auto_create_tables:
+        logger.info("Auto-creating tables (dev mode)")
+        await init_db()
+    else:
+        logger.info("Skipping table creation (production - relies on CNPG init jobs / migrations)")
+    
     # Initialize executors
     hl_exec = get_hyperliquid_executor()
     sol_exec = get_solana_executor()
