@@ -33,10 +33,17 @@ class HyperliquidExecutor:
             )
 
     async def initialize(self) -> None:
-        """Lazy-init SDK clients."""
+        """Lazy-init SDK clients.
+
+        Updated for current hyperliquid-python-sdk (Info.__init__ no longer accepts `testnet=`).
+        Uses constants.MAINNET_API_URL / TESTNET_API_URL + skip_ws=True.
+        """
         if self._initialized:
             return
-        self._info = info.Info(base_url=None, testnet=self.testnet)
+
+        base_url = constants.TESTNET_API_URL if self.testnet else constants.MAINNET_API_URL
+        self._info = info.Info(base_url, skip_ws=True)
+
         if settings.hyperliquid_private_key:
             self._exchange = Exchange(
                 settings.hyperliquid_private_key,
