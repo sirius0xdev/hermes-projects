@@ -1,6 +1,7 @@
-// API layer — connects to backend when available, falls back to mock data
-export const EXEC_BASE = process.env.NEXT_PUBLIC_EXEC_SERVICE_URL ?? 'http://localhost:8000';
-export const NEWS_BASE = process.env.NEXT_PUBLIC_NEWS_SERVICE_URL ?? 'http://localhost:8001';
+// API layer — uses relative paths proxied via HTTPRoute, falls back to mock data
+// HTTPRoute: /api/execute → execute-service, /api/news → news-service, /api/data → data-service
+export const EXEC_BASE = '/api/execute';
+export const NEWS_BASE = '/api/news';
 
 export interface TickerPrice {
   symbol: string;
