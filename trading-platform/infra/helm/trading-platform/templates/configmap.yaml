@@ -19,3 +19,8 @@ data:
   # PostgreSQL connection
   POSTGRES_HOST: postgres-primary.{{ .Values.global.namespace }}.svc.cluster.local
   POSTGRES_PORT: "5432"
+  # DB fields for execute-service (no env_prefix)
+  DB_HOST: postgres-primary.{{ .Values.global.namespace }}.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: "execute_db"
+  DB_USER: "execute"
