@@ -39,6 +39,11 @@ def _ensure_sqlite_dir(db_url: str) -> None:
         raise  # Re-raise so we get a clear error instead of a vague 'unable to open'
 
 
+def _is_production() -> bool:
+    """Return True when running against PostgreSQL (production)."""
+    return not settings.database_url.startswith("sqlite")
+
+
 # IMPORTANT: Ensure directory exists BEFORE creating the engine.
 # This prevents "unable to open database file" when the first connection is attempted.
 _ensure_sqlite_dir(settings.database_url)
@@ -65,13 +70,28 @@ async def get_session() -> AsyncSession:  # type: ignore[misc]
             pass  # session auto-closes via context manager
 
 
-async def init_db():
-    """Create all tables. Call on service startup."""
+async def init_db() -> None:
+    """Initialize database connection and tables.
+
+    In production (PostgreSQL): verify connectivity only — tables are created
+    by Alembic migrations, not DDL at runtime.
+    In development (SQLite): create all tables for convenience.
+    """
     # Double-ensure (harmless if already done)
     _ensure_sqlite_dir(settings.database_url)
 
     # Import all models so Base knows about them
     from app import models  # noqa: F401
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    if _is_production():
+        # Production: just verify the connection works
+        from sqlalchemy import text
+
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        logger.info("Database connection verified (production)")
+    else:
+        # Development: create all tables
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created (development)")
