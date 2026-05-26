@@ -20,6 +20,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import init_db, get_session, engine
 from app.middleware.mtls import MTLSMiddleware, create_ssl_context
+from app.middleware.strip_prefix import StripPrefixMiddleware
 from app.dependencies import (
     get_hyperliquid_executor,
     get_solana_executor,
@@ -108,6 +109,9 @@ app = FastAPI(
 # mTLS middleware (if enabled)
 app.add_middleware(MTLSMiddleware)
 
+# Strip Gateway API prefix so /api/execute/trades -> /trades
+app.add_middleware(StripPrefixMiddleware, prefix="/api/execute")
+
 # Register routers
 app.include_router(auth_router)
 app.include_router(trades_router)
@@ -122,17 +126,27 @@ async def health() -> dict:
 
 @app.get("/health/ready")
 async def readiness() -> JSONResponse:
-    """Readiness probe — returns 503 if any executor failed to initialize."""
-    status = getattr(app.state, "executor_status", {})
-    failed = {k: v for k, v in status.items() if v != "ready"}
-    if failed:
+    """Readiness probe — returns 200 once the service has started and DB is connected.
+    Executor status is reported separately at /health/executors.
+    """
+    if not _service_ready:
         return JSONResponse(
             status_code=503,
-            content={"status": "initializing", "executors": failed},
+            content={"status": "initializing"},
         )
     return JSONResponse(
         status_code=200,
-        content={"status": "ready", "executors": status},
+        content={"status": "ready"},
+    )
+
+
+@app.get("/health/executors")
+async def executor_health() -> JSONResponse:
+    """Report executor initialization status (separate from readiness probe)."""
+    status = getattr(app.state, "executor_status", {})
+    return JSONResponse(
+        status_code=200,
+        content=status,
     )
 
 

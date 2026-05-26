@@ -14,6 +14,28 @@ from app.api.articles import router as articles_router
 from app.api.analysis import router as analysis_router
 from app.api.signals import router as signals_router
 
+# ── Strip Gateway API prefix ──────────────────────────────────────
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+from typing import Callable, Awaitable
+
+
+class _StripPrefixMiddleware(BaseHTTPMiddleware):
+    """Strip /api/news from incoming paths so internal routes work directly."""
+
+    def __init__(self, app, prefix: str = ""):
+        super().__init__(app)
+        self.prefix = prefix.rstrip("/")
+
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        path = request.scope.get("path", "")
+        if self.prefix and path.startswith(self.prefix):
+            request.scope["path"] = path[len(self.prefix):] or "/"
+        return await call_next(request)
+
 logger = logging.getLogger(__name__)
 
 
@@ -64,6 +86,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Strip Gateway API prefix so /api/news/api/v1/... -> /api/v1/...
+    app.add_middleware(_StripPrefixMiddleware, prefix="/api/news")
     
     # Register routes
     prefix = settings.api_prefix

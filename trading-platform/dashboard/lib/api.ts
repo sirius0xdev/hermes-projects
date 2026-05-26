@@ -252,7 +252,7 @@ export async function fetchBalance(): Promise<Balance> {
 
 export async function fetchOrders(): Promise<Order[]> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/orders`, {
+    const res = await fetch(`/api/execute/trades/orders`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
     });
     if (!res.ok) throw new Error();
@@ -277,7 +277,7 @@ export async function placeOrder(order: { symbol: string; side: 'BUY' | 'SELL'; 
 
 export async function cancelOrder(id: string): Promise<{ ok: boolean }> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/orders/${id}`, {
+    const res = await fetch(`/api/execute/trades/orders/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
     });
@@ -362,7 +362,7 @@ export async function fetchTradeHistory(limit = 50): Promise<TradeHistoryItem[]>
 
 export async function fetchNews(limit = 20): Promise<NewsArticle[]> {
   try {
-    const res = await fetch(`${NEWS_BASE}/api/articles?limit=${limit}`);
+    const res = await fetch(`${NEWS_BASE}/api/v1/articles?limit=${limit}`);
     if (!res.ok) throw new Error();
     return res.json();
   } catch {
@@ -381,7 +381,7 @@ export async function fetchNews(limit = 20): Promise<NewsArticle[]> {
 
 export async function fetchNewsSignals(): Promise<{ signal: string; ticker: string; confidence: number; timestamp: string }[]> {
   try {
-    const res = await fetch(`${NEWS_BASE}/api/signals`);
+    const res = await fetch(`${NEWS_BASE}/api/v1/signals`);
     if (!res.ok) throw new Error();
     return res.json();
   } catch {
@@ -397,7 +397,7 @@ export async function fetchNewsSignals(): Promise<{ signal: string; ticker: stri
 export async function fetchNewsSentiment(tickers?: string): Promise<{ overall: number; bullish: number; bearish: number; neutral: number }> {
   try {
     const params = tickers ? `?tickers=${tickers}` : '';
-    const res = await fetch(`${NEWS_BASE}/api/analysis/sentiment${params}`);
+    const res = await fetch(`${NEWS_BASE}/api/v1/analysis/sentiment${params}`);
     if (!res.ok) throw new Error();
     return res.json();
   } catch {

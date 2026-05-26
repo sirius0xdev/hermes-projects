@@ -26,6 +26,31 @@ from fastapi import APIRouter
 health_router = APIRouter(tags=["health"])
 
 
+# ── Strip Gateway API prefix ──────────────────────────────────────
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+from typing import Callable, Awaitable
+import logging
+_mw_logger = logging.getLogger(__name__)
+
+
+class _StripPrefixMiddleware(BaseHTTPMiddleware):
+    """Strip /api/data from incoming paths so internal routes work directly."""
+
+    def __init__(self, app, prefix: str = ""):
+        super().__init__(app)
+        self.prefix = prefix.rstrip("/")
+
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        path = request.scope.get("path", "")
+        if self.prefix and path.startswith(self.prefix):
+            request.scope["path"] = path[len(self.prefix):] or "/"
+        return await call_next(request)
+
+
 # ── Service state for readiness ────────────────────────────────
 _service_ready = False
 
@@ -133,6 +158,9 @@ def create_app() -> FastAPI:
         description="PostgreSQL + Redis + Kafka data service for the trading platform",
         lifespan=lifespan,
     )
+
+    # Strip Gateway API prefix so /api/data/api/v1/... -> /api/v1/...
+    app.add_middleware(_StripPrefixMiddleware, prefix="/api/data")
 
     from data_service.app.routes.market_data import router
 
