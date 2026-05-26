@@ -157,6 +157,7 @@ def create_app() -> FastAPI:
         version="0.1.0",
         description="PostgreSQL + Redis + Kafka data service for the trading platform",
         lifespan=lifespan,
+        root_path="/api/data",
     )
 
     # Strip Gateway API prefix so /api/data/api/v1/... -> /api/v1/...

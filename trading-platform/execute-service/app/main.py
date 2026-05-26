@@ -20,7 +20,6 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import init_db, get_session, engine
 from app.middleware.mtls import MTLSMiddleware, create_ssl_context
-from app.middleware.strip_prefix import StripPrefixMiddleware
 from app.dependencies import (
     get_hyperliquid_executor,
     get_solana_executor,
@@ -29,6 +28,28 @@ from app.dependencies import (
 
 # Import API routers
 from app.api.auth import router as auth_router
+
+# Strip Gateway API prefix
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import Response as StarletteResponse
+from typing import Callable, Awaitable
+
+
+class _StripPrefixMiddleware(BaseHTTPMiddleware):
+    """Strip /api/execute from incoming paths so internal routes work."""
+
+    def __init__(self, app, prefix: str = ""):
+        super().__init__(app)
+        self.prefix = prefix.rstrip("/")
+
+    async def dispatch(
+        self, request: StarletteRequest, call_next: Callable[[StarletteRequest], Awaitable[StarletteResponse]]
+    ) -> StarletteResponse:
+        path = request.scope.get("path", "")
+        if self.prefix and path.startswith(self.prefix):
+            request.scope["path"] = path[len(self.prefix):] or "/"
+        return await call_next(request)
 from app.api.trades import router as trades_router
 
 logging.basicConfig(
@@ -104,13 +125,14 @@ app = FastAPI(
     description="Trading execution microservice for Hyperliquid + Solana",
     version="0.1.0",
     lifespan=lifespan,
+    root_path="/api/execute",
 )
 
 # mTLS middleware (if enabled)
 app.add_middleware(MTLSMiddleware)
 
 # Strip Gateway API prefix so /api/execute/trades -> /trades
-app.add_middleware(StripPrefixMiddleware, prefix="/api/execute")
+app.add_middleware(_StripPrefixMiddleware, prefix="/api/execute")
 
 # Register routers
 app.include_router(auth_router)
@@ -126,17 +148,17 @@ async def health() -> dict:
 
 @app.get("/health/ready")
 async def readiness() -> JSONResponse:
-    """Readiness probe — returns 200 once the service has started and DB is connected.
-    Executor status is reported separately at /health/executors.
-    """
+    """Readiness probe — returns 200 once the service is running.
+    Executors initialize lazily on first request after startup."""
     if not _service_ready:
         return JSONResponse(
             status_code=503,
-            content={"status": "initializing"},
+            content={"status": "starting"},
         )
+    status = getattr(app.state, "executor_status", {})
     return JSONResponse(
         status_code=200,
-        content={"status": "ready"},
+        content={"status": "ready", "executors": status},
     )
 
 

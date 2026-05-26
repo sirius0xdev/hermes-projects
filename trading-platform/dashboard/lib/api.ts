@@ -2,6 +2,7 @@
 // HTTPRoute: /api/execute → execute-service, /api/news → news-service, /api/data → data-service
 export const EXEC_BASE = '/api/execute';
 export const NEWS_BASE = '/api/news';
+export const DATA_BASE = '/api/data';
 
 export interface TickerPrice {
   symbol: string;
@@ -182,9 +183,14 @@ function generateMockTradeHistory(): TradeHistoryItem[] {
 // ========== API FUNCTIONS ==========
 export async function fetchTickers(): Promise<TickerPrice[]> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/market/tickers`);
+    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/price/hyperliquid/BTC`);
     if (!res.ok) throw new Error();
-    return res.json();
+    const data = await res.json();
+    // data-service returns per-exchange per-symbol; wrap as flat list
+    return [{
+      symbol: 'BTC-PERP', price: data.price, change24h: 0,
+      volume24h: 0, high24h: data.price, low24h: data.price,
+    }];
   } catch {
     return [
       { symbol: 'BTC-PERP', price: 43251.50, change24h: 2.34, volume24h: 1250000000, high24h: 43800.00, low24h: 42100.00 },
@@ -198,9 +204,10 @@ export async function fetchTickers(): Promise<TickerPrice[]> {
 
 export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promise<Candle[]> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/market/candles?symbol=${symbol}&interval=${interval}`);
+    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/candles/hyperliquid/${symbol}/${interval}`);
     if (!res.ok) throw new Error();
-    return res.json();
+    const data = await res.json();
+    return data.candles;
   } catch {
     return generateCandles(200, symbol.startsWith('ETH') ? 2289 : symbol.startsWith('SOL') ? 104 : 43251);
   }
@@ -208,9 +215,15 @@ export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promis
 
 export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/market/orderbook?symbol=${symbol}`);
+    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/orderbook/hyperliquid/${symbol}`);
     if (!res.ok) throw new Error();
-    return res.json();
+    const data = await res.json();
+    return {
+      symbol,
+      timestamp: Date.now(),
+      bids: data.bids.map((b: any) => ({ price: b.price, size: b.quantity })),
+      asks: data.asks.map((a: any) => ({ price: a.price, size: a.quantity })),
+    };
   } catch {
     const price = symbol.startsWith('BTC') ? 43251 : symbol.startsWith('ETH') ? 2289 : 104;
     return {
@@ -224,27 +237,45 @@ export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
 
 export async function fetchPositions(): Promise<Position[]> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/positions`, {
+    const res = await fetch(`${EXEC_BASE}/trades/positions`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
     });
     if (!res.ok) throw new Error();
-    return res.json();
+    const data = await res.json();
+    return data.map((p: any) => ({
+      id: p.symbol,
+      symbol: p.symbol,
+      side: p.side.toUpperCase(),
+      size: parseFloat(p.size),
+      entryPrice: parseFloat(p.entry_price),
+      markPrice: 0,
+      pnl: parseFloat(p.unrealized_pnl || '0'),
+      pnlPct: 0,
+      leverage: parseFloat(p.leverage || '1'),
+      platform: 'Hyperliquid' as const,
+    }));
   } catch {
     return [
-      { id: 'p1', symbol: 'BTC-PERP', side: 'LONG', size: 0.5, entryPrice: 42800, markPrice: 43251.50, pnl: 225.75, pnlPct: 1.05, leverage: 5, platform: 'Hyperliquid' },
-      { id: 'p2', symbol: 'SOL-PERP', side: 'LONG', size: 10, entryPrice: 98.50, markPrice: 104.23, pnl: 57.30, pnlPct: 5.82, leverage: 3, platform: 'Solana' },
-      { id: 'p3', symbol: 'ETH-PERP', side: 'SHORT', size: 2, entryPrice: 2350.00, markPrice: 2289.75, pnl: 120.50, pnlPct: 2.56, leverage: 2, platform: 'Hyperliquid' },
+      { id: 'p1', symbol: 'BTC-PERP', side: 'LONG', size: 0.5, entryPrice: 42800, markPrice: 43251.50, pnl: 225.75, pnlPct: 1.05, leverage: 5, platform: 'Hyperliquid' as const },
+      { id: 'p2', symbol: 'SOL-PERP', side: 'LONG', size: 10, entryPrice: 98.50, markPrice: 104.23, pnl: 57.30, pnlPct: 5.82, leverage: 3, platform: 'Solana' as const },
+      { id: 'p3', symbol: 'ETH-PERP', side: 'SHORT', size: 2, entryPrice: 2350.00, markPrice: 2289.75, pnl: 120.50, pnlPct: 2.56, leverage: 2, platform: 'Hyperliquid' as const },
     ];
   }
 }
 
 export async function fetchBalance(): Promise<Balance> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/balance`, {
+    const res = await fetch(`${EXEC_BASE}/trades/account`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
     });
     if (!res.ok) throw new Error();
-    return res.json();
+    const data = await res.json();
+    return {
+      total: parseFloat(data.total_equity || '0'),
+      available: parseFloat(data.margin_total || '0'),
+      inPositions: 0,
+      unrealizedPnl: 0,
+    };
   } catch {
     return { total: 25430.50, available: 18250.00, inPositions: 6780.50, unrealizedPnl: 403.55 };
   }
@@ -252,7 +283,7 @@ export async function fetchBalance(): Promise<Balance> {
 
 export async function fetchOrders(): Promise<Order[]> {
   try {
-    const res = await fetch(`/api/execute/trades/orders`, {
+    const res = await fetch(`${EXEC_BASE}/trades/orders`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
     });
     if (!res.ok) throw new Error();
@@ -264,12 +295,21 @@ export async function fetchOrders(): Promise<Order[]> {
 
 export async function placeOrder(order: { symbol: string; side: 'BUY' | 'SELL'; type: 'LIMIT' | 'MARKET'; price: number; amount: number; leverage?: number }): Promise<{ ok: boolean; orderId?: string; error?: string }> {
   try {
-    const res = await fetch(`${EXEC_BASE}/api/orders`, {
+    const payload = {
+      chain: 'hyperliquid',
+      symbol: order.symbol,
+      side: order.side.toLowerCase(),
+      order_type: order.type.toLowerCase(),
+      quantity: order.amount.toString(),
+      price: order.price?.toString(),
+    };
+    const res = await fetch(`${EXEC_BASE}/trades/place`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
-      body: JSON.stringify(order),
+      body: JSON.stringify(payload),
     });
-    return res.json();
+    const data = await res.json();
+    return { ok: true, orderId: data.client_order_id };
   } catch {
     return { ok: true, orderId: `mock-${Date.now()}` };
   }
@@ -277,9 +317,10 @@ export async function placeOrder(order: { symbol: string; side: 'BUY' | 'SELL'; 
 
 export async function cancelOrder(id: string): Promise<{ ok: boolean }> {
   try {
-    const res = await fetch(`/api/execute/trades/orders/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+    const res = await fetch(`${EXEC_BASE}/trades/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+      body: JSON.stringify({ client_order_id: id }),
     });
     return res.json();
   } catch {
@@ -299,12 +340,22 @@ export async function postTrade(order: {
   chain?: 'Hyperliquid' | 'Solana';
 }): Promise<{ ok: boolean; orderId?: string; error?: string }> {
   try {
+    const payload = {
+      chain: (order.chain || 'Hyperliquid').toLowerCase(),
+      symbol: order.symbol,
+      side: order.side.toLowerCase(),
+      order_type: order.type.toLowerCase(),
+      quantity: order.amount.toString(),
+      price: order.price?.toString(),
+      stop_price: order.stopPrice?.toString(),
+    };
     const res = await fetch(`${EXEC_BASE}/trades/place`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
-      body: JSON.stringify(order),
+      body: JSON.stringify(payload),
     });
-    return res.json();
+    const data = await res.json();
+    return { ok: true, orderId: data.client_order_id };
   } catch {
     return { ok: true, orderId: `mock-t6-${Date.now()}` };
   }
@@ -315,7 +366,7 @@ export async function deleteTradeOrderId(id: string): Promise<{ ok: boolean }> {
     const res = await fetch(`${EXEC_BASE}/trades/cancel`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
-      body: JSON.stringify({ orderId: id }),
+      body: JSON.stringify({ client_order_id: id }),
     });
     return res.json();
   } catch {
@@ -336,35 +387,31 @@ export async function fetchTradeOrders(): Promise<Order[]> {
 }
 
 export async function modifyOrder(id: string, updates: { price?: number; amount?: number; stopPrice?: number }): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const res = await fetch(`${EXEC_BASE}/trades/orders/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
-      body: JSON.stringify(updates),
-    });
-    return res.json();
-  } catch {
-    return { ok: true };
-  }
+  // Backend does not support order modification; cancel + re-place instead
+  return { ok: false, error: 'Not supported — cancel and place a new order' };
 }
 
 export async function fetchTradeHistory(limit = 50): Promise<TradeHistoryItem[]> {
-  try {
-    const res = await fetch(`${EXEC_BASE}/trades/history?limit=${limit}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
-    });
-    if (!res.ok) throw new Error();
-    return res.json();
-  } catch {
-    return generateMockTradeHistory();
-  }
+  // Backend does not expose trade history endpoint yet
+  return generateMockTradeHistory();
 }
 
 export async function fetchNews(limit = 20): Promise<NewsArticle[]> {
   try {
-    const res = await fetch(`${NEWS_BASE}/api/v1/articles?limit=${limit}`);
+    const res = await fetch(`${NEWS_BASE}/api/v1/articles/?page_size=${limit}`);
     if (!res.ok) throw new Error();
-    return res.json();
+    const data = await res.json();
+    return data.items.map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      summary: a.content?.substring(0, 200) || '',
+      url: a.url,
+      source: a.source_id,
+      publishedAt: a.published_at,
+      sentiment: a.sentiment_label === 'bullish' ? 'bullish' as const : a.sentiment_label === 'bearish' ? 'bearish' as const : 'neutral' as const,
+      sentimentScore: a.sentiment_score || 0,
+      tickers: a.mentioned_tickers || [],
+    }));
   } catch {
     return [
       { id: 'n1', title: 'Bitcoin Breaks $43K as ETF Momentum Continues', summary: 'Institutional inflows into spot Bitcoin ETFs pushed prices to new yearly highs.', url: '#', source: 'CryptoDesk', publishedAt: '2025-01-15T09:30:00Z', sentiment: 'bullish', sentimentScore: 0.82, tickers: ['BTC'], signal: 'STRONG_BUY' },
@@ -381,7 +428,7 @@ export async function fetchNews(limit = 20): Promise<NewsArticle[]> {
 
 export async function fetchNewsSignals(): Promise<{ signal: string; ticker: string; confidence: number; timestamp: string }[]> {
   try {
-    const res = await fetch(`${NEWS_BASE}/api/v1/signals`);
+    const res = await fetch(`${NEWS_BASE}/api/v1/signals/summary`);
     if (!res.ok) throw new Error();
     return res.json();
   } catch {
@@ -395,14 +442,8 @@ export async function fetchNewsSignals(): Promise<{ signal: string; ticker: stri
 }
 
 export async function fetchNewsSentiment(tickers?: string): Promise<{ overall: number; bullish: number; bearish: number; neutral: number }> {
-  try {
-    const params = tickers ? `?tickers=${tickers}` : '';
-    const res = await fetch(`${NEWS_BASE}/api/v1/analysis/sentiment${params}`);
-    if (!res.ok) throw new Error();
-    return res.json();
-  } catch {
-    return { overall: 0.42, bullish: 62, bearish: 18, neutral: 20 };
-  }
+  // Backend does not expose sentiment aggregation endpoint yet
+  return { overall: 0.42, bullish: 62, bearish: 18, neutral: 20 };
 }
 
 // ========== AUTH FUNCTIONS (via Next.js api proxy) ==========
