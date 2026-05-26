@@ -28,6 +28,8 @@ from app.dependencies import (
 
 # Import API routers
 from app.api.auth import router as auth_router
+from app.api.trades import router as trades_router
+from app.api.settings import router as settings_router
 
 # Strip Gateway API prefix
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -50,7 +52,6 @@ class _StripPrefixMiddleware(BaseHTTPMiddleware):
         if self.prefix and path.startswith(self.prefix):
             request.scope["path"] = path[len(self.prefix):] or "/"
         return await call_next(request)
-from app.api.trades import router as trades_router
 
 logging.basicConfig(
     level=logging.DEBUG if settings.debug else logging.INFO,
@@ -137,6 +138,7 @@ app.add_middleware(_StripPrefixMiddleware, prefix="/api/execute")
 # Register routers
 app.include_router(auth_router)
 app.include_router(trades_router)
+app.include_router(settings_router)
 
 
 # Health checks

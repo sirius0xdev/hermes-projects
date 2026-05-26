@@ -2,5 +2,6 @@
 from app.models.auth_models import AuthNonce, WalletSession
 from app.models.order_models import OrderRecord
 from app.models.position_models import PositionRecord
+from app.models.config_models import ServiceConfig
 
-__all__ = ["AuthNonce", "WalletSession", "OrderRecord", "PositionRecord"]
+__all__ = ["AuthNonce", "WalletSession", "OrderRecord", "PositionRecord", "ServiceConfig"]

@@ -8,6 +8,7 @@ import {
   Cpu,
   Newspaper,
   Wallet,
+  Settings,
 } from 'lucide-react';
 
 const navItems = [
@@ -61,8 +62,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           })}
         </nav>
 
-        {/* Wallet */}
-        <div className="p-3 border-t border-bg-border shrink-0">
+        {/* Wallet & Settings */}
+        <div className="p-3 border-t border-bg-border shrink-0 space-y-0.5">
           <Link
             href="/auth"
             onClick={onClose}
@@ -70,6 +71,18 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           >
             <Wallet className="w-4 h-4 shrink-0" strokeWidth={1.5} />
             Wallet
+          </Link>
+          <Link
+            href="/settings"
+            onClick={onClose}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors duration-150 ${
+              pathname === '/settings'
+                ? 'bg-accent/[0.08] text-accent font-medium'
+                : 'text-text-dim hover:text-text-primary hover:bg-bg-tertiary'
+            }`}
+          >
+            <Settings className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+            Settings
           </Link>
         </div>
       </aside>
