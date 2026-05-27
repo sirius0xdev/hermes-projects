@@ -12,7 +12,7 @@ const CONFIG_FIELDS: { key: string; label: string; secret: boolean; description:
   { key: 'hyperliquid_wallet_address', label: 'Hyperliquid Wallet Address', secret: false, description: 'Public wallet address on Hyperliquid' },
   { key: 'hyperliquid_testnet', label: 'Hyperliquid Testnet Mode', secret: false, description: 'Use testnet instead of mainnet (true/false)' },
   { key: 'solana_private_key_base58', label: 'Solana Private Key (Base58)', secret: true, description: 'Wallet private key for Solana order execution' },
-  { key: 'solana_rpc_url', label: 'Solana RPC URL', secret: false, description: 'Solana RPC endpoint (default: https://api.devnet.solana.com)' },
+  { key: 'solana_rpc_url', label: 'Solana RPC URL', secret: false, description: 'Solana RPC endpoint (mainnet recommended: https://api.mainnet-beta.solana.com or Helius/QuickNode)' },
 ];
 
 export default function SettingsPage() {
