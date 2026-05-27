@@ -95,9 +95,9 @@ class Settings(BaseSettings):
                     or ""
                 )
 
-            # Auto-create flag (can be set in ConfigMap)
-            if "db_auto_create_tables" not in data:
-                auto_create = data.get("DB_AUTO_CREATE_TABLES") or data.get("EXECUTE_DB_AUTO_CREATE_TABLES") or os.getenv("DB_AUTO_CREATE_TABLES")
+            # Auto-create flag (can be set in ConfigMap as EXECUTE_DB_AUTO_CREATE_TABLES)
+            if not data.get("db_auto_create_tables"):
+                auto_create = data.get("DB_AUTO_CREATE_TABLES") or data.get("EXECUTE_DB_AUTO_CREATE_TABLES") or os.getenv("DB_AUTO_CREATE_TABLES") or os.getenv("EXECUTE_DB_AUTO_CREATE_TABLES")
                 if auto_create is not None:
                     data["db_auto_create_tables"] = auto_create.lower() in ("true", "1", "yes")
 
