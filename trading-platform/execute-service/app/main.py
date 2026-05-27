@@ -72,6 +72,7 @@ _service_ready = False
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Service startup and shutdown lifecycle."""
+    global _service_ready
     logger.info("Starting execution service...")
 
     if settings.db_auto_create_tables:
