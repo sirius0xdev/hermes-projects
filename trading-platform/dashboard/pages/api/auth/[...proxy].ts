@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const EXEC_SERVICE = process.env.NEXT_PUBLIC_EXEC_SERVICE_URL || process.env.EXEC_SERVICE_URL || 'http://localhost:8000';
+const EXEC_SERVICE = process.env.NEXT_PUBLIC_EXEC_SERVICE_URL || process.env.EXECUTE_SERVICE_URL || process.env.EXEC_SERVICE_URL || 'http://localhost:8002';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { proxy = [] } = req.query;
