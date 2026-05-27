@@ -1,5 +1,5 @@
-import { getLivePrices } from '@/lib/prices';
 'use client';
+import { getLivePrices } from '@/lib/prices';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import CandlestickChart from '@/components/chart/CandlestickChart';
