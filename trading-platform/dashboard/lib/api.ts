@@ -169,11 +169,11 @@ function generateMockOrders(): Order[] {
 function generateMockTradeHistory(): TradeHistoryItem[] {
   const now = Date.now();
   return [
-    { id: 't1', symbol: 'BTC-PERP', side: 'BUY', type: 'MARKET', price: 43251.50, amount: 0.5, fee: 10.81, pnl: 0, timestamp: now - 86400000, chain: 'Hyperliquid', status: 'FILLED' },
+    { id: 't1', symbol: 'BTC-PERP', side: 'BUY', type: 'MARKET', price: 68250.50, amount: 0.5, fee: 10.81, pnl: 0, timestamp: now - 86400000, chain: 'Hyperliquid', status: 'FILLED' },
     { id: 't2', symbol: 'ETH-PERP', side: 'SELL', type: 'LIMIT', price: 2290.00, amount: 1, fee: 2.29, pnl: 45.50, timestamp: now - 72000000, chain: 'Hyperliquid', status: 'FILLED' },
     { id: 't3', symbol: 'SOL-PERP', side: 'BUY', type: 'MARKET', price: 102.50, amount: 10, fee: 1.03, pnl: 17.30, timestamp: now - 57600000, chain: 'Solana', status: 'FILLED' },
     { id: 't4', symbol: 'ARB-PERP', side: 'SELL', type: 'LIMIT', price: 0.98, amount: 200, fee: 0.20, pnl: 0, timestamp: now - 43200000, chain: 'Hyperliquid', status: 'CANCELLED' },
-    { id: 't5', symbol: 'BTC-PERP', side: 'SELL', type: 'MARKET', price: 42800.00, amount: 0.25, fee: 10.70, pnl: -126.25, timestamp: now - 36000000, chain: 'Hyperliquid', status: 'FILLED' },
+    { id: 't5', symbol: 'BTC-PERP', side: 'SELL', type: 'MARKET', price: 67500.00, amount: 0.25, fee: 10.70, pnl: -126.25, timestamp: now - 36000000, chain: 'Hyperliquid', status: 'FILLED' },
     { id: 't6', symbol: 'DOGE-PERP', side: 'BUY', type: 'MARKET', price: 0.0823, amount: 5000, fee: 0.41, pnl: 2.15, timestamp: now - 28800000, chain: 'Solana', status: 'FILLED' },
     { id: 't7', symbol: 'ETH-PERP', side: 'BUY', type: 'STOP', price: 2350.00, amount: 0.5, fee: 0.59, pnl: 0, timestamp: now - 14400000, chain: 'Hyperliquid', status: 'CANCELLED' },
     { id: 't8', symbol: 'SOL-PERP', side: 'BUY', type: 'LIMIT', price: 100.00, amount: 15, fee: 1.50, pnl: 63.45, timestamp: now - 7200000, chain: 'Solana', status: 'FILLED' },
@@ -190,7 +190,7 @@ export async function fetchTickers(): Promise<TickerPrice[]> {
       const price = parseFloat(data.last || data.price || '0');
       return [{
         symbol: 'BTC-PERP', 
-        price: price || 43251.5, 
+        price: price || 68250.5, 
         change24h: 2.34,
         volume24h: 1250000000, 
         high24h: price * 1.02 || 43800, 
@@ -248,7 +248,7 @@ export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promis
     const data = await res.json();
     return data.candles;
   } catch {
-    return generateCandles(200, symbol.startsWith('ETH') ? 2289 : symbol.startsWith('SOL') ? 104 : 43251);
+    return generateCandles(200, symbol.startsWith('ETH') ? 2289 : symbol.startsWith('SOL') ? 104 : 68250);
   }
 }
 
@@ -264,7 +264,7 @@ export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
       asks: data.asks.map((a: any) => ({ price: a.price, size: a.quantity })),
     };
   } catch {
-    const price = symbol.startsWith('BTC') ? 43251 : symbol.startsWith('ETH') ? 2289 : 104;
+    const price = symbol.startsWith('BTC') ? 68250 : symbol.startsWith('ETH') ? 2289 : 104;
     return {
       symbol,
       timestamp: Date.now(),
@@ -295,7 +295,7 @@ export async function fetchPositions(): Promise<Position[]> {
     }));
   } catch {
     return [
-      { id: 'p1', symbol: 'BTC-PERP', side: 'LONG', size: 0.5, entryPrice: 42800, markPrice: 43251.50, pnl: 225.75, pnlPct: 1.05, leverage: 5, platform: 'Hyperliquid' as const },
+      { id: 'p1', symbol: 'BTC-PERP', side: 'LONG', size: 0.5, entryPrice: 67500, markPrice: 68250.50, pnl: 225.75, pnlPct: 1.05, leverage: 5, platform: 'Hyperliquid' as const },
       { id: 'p2', symbol: 'SOL-PERP', side: 'LONG', size: 10, entryPrice: 98.50, markPrice: 104.23, pnl: 57.30, pnlPct: 5.82, leverage: 3, platform: 'Solana' as const },
       { id: 'p3', symbol: 'ETH-PERP', side: 'SHORT', size: 2, entryPrice: 2350.00, markPrice: 2289.75, pnl: 120.50, pnlPct: 2.56, leverage: 2, platform: 'Hyperliquid' as const },
     ];
