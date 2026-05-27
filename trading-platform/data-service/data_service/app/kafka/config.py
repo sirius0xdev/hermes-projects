@@ -61,6 +61,35 @@ TOPIC_CONFIG = {
             "min.insync.replicas": "1",
         }
     },
+    # Solana on-chain data topics
+    KafkaTopics.SOLANA_TOKEN_DATA: {
+        "partitions": 3,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "86400000",
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        }
+    },
+    KafkaTopics.SOLANA_POOL_DATA: {
+        "partitions": 3,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "86400000",
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        }
+    },
+    KafkaTopics.SOLANA_BLOCK: {
+        "partitions": 1,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "3600000",  # 1 hour
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        }
+    },
+    # Cross-chain opportunity scanner topics
     KafkaTopics.OPPORTUNITIES: {
         "partitions": 3,
         "replication_factor": 1,
