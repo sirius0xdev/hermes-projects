@@ -75,10 +75,11 @@ async def lifespan(app: FastAPI):
     logger.info("Starting execution service...")
 
     if settings.db_auto_create_tables:
-        logger.info("Auto-creating tables (dev mode)")
+        logger.info("Auto-creating tables (dev/prod auto mode)")
         await init_db()
     else:
-        logger.info("Skipping table creation (production - relies on CNPG init jobs / migrations)")
+        logger.info("Skipping table auto-creation (production - manual/alembic mode)")
+        await init_db()
 
     # Initialize rate limiter (Redis-backed with in-memory fallback)
     rate_limiter = get_rate_limiter()

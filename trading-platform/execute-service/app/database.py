@@ -84,12 +84,17 @@ async def init_db() -> None:
     from app import models  # noqa: F401
 
     if _is_production():
-        # Production: just verify the connection works
+        # Production: verify connection, optionally create tables
         from sqlalchemy import text
 
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         logger.info("Database connection verified (production)")
+
+        if settings.db_auto_create_tables:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            logger.info("Database tables auto-created (production)")
     else:
         # Development: create all tables
         async with engine.begin() as conn:
