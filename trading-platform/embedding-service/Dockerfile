@@ -11,6 +11,8 @@ COPY --from=builder /install /usr/local
 
 WORKDIR /app
 COPY --chown=appuser:appuser trading-platform/embedding-service/app.py .
+COPY --chown=appuser:appuser trading-platform/embedding-service/app/ ./app/
+COPY --chown=appuser:appuser trading-platform/embedding-service/tests/ ./tests/
 
 USER appuser
 
