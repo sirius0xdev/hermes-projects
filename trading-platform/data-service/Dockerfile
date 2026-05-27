@@ -6,7 +6,9 @@ COPY trading-platform/data-service/data_service/ ./data_service/
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim
-RUN useradd -m --system appuser
+RUN apt-get update && apt-get install -y --no-install-recommends liblz4-1 && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m --system appuser
 
 COPY --from=builder /install /usr/local
 

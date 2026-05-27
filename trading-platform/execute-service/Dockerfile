@@ -5,7 +5,9 @@ COPY trading-platform/execute-service/ ./
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim
-RUN useradd -m --uid 1000 --system appuser && mkdir -p /data && chown appuser:appuser /data
+RUN apt-get update && apt-get install -y --no-install-recommends liblz4-1 && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m --uid 1000 --system appuser && mkdir -p /data && chown appuser:appuser /data
 
 COPY --from=builder /install /usr/local
 
