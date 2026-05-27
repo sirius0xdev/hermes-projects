@@ -189,6 +189,64 @@ class DataProducer:
         ]
         self.send_message(KafkaTopics.TRADING_SIGNALS, key=signal.signal_id, value=signal, headers=headers)
 
+    # ── Solana blockchain events ─────────────────────────────────────
+
+    def send_solana_token_transfer(self, event) -> None:
+        """Send a Solana SPL token transfer. Key: mint address."""
+        from data_service.app.kafka.schemas import SolanaTokenTransfer
+
+        if not isinstance(event, SolanaTokenTransfer):
+            raise TypeError("Expected SolanaTokenTransfer")
+        headers = [
+            ("event_type", b"solana_token_transfer"),
+            ("source", b"helius"),
+        ]
+        self.send_message(
+            KafkaTopics.SOLANA_TOKEN_DATA, key=event.mint, value=event, headers=headers
+        )
+
+    def send_solana_pool_event(self, event) -> None:
+        """Send a Solana pool LP event. Key: pool_address."""
+        from data_service.app.kafka.schemas import SolanaPoolEvent
+
+        if not isinstance(event, SolanaPoolEvent):
+            raise TypeError("Expected SolanaPoolEvent")
+        headers = [
+            ("event_type", b"solana_pool"),
+            ("source", b"helius"),
+        ]
+        self.send_message(
+            KafkaTopics.SOLANA_POOL_DATA, key=event.pool_address, value=event, headers=headers
+        )
+
+    def send_solana_block_event(self, event) -> None:
+        """Send a Solana block event. Key: slot number."""
+        from data_service.app.kafka.schemas import SolanaBlockEvent
+
+        if not isinstance(event, SolanaBlockEvent):
+            raise TypeError("Expected SolanaBlockEvent")
+        headers = [
+            ("event_type", b"solana_block"),
+            ("source", b"helius"),
+        ]
+        self.send_message(
+            KafkaTopics.SOLANA_BLOCK, key=str(event.slot), value=event, headers=headers
+        )
+
+    def send_jupiter_swap(self, event) -> None:
+        """Send a Jupiter DEX swap event. Key: in_mint."""
+        from data_service.app.kafka.schemas import JupiterSwapEvent
+
+        if not isinstance(event, JupiterSwapEvent):
+            raise TypeError("Expected JupiterSwapEvent")
+        headers = [
+            ("event_type", b"jupiter_swap"),
+            ("source", b"jupiter"),
+        ]
+        self.send_message(
+            KafkaTopics.MARKET_TRADES, key=event.in_mint, value=event, headers=headers
+        )
+
     @property
     def is_running(self) -> bool:
         return self._producer is not None

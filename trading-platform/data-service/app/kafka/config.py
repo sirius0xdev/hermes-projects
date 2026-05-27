@@ -57,6 +57,34 @@ TOPIC_CONFIG = {
             "compression.type": "lz4",
         },
     },
+    # Solana blockchain topics
+    KafkaTopics.SOLANA_TOKEN_DATA: {
+        "partitions": 6,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "2592000000",
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        },
+    },
+    KafkaTopics.SOLANA_POOL_DATA: {
+        "partitions": 3,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "2592000000",
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        },
+    },
+    KafkaTopics.SOLANA_BLOCK: {
+        "partitions": 3,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "86400000",
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        },
+    },
 }
 
 def get_topic_config(topic: str) -> dict:

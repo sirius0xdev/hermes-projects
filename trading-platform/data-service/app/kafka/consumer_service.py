@@ -27,6 +27,7 @@ from typing import Any
 from fastapi import FastAPI
 
 from data_service.app.kafka.consumer import DataConsumer
+from data_service.app.kafka.solana_ingester import HeliusIngester, JupiterIngester
 from data_service.app.kafka.topics import KafkaTopics
 
 logger = logging.getLogger(__name__)
@@ -92,6 +93,36 @@ def handle_news_analysis(message: dict[str, Any]) -> None:
     )
 
 
+def handle_solana_token_transfer(message: dict[str, Any]) -> None:
+    """Handle incoming Solana token transfer events."""
+    value = message.get("value", {})
+    symbol = value.get("token_symbol", "unknown")
+    amount = value.get("amount", "N/A")
+    mint = value.get("mint", "unknown")[:8]
+    logger.info(
+        "Solana token transfer: symbol=%s amount=%s mint=%s… offset=%d",
+        symbol, amount, mint, message.get("offset"),
+    )
+
+
+def handle_solana_pool_event(message: dict[str, Any]) -> None:
+    """Handle incoming Solana pool LP events."""
+    value = message.get("value", {})
+    action = value.get("action", "unknown")
+    pool = value.get("pool_address", "unknown")[:8]
+    logger.info(
+        "Solana pool event: action=%s pool=%s… offset=%d",
+        action, pool, message.get("offset"),
+    )
+
+
+def handle_solana_block(message: dict[str, Any]) -> None:
+    """Handle incoming Solana block events."""
+    value = message.get("value", {})
+    slot = value.get("slot", 0)
+    logger.info("Solana block: slot=%d offset=%d", slot, message.get("offset"))
+
+
 # Map topics to handlers
 DEFAULT_HANDLERS: dict[str, Any] = {
     KafkaTopics.MARKET_PRICES: handle_price_event,
@@ -99,17 +130,22 @@ DEFAULT_HANDLERS: dict[str, Any] = {
     KafkaTopics.MARKET_TRADES: handle_trade_event,
     KafkaTopics.NEWS_FEED: handle_news_article,
     KafkaTopics.NEWS_ANALYSIS: handle_news_analysis,
+    KafkaTopics.SOLANA_TOKEN_DATA: handle_solana_token_transfer,
+    KafkaTopics.SOLANA_POOL_DATA: handle_solana_pool_event,
+    KafkaTopics.SOLANA_BLOCK: handle_solana_block,
 }
 
-# Global consumer instance (set during lifespan)
+# Global instances (set during lifespan)
 _consumer: DataConsumer | None = None
 _consume_thread: threading.Thread | None = None
+_helius_ingester: HeliusIngester | None = None
+_jupiter_ingester: JupiterIngester | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Start Kafka consumer on startup, stop on shutdown."""
-    global _consumer, _consume_thread
+    """Start Kafka consumer and WebSocket ingesters on startup, stop on shutdown."""
+    global _consumer, _consume_thread, _helius_ingester, _jupiter_ingester
 
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka.customer1.svc.cluster.local:9092")
     group_id = os.getenv("KAFKA_GROUP_ID", "data-service-consumer")
@@ -144,6 +180,41 @@ async def lifespan(app: FastAPI):
     )
     _consume_thread.start()
 
+    # Start Solana WebSocket ingesters (sidecars)
+    # They use the same Kafka producer to publish events
+    from data_service.app.kafka.producer import DataProducer
+
+    kafka_broker = os.getenv("KAFKA_BROKER", bootstrap)
+    _producer = DataProducer(
+        bootstrap_servers=kafka_broker,
+        client_id="solana-ws-ingester",
+    )
+    _producer.start()
+
+    helius_api_key = os.getenv("HELIUS_API_KEY")
+    if helius_api_key:
+        monitored_mints = os.getenv("MONITORED_SOLANA_MINTS", "")
+        monitored_pools = os.getenv("MONITORED_SOLANA_POOLS", "")
+        _helius_ingester = HeliusIngester(
+            producer=_producer,
+            api_key=helius_api_key,
+            monitored_mints=[m.strip() for m in monitored_mints.split(",") if m.strip()],
+            monitored_pools=[p.strip() for p in monitored_pools.split(",") if p.strip()],
+        )
+        _helius_ingester.start()
+        logger.info("HeliusIngester started (key=%s…)", helius_api_key[:8])
+    else:
+        logger.info("HeliusIngester skipped (no HELIUS_API_KEY set)")
+
+    # Jupiter ingester (no API key required for public WS)
+    jupiter_api_key = os.getenv("JUPITER_API_KEY")
+    _jupiter_ingester = JupiterIngester(
+        producer=_producer,
+        api_key=jupiter_api_key,
+    )
+    _jupiter_ingester.start()
+    logger.info("JupiterIngester started")
+
     logger.info(
         "Consumer service started: group=%s topics=%s",
         group_id, topics,
@@ -152,6 +223,11 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown
+    if _helius_ingester:
+        _helius_ingester.stop()
+    if _jupiter_ingester:
+        _jupiter_ingester.stop()
+    _producer.stop()
     if _consumer:
         _consumer.stop()
     logger.info("Consumer service stopped")
@@ -171,6 +247,8 @@ def health_check():
     return {
         "status": "healthy",
         "consumer_running": _consumer.is_running if _consumer else False,
+        "helius_ingester_running": _helius_ingester.is_running if _helius_ingester else False,
+        "jupiter_ingester_running": _jupiter_ingester.is_running if _jupiter_ingester else False,
     }
 
 
