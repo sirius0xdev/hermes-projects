@@ -54,9 +54,15 @@ export default function MarketPage() {
   const prevPriceRef = useRef<number>(0);
   const [chartHeight, setChartHeight] = useState(380);
 
-  // Responsive chart height
+  // Responsive chart height - much taller on mobile for real trading UX
   useEffect(() => {
-    const update = () => setChartHeight(window.innerWidth < 640 ? 250 : 380);
+    const update = () => {
+      const w = window.innerWidth;
+      if (w < 360) setChartHeight(280);      // very small phones
+      else if (w < 480) setChartHeight(340);  // most phones in portrait
+      else if (w < 640) setChartHeight(380);  // tablets/small landscape
+      else setChartHeight(420);               // desktop
+    };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -150,15 +156,15 @@ export default function MarketPage() {
       <div className="space-y-4">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-neon-cyan/[0.08] flex items-center justify-center neon-border-cyan">
-              <BarChart3 className="w-4 h-4 text-neon-cyan" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-neon-cyan/[0.08] flex items-center justify-center neon-border-cyan shrink-0">
+              <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neon-cyan" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-text tracking-tight">Market Surveillance</h2>
-              <p className="text-[10px] text-text-dim mt-0.5 flex items-center gap-1.5 font-mono">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-text tracking-tight">Market Surveillance</h2>
+              <p className="text-[9px] sm:text-[10px] text-text-dim mt-0.5 flex items-center gap-1.5 font-mono">
                 <Clock className="w-3 h-3" />
-                Updated {lastUpdate.toLocaleTimeString()}
+                Updated {lastUpdate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
               </p>
             </div>
           </div>
@@ -182,47 +188,44 @@ export default function MarketPage() {
           </div>
         </div>
 
-        {/* Ticker Strip */}
-        <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
+        {/* Ticker Strip - mobile optimized horizontal scroller with larger touch targets */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide snap-x snap-mandatory">
           {filteredTickers.length === 0 && search && (
-            <p className="text-sm text-text-dim py-2">No symbols match &quot;{search}&quot;</p>
+            <p className="text-sm text-text-dim py-2 px-1">No symbols match &quot;{search}&quot;</p>
           )}
           {filteredTickers.map(t => (
             <button
               key={t.symbol}
               onClick={() => setSelected(t.symbol)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-md border text-sm transition-all duration-150 whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm transition-all duration-150 whitespace-nowrap snap-start min-w-[112px] active:scale-[0.985] touch-manipulation ${
                 selected === t.symbol
-                  ? 'bg-neon-cyan/[0.08] neon-border-cyan'
-                  : 'bg-bg-card border-bg-border hover:border-bg-border-light'
+                  ? 'bg-neon-cyan/[0.1] border-neon-cyan text-text shadow-[0_0_0_1px_rgba(0,255,247,0.3)]'
+                  : 'bg-bg-card border-bg-border hover:border-bg-border-light active:bg-bg-elevated'
               }`}
             >
-              <span className="font-semibold text-text">{t.symbol}</span>
-              <span className={`font-mono text-xs transition-colors ${
-                t.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
-              }`}>
+              <span className="font-semibold text-text tracking-tight">{t.symbol.replace('-PERP','')}</span>
+              <span className={`font-mono text-xs transition-colors ${t.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                 ${formatPrice(t.price)}
               </span>
-              <span className={`inline-flex items-center gap-0.5 text-[11px] font-mono px-1.5 py-0.5 rounded-md font-medium ${
-                t.change24h >= 0 ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-pink/[0.08] text-neon-pink'
+              <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-px rounded-md font-medium ${
+                t.change24h >= 0 ? 'bg-neon-cyan/[0.1] text-neon-cyan' : 'bg-neon-pink/[0.1] text-neon-pink'
               }`}>
-                {t.change24h >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                {Math.abs(t.change24h).toFixed(2)}%
+                {t.change24h >= 0 ? '+' : ''}{Math.abs(t.change24h).toFixed(1)}%
               </span>
             </button>
           ))}
         </div>
 
-        {/* Main Content: Chart + Order Book */}
+        {/* Main Content: Chart + Order Book (order book hidden on mobile to keep chart prominent) */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-          {/* Chart Area */}
+          {/* Chart Area - full focus on mobile */}
           <div className="xl:col-span-3 bg-bg-card rounded-md neon-border-cyan">
-            {/* Chart Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 pb-0 gap-3">
-              <div className="flex items-baseline gap-3">
-                <span className="text-base font-semibold text-text tracking-tight font-mono">{selected}</span>
+            {/* Chart Header - mobile first, prominent price */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 pb-0 gap-2 sm:gap-3">
+              <div className="flex items-center sm:items-baseline gap-2 sm:gap-3">
+                <span className="text-sm sm:text-base font-semibold text-text tracking-tight font-mono">{selected}</span>
                 {current && (
-                  <span className={`font-mono text-2xl font-bold tracking-tight transition-colors ${
+                  <span className={`font-mono text-3xl sm:text-2xl font-bold tracking-[-1.5px] transition-colors ${
                     priceFlash === 'up' ? 'text-neon-cyan' :
                     priceFlash === 'down' ? 'text-neon-pink' :
                     current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
@@ -231,23 +234,24 @@ export default function MarketPage() {
                   </span>
                 )}
                 {current && (
-                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${
-                    current.change24h >= 0 ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-pink/[0.08] text-neon-pink'
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                    current.change24h >= 0 ? 'bg-neon-cyan/[0.1] text-neon-cyan' : 'bg-neon-pink/[0.1] text-neon-pink'
                   }`}>
-                    {current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                    {current.change24h >= 0 ? '+' : ''}{current.change24h.toFixed(2)}%
+                    {current.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {current.change24h >= 0 ? '+' : ''}{current.change24h.toFixed(1)}%
                   </span>
                 )}
               </div>
-              <div className="flex gap-1 bg-bg-elevated p-1 rounded-md border border-bg-border overflow-x-auto scrollbar-thin">
+              {/* Timeframe pills - larger touch targets on mobile */}
+              <div className="flex gap-0.5 bg-bg-elevated p-0.5 rounded-lg border border-bg-border overflow-x-auto scrollbar-thin">
                 {TIMEFRAMES.map(tf => (
                   <button
                     key={tf.value}
                     onClick={() => setIntervalState(tf.value)}
-                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors duration-150 whitespace-nowrap ${
+                    className={`px-3 py-1.5 sm:py-1 text-xs sm:text-[11px] rounded-md font-medium transition-all duration-150 whitespace-nowrap min-w-[38px] active:scale-95 ${
                       interval === tf.value
-                        ? 'bg-neon-cyan/[0.15] text-neon-cyan'
-                        : 'text-text-dim hover:text-text-secondary'
+                        ? 'bg-neon-cyan text-bg-primary shadow-sm'
+                        : 'text-text-dim hover:text-text hover:bg-bg-hover'
                     }`}
                   >
                     {tf.label}
@@ -268,8 +272,8 @@ export default function MarketPage() {
             </div>
           </div>
 
-          {/* Order Book */}
-          <div className="bg-bg-card rounded-md neon-border-cyan">
+          {/* Order Book - hidden on mobile, shown on xl+ */}
+          <div className="hidden xl:block bg-bg-card rounded-md neon-border-cyan">
             <div className="px-4 py-3 border-b border-bg-border flex items-center justify-between">
               <h3 className="text-xs font-semibold text-text tracking-tight font-mono uppercase tracking-wider">Order Book</h3>
               <span className="relative flex h-1.5 w-1.5">
