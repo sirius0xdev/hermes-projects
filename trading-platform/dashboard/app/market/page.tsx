@@ -6,7 +6,6 @@ import CandlestickChart from '@/components/chart/CandlestickChart';
 import { fetchTickers, fetchCandles, fetchOrderBook } from '@/lib/api';
 import type { TickerPrice, Candle, OrderBookEntry } from '@/lib/api';
 import {
-  Search,
   Clock,
   TrendingUp,
   TrendingDown,
@@ -51,17 +50,15 @@ export default function MarketPage() {
   const [chartLoading, setChartLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [priceFlash, setPriceFlash] = useState<'up' | 'down' | null>(null);
-  const prevPriceRef = useRef<number>(0);
-  const [chartHeight, setChartHeight] = useState(380);
+  const [chartHeight, setChartHeight] = useState(300);
 
-  // Responsive chart height - much taller on mobile for real trading UX
+  // Responsive chart height
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      if (w < 360) setChartHeight(280);      // very small phones
-      else if (w < 480) setChartHeight(340);  // most phones in portrait
-      else if (w < 640) setChartHeight(380);  // tablets/small landscape
-      else setChartHeight(420);               // desktop
+      if (w < 480) setChartHeight(260);
+      else if (w < 640) setChartHeight(320);
+      else setChartHeight(400);
     };
     update();
     window.addEventListener('resize', update);
@@ -81,11 +78,8 @@ export default function MarketPage() {
           for (const ticker of t) {
             const prevTicker = prevMap.get(ticker.symbol);
             if (prevTicker && ticker.symbol === selected) {
-              if (ticker.price > prevTicker.price) {
-                setPriceFlash('up');
-              } else if (ticker.price < prevTicker.price) {
-                setPriceFlash('down');
-              }
+              if (ticker.price > prevTicker.price) setPriceFlash('up');
+              else if (ticker.price < prevTicker.price) setPriceFlash('down');
             }
           }
         }
@@ -122,7 +116,7 @@ export default function MarketPage() {
 
   useEffect(() => {
     if (tickers.length > 0) setLoading(false);
-  }, [tickers]);
+  }, [tickers.length]);
 
   useEffect(() => {
     if (tickers.length === 0) return;
@@ -140,47 +134,34 @@ export default function MarketPage() {
     ? (bids[0].price + (asks[0]?.price ?? bids[0].price)) / 2
     : current?.price ?? 0;
 
-  const stats = current ? [
-    { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
-    { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
-    { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
-    { label: '24h Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3.5 h-3.5" /> },
-    { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan">◎</span> },
-    { label: 'Spread', value: asks.length > 0 && bids.length > 0
-      ? `${((asks[0].price - bids[0].price) / midPrice * 100).toFixed(3)}%`
-      : '—', icon: <span className="text-text-dim">↔</span> },
-  ] : [];
-
   return (
     <AppShell>
-      <div className="space-y-4">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-neon-cyan/[0.08] flex items-center justify-center neon-border-cyan shrink-0">
-              <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neon-cyan" />
+      <div className="space-y-3 sm:space-y-4">
+
+        {/* Page Header — compact on mobile */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-neon-cyan/[0.08] flex items-center justify-center border border-bg-border/80 shrink-0">
+              <BarChart3 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neon-cyan" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold text-text tracking-tight">Market Surveillance</h2>
-              <p className="text-[9px] sm:text-[10px] text-text-dim mt-0.5 flex items-center gap-1.5 font-mono">
-                <Clock className="w-3 h-3" />
-                Updated {lastUpdate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
-              </p>
+              <h2 className="text-sm sm:text-base font-bold text-text tracking-tight">Market</h2>
             </div>
           </div>
+
+          {/* Search — compact on mobile */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-dim" />
             <input
               type="text"
-              placeholder="Search symbol..."
+              placeholder="Symbol..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full sm:w-56 pl-9 pr-8 py-2 bg-bg-elevated border border-bg-border rounded-md text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-neon-cyan/50 focus:border-neon-cyan transition-all"
+              className="w-24 sm:w-40 lg:w-56 pl-3 pr-7 py-1.5 bg-bg-elevated border border-bg-border rounded-md text-xs sm:text-sm text-text placeholder:text-text-dim focus:outline-none focus:border-neon-cyan/50 transition-all"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-dim hover:text-text text-xs transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-dim hover:text-text text-xs"
               >
                 ✕
               </button>
@@ -188,27 +169,27 @@ export default function MarketPage() {
           </div>
         </div>
 
-        {/* Ticker Strip - mobile optimized horizontal scroller with larger touch targets */}
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide snap-x snap-mandatory">
+        {/* Ticker Strip — horizontal scroller */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide">
           {filteredTickers.length === 0 && search && (
-            <p className="text-sm text-text-dim py-2 px-1">No symbols match &quot;{search}&quot;</p>
+            <p className="text-xs text-text-dim py-2 px-1">No symbols match &quot;{search}&quot;</p>
           )}
           {filteredTickers.map(t => (
             <button
               key={t.symbol}
               onClick={() => setSelected(t.symbol)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm transition-all duration-150 whitespace-nowrap snap-start min-w-[112px] active:scale-[0.985] touch-manipulation ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all whitespace-nowrap snap-start min-w-[100px] active:scale-[0.98] ${
                 selected === t.symbol
-                  ? 'bg-neon-cyan/[0.1] border-neon-cyan text-text shadow-[0_0_0_1px_rgba(0,255,247,0.3)]'
+                  ? 'bg-neon-cyan/[0.1] border-neon-cyan/40 text-text'
                   : 'bg-bg-card border-bg-border hover:border-bg-border-light active:bg-bg-elevated'
               }`}
             >
-              <span className="font-semibold text-text tracking-tight">{t.symbol.replace('-PERP','')}</span>
-              <span className={`font-mono text-xs transition-colors ${t.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
+              <span className="font-semibold text-text text-xs">{t.symbol.replace('-PERP','')}</span>
+              <span className={`font-mono text-[11px] ${t.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                 ${formatPrice(t.price)}
               </span>
-              <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-px rounded-md font-medium ${
-                t.change24h >= 0 ? 'bg-neon-cyan/[0.1] text-neon-cyan' : 'bg-neon-pink/[0.1] text-neon-pink'
+              <span className={`text-[10px] font-mono font-medium ${
+                t.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
               }`}>
                 {t.change24h >= 0 ? '+' : ''}{Math.abs(t.change24h).toFixed(1)}%
               </span>
@@ -216,25 +197,27 @@ export default function MarketPage() {
           ))}
         </div>
 
-        {/* Main Content: Chart + Order Book (order book hidden on mobile to keep chart prominent) */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-          {/* Chart Area - full focus on mobile */}
-          <div className="xl:col-span-3 bg-bg-card rounded-md neon-border-cyan">
-            {/* Chart Header - mobile first, prominent price */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 pb-0 gap-2 sm:gap-3">
-              <div className="flex items-center sm:items-baseline gap-2 sm:gap-3">
-                <span className="text-sm sm:text-base font-semibold text-text tracking-tight font-mono">{selected}</span>
+        {/* Chart + Order Book */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 sm:gap-4">
+          {/* Chart Area */}
+          <div className="xl:col-span-3 bg-bg-card rounded-lg border border-bg-border">
+            {/* Chart Header — price + timeframes */}
+            <div className="flex flex-col gap-2 p-2 sm:p-3 sm:gap-3">
+              <div className="flex items-baseline sm:items-center justify-between gap-2">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <span className="text-xs sm:text-sm font-semibold text-text font-mono shrink-0">{selected}</span>
+                  {current && (
+                    <span className={`font-mono text-2xl sm:text-3xl font-bold tracking-tight transition-colors ${
+                      priceFlash === 'up' ? 'text-neon-cyan' :
+                      priceFlash === 'down' ? 'text-neon-pink' :
+                      current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
+                    }`}>
+                      ${formatPrice(current.price)}
+                    </span>
+                  )}
+                </div>
                 {current && (
-                  <span className={`font-mono text-3xl sm:text-2xl font-bold tracking-[-1.5px] transition-colors ${
-                    priceFlash === 'up' ? 'text-neon-cyan' :
-                    priceFlash === 'down' ? 'text-neon-pink' :
-                    current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
-                  }`}>
-                    ${formatPrice(current.price)}
-                  </span>
-                )}
-                {current && (
-                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
                     current.change24h >= 0 ? 'bg-neon-cyan/[0.1] text-neon-cyan' : 'bg-neon-pink/[0.1] text-neon-pink'
                   }`}>
                     {current.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -242,13 +225,14 @@ export default function MarketPage() {
                   </span>
                 )}
               </div>
-              {/* Timeframe pills - larger touch targets on mobile */}
-              <div className="flex gap-0.5 bg-bg-elevated p-0.5 rounded-lg border border-bg-border overflow-x-auto scrollbar-thin">
+
+              {/* Timeframe pills */}
+              <div className="flex gap-0.5 bg-bg-elevated p-0.5 rounded-lg border border-bg-border overflow-x-auto scrollbar-hide">
                 {TIMEFRAMES.map(tf => (
                   <button
                     key={tf.value}
                     onClick={() => setIntervalState(tf.value)}
-                    className={`px-3 py-1.5 sm:py-1 text-xs sm:text-[11px] rounded-md font-medium transition-all duration-150 whitespace-nowrap min-w-[38px] active:scale-95 ${
+                    className={`px-3 py-1 text-xs rounded-md font-medium transition-all whitespace-nowrap min-w-[36px] active:scale-95 ${
                       interval === tf.value
                         ? 'bg-neon-cyan text-bg-primary shadow-sm'
                         : 'text-text-dim hover:text-text hover:bg-bg-hover'
@@ -261,7 +245,7 @@ export default function MarketPage() {
             </div>
 
             {/* Chart */}
-            <div className="p-3">
+            <div className="px-2 pb-2">
               {chartLoading ? (
                 <div className="flex items-center justify-center" style={{ height: `${chartHeight}px` }}>
                   <div className="cyber-spinner" />
@@ -272,10 +256,10 @@ export default function MarketPage() {
             </div>
           </div>
 
-          {/* Order Book - hidden on mobile, shown on xl+ */}
-          <div className="hidden xl:block bg-bg-card rounded-md neon-border-cyan">
+          {/* Order Book — hidden on mobile */}
+          <div className="hidden xl:block bg-bg-card rounded-lg border border-bg-border">
             <div className="px-4 py-3 border-b border-bg-border flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-text tracking-tight font-mono uppercase tracking-wider">Order Book</h3>
+              <h3 className="text-xs font-semibold text-text tracking-tight font-mono uppercase">Order Book</h3>
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-60"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-neon-cyan"></span>
@@ -283,10 +267,8 @@ export default function MarketPage() {
             </div>
             <div className="px-1 py-2">
               <div className="flex justify-between text-[10px] text-text-dim mb-1 px-2 font-medium uppercase tracking-wider font-mono">
-                <span>Price</span>
-                <span>Size</span>
+                <span>Price</span><span>Size</span>
               </div>
-              {/* Asks */}
               <div className="space-y-px max-h-[180px] overflow-y-auto font-mono text-xs mb-1 scrollbar-thin">
                 {asks.slice().reverse().map((a, i) => {
                   const depth = asks.reduce((sum, x) => sum + x.size, 0);
@@ -300,15 +282,11 @@ export default function MarketPage() {
                   );
                 })}
               </div>
-              {/* Mid Price */}
-              <div className="flex items-center justify-center py-2.5 border-y border-bg-border my-1">
-                <span className={`text-sm font-bold font-mono tracking-tight ${
-                  current?.change24h !== undefined && current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
-                }`}>
+              <div className="flex items-center justify-center py-2 border-y border-bg-border my-1">
+                <span className={`text-sm font-bold font-mono ${current?.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                   ${formatPrice(midPrice)}
                 </span>
               </div>
-              {/* Bids */}
               <div className="space-y-px max-h-[180px] overflow-y-auto font-mono text-xs mt-1 scrollbar-thin">
                 {bids.map((b, i) => {
                   const depth = bids.reduce((sum, x) => sum + x.size, 0);
@@ -326,25 +304,25 @@ export default function MarketPage() {
           </div>
         </div>
 
-        {/* Stats Row — scrollable on mobile, grid on desktop */}
+        {/* Stats Row — horizontal scroll on mobile, grid on desktop */}
         {current && (() => {
           const stats = [
-            { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
-            { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
-            { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
-            { label: '24h Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3.5 h-3.5" /> },
-            { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan">◎</span> },
+            { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3 h-3" /> },
+            { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3 h-3" /> },
+            { label: 'Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" /> },
+            { label: 'Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3 h-3" /> },
+            { label: 'Mark', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan text-xs">◎</span> },
             { label: 'Spread', value: asks.length > 0 && bids.length > 0
               ? `${((asks[0].price - bids[0].price) / midPrice * 100).toFixed(3)}%`
-              : '—', icon: <span className="text-text-dim">↔</span> },
+              : '—', icon: <span className="text-text-dim text-xs">↔</span> },
           ];
           return (
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-              {/* Mobile: 2-col horizontal scroll */}
-              <div className="grid grid-cols-2 gap-2 sm:hidden" style={{ width: 'max-content', minWidth: '60vw' }}>
+            <>
+              {/* Mobile: horizontal scroll cards */}
+              <div className="flex gap-2 overflow-x-auto pb-1 sm:hidden scrollbar-hide">
                 {stats.map(m => (
-                  <div key={m.label} className="card-hover p-4">
-                    <div className="flex items-center gap-1.5 text-[10px] text-text-dim mb-1.5 font-mono uppercase tracking-wider">
+                  <div key={m.label} className="card-hover p-3 shrink-0" style={{ width: 'calc(50vw - 12px)' }}>
+                    <div className="flex items-center gap-1 text-[9px] text-text-dim mb-1 font-mono uppercase tracking-wider">
                       <span className="opacity-70">{m.icon}</span>
                       {m.label}
                     </div>
@@ -354,7 +332,7 @@ export default function MarketPage() {
                   </div>
                 ))}
               </div>
-              {/* Desktop: full grid */}
+              {/* Desktop: grid */}
               <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                 {stats.map(m => (
                   <div key={m.label} className="card-hover p-4">
@@ -368,7 +346,7 @@ export default function MarketPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </>
           );
         })()}
       </div>
