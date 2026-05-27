@@ -14,6 +14,11 @@ from data_infrastructure.models.market_data_models import (  # noqa: F401
 )
 from execute_service.app.models.order_models import OrderRecord  # noqa: F401
 from execute_service.app.models.position_models import PositionRecord  # noqa: F401
+from data_infrastructure.models.encrypted_models import (  # noqa: F401
+    CopilotConversation,
+    WeeklyReport,
+    UserTwinProfile,
+)
 
 # this is the Alembic Config object
 config = context.config
