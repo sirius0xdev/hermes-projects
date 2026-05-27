@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     # Solana
     solana_private_key_base58: str = ""
-    solana_rpc_url: str = "https://api.devnet.solana.com"
+    solana_rpc_url: str = "https://api.mainnet-beta.solana.com"
 
     # mTLS
     mtls_enabled: bool = False
