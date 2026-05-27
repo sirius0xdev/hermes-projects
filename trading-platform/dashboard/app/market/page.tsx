@@ -283,7 +283,7 @@ export default function MarketPage() {
                 })}
               </div>
               <div className="flex items-center justify-center py-2 border-y border-bg-border my-1">
-                <span className={`text-sm font-bold font-mono ${current?.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
+                <span className={`text-sm font-bold font-mono ${(current?.change24h ?? 0) >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                   ${formatPrice(midPrice)}
                 </span>
               </div>
