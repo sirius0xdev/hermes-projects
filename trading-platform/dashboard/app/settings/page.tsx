@@ -151,8 +151,8 @@ export default function SettingsPage() {
 
         {/* Key info */}
         <div className="text-xs text-text-dim text-center space-y-1">
-          <p>Values are stored in the service database and are never exposed in logs or responses.</p>
-          <p>Secret fields show only whether they are configured — the values cannot be read back.</p>
+          <p>Values stored encrypted in service_config table. Never logged or returned by the API.</p>
+          <p>Secrets are write-only from the dashboard for operational security.</p>
         </div>
       </div>
     </AppShell>
