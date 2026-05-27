@@ -542,6 +542,51 @@ export async function simulateWalletConnect(chain: 'ethereum' | 'solana' | 'base
   }
 }
 
+// ========== SEMANTIC SEARCH API ==========
+export interface SemanticSearchResult {
+  id: string;
+  entityType: string;
+  text: string;
+  score: number;
+  timestamp: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface SemanticSearchResponse {
+  results: SemanticSearchResult[];
+  total: number;
+  query: string;
+  error?: string;
+}
+
+export async function semanticSearch(
+  query: string,
+  options?: {
+    entity_type?: string;
+    date_from?: string;
+    date_to?: string;
+    min_similarity?: number;
+    top_k?: number;
+  }
+): Promise<SemanticSearchResponse> {
+  const params = new URLSearchParams({ q: query });
+  if (options?.entity_type) params.set('entity_type', options.entity_type);
+  if (options?.date_from) params.set('date_from', options.date_from);
+  if (options?.date_to) params.set('date_to', options.date_to);
+  if (options?.min_similarity !== undefined) params.set('min_similarity', String(options.min_similarity));
+  if (options?.top_k !== undefined) params.set('top_k', String(options.top_k));
+
+  try {
+    const res = await fetch(`/api/semantic-search?${params}`);
+    if (!res.ok) {
+      return { results: [], total: 0, query, error: `Search failed (${res.status})` };
+    }
+    return res.json();
+  } catch {
+    return { results: [], total: 0, query, error: 'Network error' };
+  }
+}
+
 // ========== AUTONOMOUS BOT API (for t_89d736eb) ==========
 export interface BotStatus {
   id: string;
