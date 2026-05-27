@@ -14,9 +14,9 @@ class KafkaTopics:
     TRADING_SIGNALS = "trading-platform.signals.trading.v1"
 
     # Solana on-chain data topics
-    SOLANA_TOKEN_DATA = "solana.token.data"
-    SOLANA_POOL_DATA = "solana.pool.data"
-    SOLANA_BLOCK = "solana.block.v1"
+    SOLANA_TOKEN_DATA = "trading-platform.solana.token.data.v1"
+    SOLANA_POOL_DATA = "trading-platform.solana.pool.data.v1"
+    SOLANA_BLOCK = "trading-platform.solana.block.v1"
 
     # Cross-chain opportunity scanner topics
     OPPORTUNITIES = "trading-platform.opportunities.v1"

@@ -189,3 +189,79 @@ class OpportunityEvent(BaseModel):
     @classmethod
     def symbol_upper(cls, v: str) -> str:
         return v.upper()
+
+
+# ── Solana Blockchain Events ─────────────────────────────────────────────
+
+class SolanaTokenTransfer(BaseModel):
+    """SPL token transfer event from Solana mainnet (via Helius WS)."""
+    signature: str = Field(..., description="Solana transaction signature")
+    slot: int = Field(..., description="Slot number")
+    mint: str = Field(..., description="Token mint address")
+    token_symbol: str = Field(..., description="Token symbol (e.g. USDC, SOL)")
+    amount: Decimal = Field(..., description="Token amount (uiAmount)")
+    decimals: int = Field(..., description="Token decimals")
+    from_address: str = Field(..., description="Sender wallet/token account")
+    to_address: str = Field(..., description="Recipient wallet/token account")
+    tx_type: str = Field(..., description="Transfer type: transfer, transferChecked, mintTo, burn")
+    block_time: datetime = Field(..., description="Transaction block time")
+    source: str = "helius"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    @field_validator("block_time")
+    @classmethod
+    def block_time_utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            return v.replace(tzinfo=None)
+        return v
+
+
+class SolanaPoolEvent(BaseModel):
+    """Pool LP event (liquidity added/removed) from Solana mainnet."""
+    signature: str = Field(..., description="Solana transaction signature")
+    slot: int = Field(..., description="Slot number")
+    pool_address: str = Field(..., description="Pool contract address")
+    pool_name: Optional[str] = None
+    token_a_mint: str = Field(..., description="Token A mint address")
+    token_b_mint: str = Field(..., description="Token B mint address")
+    token_a_amount: Decimal = Field(..., description="Token A amount")
+    token_b_amount: Decimal = Field(..., description="Token B amount")
+    lp_amount: Decimal = Field(..., description="LP tokens minted/burned (negative for removal)")
+    action: str = Field(..., description="add or remove")
+    actor: str = Field(..., description="Wallet that performed the action")
+    block_time: datetime = Field(..., description="Transaction block time")
+    source: str = "helius"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class SolanaBlockEvent(BaseModel):
+    """New Solana block event."""
+    slot: int = Field(..., description="Slot number")
+    block_height: int = Field(..., description="Block height")
+    blockhash: str = Field(..., description="Block hash")
+    parent_slot: int = Field(..., description="Parent slot number")
+    block_time: datetime = Field(..., description="Block timestamp")
+    transactions_count: Optional[int] = None
+    source: str = "helius"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class JupiterSwapEvent(BaseModel):
+    """Jupiter DEX swap event from Jupiter WebSocket feed."""
+    signature: str = Field(..., description="Solana transaction signature")
+    slot: int = Field(..., description="Slot number")
+    in_mint: str = Field(..., description="Input token mint")
+    in_amount: Decimal = Field(..., description="Input token amount (raw)")
+    in_token_amount: Decimal = Field(..., description="Input token UI amount")
+    out_mint: str = Field(..., description="Output token mint")
+    out_amount: Decimal = Field(..., description="Output token amount (raw)")
+    out_token_amount: Decimal = Field(..., description="Output token UI amount")
+    platform_fee: Optional[Decimal] = None
+    referrer_fee: Optional[Decimal] = None
+    fee_amount: Decimal = Field(default=Decimal("0"), description="Total fee")
+    fee_mint: Optional[str] = None
+    swap_source: Optional[str] = Field(default=None, description="AMM/DEX used (e.g. Raydium, Orca)")
+    user: str = Field(..., description="Swapper wallet address")
+    block_time: datetime = Field(..., description="Transaction block time")
+    source: str = "jupiter"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
