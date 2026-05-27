@@ -1,0 +1,49 @@
+name: Build and Test Docker Images
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: sirius0xdev
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - paaas
+          - waitlist-api
+          - trading-platform/data-service
+          - trading-platform/news-service
+          - trading-platform/execute-service
+          - trading-platform/embedding-service
+          - trading-platform/dashboard
+          - trading-platform/reasoning-service
+          - trading-platform/swarm-service
+          - trading-platform/simulation-service
+          - trading-platform/reporting-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        run: |
+          PROJECT="${{ matrix.project }}"
+          if [[ "$PROJECT" == trading-platform/* ]]; then
+            IMG_NAME="trading-$(basename "$PROJECT")"
+          else
+            IMG_NAME="$PROJECT"
+          fi
+          echo "name=${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/$IMG_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.project }}/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.name }}:test

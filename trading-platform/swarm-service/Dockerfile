@@ -1,11 +1,12 @@
 # Multi-stage build for swarm-service (Multi-agent orchestration + consensus)
 FROM python:3.12-slim AS builder
 WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends librdkafka-dev && rm -rf /var/lib/apt/lists/*
 COPY trading-platform/swarm-service/pyproject.toml .
 RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.12-slim
-RUN useradd -m --system appuser
+RUN apt-get update && apt-get install -y --no-install-recommends librdkafka1 && rm -rf /var/lib/apt/lists/* && useradd -m --system appuser
 
 COPY --from=builder /install /usr/local
 
