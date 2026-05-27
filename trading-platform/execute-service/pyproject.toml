@@ -23,6 +23,8 @@ dependencies = [
     "python-multipart>=0.0.9",
     "cryptography>=42.0",
     "aiokafka>=0.11",
+    "lz4>=4.0",
+    "python-snappy>=0.6",
     "protobuf>=5.0",
 ]
 
