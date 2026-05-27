@@ -52,6 +52,15 @@ export default function MarketPage() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [priceFlash, setPriceFlash] = useState<'up' | 'down' | null>(null);
   const prevPriceRef = useRef<number>(0);
+  const [chartHeight, setChartHeight] = useState(380);
+
+  // Responsive chart height
+  useEffect(() => {
+    const update = () => setChartHeight(window.innerWidth < 640 ? 250 : 380);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const filteredTickers = tickers.filter(t =>
     t.symbol.toLowerCase().includes(search.toLowerCase())
@@ -219,12 +228,12 @@ export default function MarketPage() {
                   </span>
                 )}
               </div>
-              <div className="flex gap-1 bg-bg-elevated p-1 rounded-md border border-bg-border">
+              <div className="flex gap-1 bg-bg-elevated p-1 rounded-md border border-bg-border overflow-x-auto scrollbar-thin">
                 {TIMEFRAMES.map(tf => (
                   <button
                     key={tf.value}
                     onClick={() => setIntervalState(tf.value)}
-                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors duration-150 ${
+                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors duration-150 whitespace-nowrap ${
                       interval === tf.value
                         ? 'bg-neon-cyan/[0.15] text-neon-cyan'
                         : 'text-text-dim hover:text-text-secondary'
@@ -239,11 +248,11 @@ export default function MarketPage() {
             {/* Chart */}
             <div className="p-3">
               {chartLoading ? (
-                <div className="flex items-center justify-center h-[380px]">
+                <div className="flex items-center justify-center" style={{ height: `${chartHeight}px` }}>
                   <div className="cyber-spinner" />
                 </div>
               ) : (
-                <CandlestickChart data={candles} height={380} />
+                <CandlestickChart data={candles} height={chartHeight} />
               )}
             </div>
           </div>
@@ -304,7 +313,7 @@ export default function MarketPage() {
 
         {/* Stats Row */}
         {current && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             {[
               { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
               { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },

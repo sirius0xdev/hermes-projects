@@ -494,3 +494,27 @@ input[type='range']::-webkit-slider-thumb {
   white-space: nowrap;
   animation: typewriter 1.5s steps(30) forwards;
 }
+
+/* ===== MOBILE / RESPONSIVE ===== */
+
+/* Safe area padding for notched devices (iPhone X+) */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Minimum touch targets on mobile */
+@media (max-width: 639px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Tighten font sizes that are too small on mobile */
+  .text-\[10px\] {
+    font-size: 11px;
+  }
+
+  /* Make table text more readable */
+  table.text-sm {
+    font-size: 12px;
+  }
+}

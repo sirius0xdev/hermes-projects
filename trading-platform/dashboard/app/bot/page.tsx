@@ -244,18 +244,18 @@ export default function AutonomousBotPage() {
     <AppShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-bg-border pb-6">
+        <div className="flex flex-col gap-4 border-b border-bg-border pb-4 sm:pb-6">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-neon-cyan/[0.08] flex items-center justify-center shrink-0 neon-border-cyan">
               <Bot className="w-5 h-5 text-neon-cyan" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-text tracking-tight">Autonomous Solana Quant</h1>
-              <p className="text-text-dim text-sm mt-0.5 font-mono">Scientific trading loop • Jupiter execution • Live since May 7</p>
+              <h1 className="text-lg sm:text-2xl font-bold text-text tracking-tight">Autonomous Solana Quant</h1>
+              <p className="text-text-dim text-xs sm:text-sm mt-0.5 font-mono">Scientific trading loop • Jupiter execution • Live since May 7</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
             <div>
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Status</div>
               <StatusIndicator status={botStatus.status} />
@@ -264,16 +264,16 @@ export default function AutonomousBotPage() {
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Strategy</div>
               <div className="font-mono text-sm text-neon-cyan font-semibold">{botStatus.strategy}</div>
             </div>
-            <div className="h-9 w-px bg-bg-border" />
+            <div className="hidden sm:block h-9 w-px bg-bg-border" />
             <div>
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Today</div>
-              <div className={`text-2xl font-bold font-mono ${botStatus.dailyPnl >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
+              <div className={`text-xl sm:text-2xl font-bold font-mono ${botStatus.dailyPnl >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                 {formatPnl(botStatus.dailyPnl)}
               </div>
             </div>
             <div className="text-right">
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Equity</div>
-              <span className="text-text font-mono text-lg font-bold">${botStatus.equity}</span>
+              <span className="text-text font-mono text-lg sm:text-xl font-bold">${botStatus.equity}</span>
             </div>
           </div>
         </div>
@@ -375,7 +375,7 @@ export default function AutonomousBotPage() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-bg-border flex gap-0">
+        <div className="border-b border-bg-border flex gap-0 overflow-x-auto scrollbar-thin">
           {[
             { id: 'overview' as const, label: 'Recent Decisions' },
             { id: 'signals' as const, label: 'Signal Archive' },
@@ -456,7 +456,8 @@ export default function AutonomousBotPage() {
 
         {activeTab === 'backtests' && (
           <div className="card-hover overflow-hidden">
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="border-b border-bg-border text-left text-[10px] text-text-dim uppercase tracking-wider bg-bg-elevated/50">
                   <th className="px-5 py-3.5 font-semibold font-mono">Strategy</th>
@@ -482,7 +483,8 @@ export default function AutonomousBotPage() {
                 ))}
               </tbody>
             </table>
-            <div className="p-5 border-t border-bg-border text-[11px] text-text-dim bg-bg-elevated font-mono">
+            </div>
+            <div className="p-4 sm:p-5 border-t border-bg-border text-[11px] text-text-dim bg-bg-elevated font-mono">
               Read-only viewer. Parameter optimization and live A/B testing controlled by backend quant engine. All backtests use realistic slippage and Jupiter routing simulation.
             </div>
           </div>

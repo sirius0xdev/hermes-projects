@@ -172,7 +172,7 @@ export default function PortfolioPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-bg-border">
+        <div className="flex gap-0 border-b border-bg-border overflow-x-auto scrollbar-thin">
           {([
             { key: 'positions' as const, label: 'Positions', count: positions.length },
             { key: 'orders' as const, label: 'Orders', count: orders.length },
