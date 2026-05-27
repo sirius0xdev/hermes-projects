@@ -20,6 +20,3 @@ class KafkaTopics:
 
     # Cross-chain opportunity scanner topics
     OPPORTUNITIES = "trading-platform.opportunities.v1"
-
-    # Opportunity SSE endpoint
-    OPPORTUNITY_SSE = "/api/v1/opportunities/stream"

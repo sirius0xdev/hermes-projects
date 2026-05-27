@@ -61,6 +61,15 @@ TOPIC_CONFIG = {
             "min.insync.replicas": "1",
         }
     },
+    KafkaTopics.OPPORTUNITIES: {
+        "partitions": 3,
+        "replication_factor": 1,
+        "config": {
+            "retention.ms": "43200000",  # 12 hours
+            "cleanup.policy": "delete",
+            "compression.type": "lz4",
+        }
+    },
 }
 
 def get_topic_config(topic: str) -> dict:
