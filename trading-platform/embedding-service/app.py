@@ -3,12 +3,22 @@ Lightweight embedding service wrapping nomic-embed-text-v1.5
 OpenAI-compatible /v1/embeddings endpoint.
 """
 
+import logging
 import os
 import time
 import uuid
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
+from app.config import Settings
+from app.vector_store import VectorStore
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Global vector store
+_vector_store: VectorStore | None = None
 
 
 # Model globals (loaded at startup)
@@ -33,11 +43,29 @@ def load_model():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: load model."""
+    """Startup: load model + initialize vector store."""
     load_model()
-    yield
-    # Shutdown: no cleanup needed for CPU model
 
+    # Initialize vector store (graceful: don't fail startup if Redis is down)
+    settings = Settings()
+    global _vector_store
+    _vector_store = VectorStore(settings)
+    try:
+        await _vector_store.initialize(drop_existing=False)
+        logger.info("Vector store initialized.")
+        # Wire vector store into search routes
+        search_routes._vector_store = _vector_store
+    except Exception as e:
+        logger.warning("Vector store init failed (search disabled): %s", e)
+        _vector_store = None
+
+    yield
+
+    # Shutdown
+    logger.info("Embedding service shutting down.")
+
+
+from app.routes import search as search_routes
 
 app = FastAPI(
     title="Embedding Service",
@@ -45,6 +73,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Register search/indexing routes
+app.include_router(search_routes.router)
 
 
 # --- Request/Response Models ---
@@ -147,4 +178,5 @@ def health():
         "model": _model_name,
         "dimensions": _dimensions,
         "ready": _model is not None,
+        "vector_store": "connected" if _vector_store is not None else "unavailable",
     }
