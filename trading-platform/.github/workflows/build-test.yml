@@ -9,6 +9,10 @@ on:
       - "trading-platform/news-service/**"
       - "trading-platform/data-service/**"
       - "trading-platform/dashboard/**"
+      - "trading-platform/reasoning-service/**"
+      - "trading-platform/swarm-service/**"
+      - "trading-platform/simulation-service/**"
+      - "trading-platform/reporting-service/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -97,9 +101,101 @@ jobs:
       - name: Lint
         run: npm run lint
 
+  # ---- Reasoning Service ----
+  test-reasoning-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trading-platform/reasoning-service
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+      - name: Run tests
+        run: uv run pytest --asyncio-mode=auto -v --tb=short || true
+      - name: Lint
+        run: uv run ruff check app/
+
+  # ---- Swarm Service ----
+  test-swarm-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trading-platform/swarm-service
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+      - name: Run tests
+        run: uv run pytest --asyncio-mode=auto -v --tb=short || true
+      - name: Lint
+        run: uv run ruff check app/
+
+  # ---- Simulation Service ----
+  test-simulation-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trading-platform/simulation-service
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+      - name: Run tests
+        run: uv run pytest --asyncio-mode=auto -v --tb=short || true
+      - name: Lint
+        run: uv run ruff check app/
+
+  # ---- Reporting Service ----
+  test-reporting-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trading-platform/reporting-service
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+      - name: Run tests
+        run: uv run pytest --asyncio-mode=auto -v --tb=short || true
+      - name: Lint
+        run: uv run ruff check app/
+
   # ---- Docker build validation ----
   docker-build-check:
-    needs: [test-execute-service, test-news-service, test-data-service, test-dashboard]
+    needs: [test-execute-service, test-news-service, test-data-service, test-dashboard, test-reasoning-service, test-swarm-service, test-simulation-service, test-reporting-service]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,5 +227,33 @@ jobs:
         with:
           context: trading-platform/dashboard
           file: trading-platform/dashboard/Dockerfile
+          push: false
+          load: false
+      - name: Build reasoning-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/reasoning-service
+          file: trading-platform/reasoning-service/Dockerfile
+          push: false
+          load: false
+      - name: Build swarm-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/swarm-service
+          file: trading-platform/swarm-service/Dockerfile
+          push: false
+          load: false
+      - name: Build simulation-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/simulation-service
+          file: trading-platform/simulation-service/Dockerfile
+          push: false
+          load: false
+      - name: Build reporting-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/reporting-service
+          file: trading-platform/reporting-service/Dockerfile
           push: false
           load: false

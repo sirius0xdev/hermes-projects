@@ -101,6 +101,58 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # ---- Reasoning Service ----
+      - name: Build and push reasoning-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/reasoning-service
+          file: trading-platform/reasoning-service/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ARTIFACT_REGISTRY }}/reasoning-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.ARTIFACT_REGISTRY }}/reasoning-service:${{ steps.tags.outputs.tag_branch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ---- Swarm Service ----
+      - name: Build and push swarm-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/swarm-service
+          file: trading-platform/swarm-service/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ARTIFACT_REGISTRY }}/swarm-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.ARTIFACT_REGISTRY }}/swarm-service:${{ steps.tags.outputs.tag_branch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ---- Simulation Service ----
+      - name: Build and push simulation-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/simulation-service
+          file: trading-platform/simulation-service/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ARTIFACT_REGISTRY }}/simulation-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.ARTIFACT_REGISTRY }}/simulation-service:${{ steps.tags.outputs.tag_branch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ---- Reporting Service ----
+      - name: Build and push reporting-service
+        uses: docker/build-push-action@v5
+        with:
+          context: trading-platform/reporting-service
+          file: trading-platform/reporting-service/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ARTIFACT_REGISTRY }}/reporting-service:${{ steps.tags.outputs.tag_sha }}
+            ${{ env.ARTIFACT_REGISTRY }}/reporting-service:${{ steps.tags.outputs.tag_branch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Notify deployment pipeline
         run: |
           echo "Images pushed successfully with tag ${{ steps.tags.outputs.tag_sha }}"
