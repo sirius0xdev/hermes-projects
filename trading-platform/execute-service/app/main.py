@@ -151,7 +151,6 @@ app = FastAPI(
     description="Trading execution microservice for Hyperliquid + Solana",
     version="0.1.0",
     lifespan=lifespan,
-    root_path="/api/execute",
 )
 
 # mTLS middleware (if enabled)
