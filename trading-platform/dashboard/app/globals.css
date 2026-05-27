@@ -504,7 +504,10 @@ input[type='range']::-webkit-slider-thumb {
 
 /* Minimum touch targets on mobile */
 @media (max-width: 639px) {
-  button, a, [role="button"] {
+  /* Only apply min-height to primary CTA buttons, not small UI controls */
+  button[type="submit"],
+  .w-full.py-3,
+  a[href] {
     min-height: 44px;
   }
 
@@ -516,5 +519,14 @@ input[type='range']::-webkit-slider-thumb {
   /* Make table text more readable */
   table.text-sm {
     font-size: 12px;
+  }
+
+  /* Widen scrollable areas */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
   }
 }

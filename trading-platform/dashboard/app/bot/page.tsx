@@ -255,12 +255,12 @@ export default function AutonomousBotPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+          <div className="flex flex-wrap items-start sm:items-center gap-3 sm:gap-6">
             <div>
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Status</div>
               <StatusIndicator status={botStatus.status} />
             </div>
-            <div className="text-right">
+            <div>
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Strategy</div>
               <div className="font-mono text-sm text-neon-cyan font-semibold">{botStatus.strategy}</div>
             </div>
@@ -271,7 +271,7 @@ export default function AutonomousBotPage() {
                 {formatPnl(botStatus.dailyPnl)}
               </div>
             </div>
-            <div className="text-right">
+            <div>
               <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1 font-semibold font-mono">Equity</div>
               <span className="text-text font-mono text-lg sm:text-xl font-bold">${botStatus.equity}</span>
             </div>
@@ -410,7 +410,7 @@ export default function AutonomousBotPage() {
                       <div className="font-semibold text-text font-mono">{bt.name}</div>
                       <div className="font-mono text-[11px] text-neon-cyan font-semibold">Sharpe {bt.sharpeRatio}</div>
                     </div>
-                    <div className="grid grid-cols-4 gap-3 mt-4 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-xs">
                       <div>
                         <div className="text-text-dim text-[10px] uppercase tracking-wider font-semibold font-mono">Winrate</div>
                         <div className="font-mono text-lg text-neon-cyan font-bold">{(bt.winRate * 100).toFixed(0)}%</div>

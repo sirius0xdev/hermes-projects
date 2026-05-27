@@ -134,6 +134,17 @@ export default function MarketPage() {
     ? (bids[0].price + (asks[0]?.price ?? bids[0].price)) / 2
     : current?.price ?? 0;
 
+  const stats = current ? [
+    { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
+    { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
+    { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
+    { label: '24h Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3.5 h-3.5" /> },
+    { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan">◎</span> },
+    { label: 'Spread', value: asks.length > 0 && bids.length > 0
+      ? `${((asks[0].price - bids[0].price) / midPrice * 100).toFixed(3)}%`
+      : '—', icon: <span className="text-text-dim">↔</span> },
+  ] : [];
+
   return (
     <AppShell>
       <div className="space-y-4">
@@ -311,31 +322,51 @@ export default function MarketPage() {
           </div>
         </div>
 
-        {/* Stats Row */}
-        {current && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-            {[
-              { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
-              { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
-              { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
-              { label: '24h Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3.5 h-3.5" /> },
-              { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan">◎</span> },
-              { label: 'Spread', value: asks.length > 0 && bids.length > 0
-                ? `${((asks[0].price - bids[0].price) / midPrice * 100).toFixed(3)}%`
-                : '—', icon: <span className="text-text-dim">↔</span> },
-            ].map(m => (
-              <div key={m.label} className="card-hover p-4">
-                <div className="flex items-center gap-1.5 text-[10px] text-text-dim mb-1.5 font-mono uppercase tracking-wider">
-                  <span className="opacity-70">{m.icon}</span>
-                  {m.label}
-                </div>
-                <div className={`text-sm font-mono font-semibold text-text ${m.color ?? ''}`}>
-                  {m.value}
-                </div>
+        {/* Stats Row — scrollable on mobile, grid on desktop */}
+        {current && (() => {
+          const stats = [
+            { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
+            { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
+            { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
+            { label: '24h Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3.5 h-3.5" /> },
+            { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan">◎</span> },
+            { label: 'Spread', value: asks.length > 0 && bids.length > 0
+              ? `${((asks[0].price - bids[0].price) / midPrice * 100).toFixed(3)}%`
+              : '—', icon: <span className="text-text-dim">↔</span> },
+          ];
+          return (
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+              {/* Mobile: 2-col horizontal scroll */}
+              <div className="grid grid-cols-2 gap-2 sm:hidden" style={{ width: 'max-content', minWidth: '60vw' }}>
+                {stats.map(m => (
+                  <div key={m.label} className="card-hover p-4">
+                    <div className="flex items-center gap-1.5 text-[10px] text-text-dim mb-1.5 font-mono uppercase tracking-wider">
+                      <span className="opacity-70">{m.icon}</span>
+                      {m.label}
+                    </div>
+                    <div className={`text-sm font-mono font-semibold text-text ${m.color ?? ''}`}>
+                      {m.value}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+              {/* Desktop: full grid */}
+              <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+                {stats.map(m => (
+                  <div key={m.label} className="card-hover p-4">
+                    <div className="flex items-center gap-1.5 text-[10px] text-text-dim mb-1.5 font-mono uppercase tracking-wider">
+                      <span className="opacity-70">{m.icon}</span>
+                      {m.label}
+                    </div>
+                    <div className={`text-sm font-mono font-semibold text-text ${m.color ?? ''}`}>
+                      {m.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </AppShell>
   );
