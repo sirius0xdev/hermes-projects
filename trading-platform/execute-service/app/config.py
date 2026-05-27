@@ -166,7 +166,7 @@ class Settings(BaseSettings):
                 data["solana_rpc_url"] = (
                     data.get("SOLANA_RPC_URL")
                     or os.getenv("SOLANA_RPC_URL")
-                    or "https://api.devnet.solana.com"
+                    or "https://api.mainnet-beta.solana.com"
                 )
 
             # Redis URL
