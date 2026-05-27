@@ -1,3 +1,4 @@
+import { getLivePrices } from '@/lib/prices';
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AppShell from '@/components/layout/AppShell';
@@ -58,7 +59,7 @@ export default function MarketPage() {
 
   const loadTickers = useCallback(async () => {
     try {
-      const t = await fetchTickers();
+      const t = await getLivePrices();
       setTickers(prev => {
         if (prev.length > 0 && t.length > 0) {
           const prevMap = new Map(prev.map(p => [p.symbol, p]));
