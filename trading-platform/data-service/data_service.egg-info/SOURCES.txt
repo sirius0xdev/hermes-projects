@@ -7,6 +7,7 @@ data_service.egg-info/requires.txt
 data_service.egg-info/top_level.txt
 data_service/alembic/env.py
 data_service/alembic/versions/001_initial_schema.py
+data_service/alembic/versions/002_indexed_entities.py
 data_service/app/__init__.py
 data_service/app/main.py
 data_service/app/cache/__init__.py
@@ -14,6 +15,12 @@ data_service/app/cache/client.py
 data_service/app/cache/service.py
 data_service/app/db/__init__.py
 data_service/app/db/base.py
+data_service/app/embedding/__init__.py
+data_service/app/embedding/client.py
+data_service/app/indexers/__init__.py
+data_service/app/indexers/news_indexer.py
+data_service/app/indexers/persistence.py
+data_service/app/indexers/trade_indexer.py
 data_service/app/kafka/__init__.py
 data_service/app/kafka/config.py
 data_service/app/kafka/consumer.py
@@ -27,4 +34,5 @@ data_service/app/routes/market_data.py
 data_service/app/schemas/market_data.py
 tests/test_cache.py
 tests/test_data_service.py
+tests/test_indexers.py
 tests/test_kafka.py

@@ -16,6 +16,7 @@ from app.database import get_session
 from app.models.order_models import OrderRecord
 from app.auth.service import decode_access_token
 from app.dependencies import get_order_manager, get_hyperliquid_executor, get_solana_executor
+from app.risk.engine import get_risk_engine, RiskViolationError
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +119,23 @@ async def place_order(
     session=Depends(get_session),
 ) -> PlaceOrderResponse:
     """Place a new trading order."""
+    # Risk checks BEFORE execution
+    risk_engine = get_risk_engine()
+    try:
+        await risk_engine.check_order(
+            wallet_address=user["wallet_address"],
+            chain=req.chain,
+            symbol=req.symbol,
+            side=req.side,
+            quantity=Decimal(req.quantity),
+            price=Decimal(req.price) if req.price else None,
+        )
+    except RiskViolationError as e:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Risk check failed: {e.reason}",
+        )
+
     order = await order_mgr.place_order(
         session=session,
         wallet_address=user["wallet_address"],

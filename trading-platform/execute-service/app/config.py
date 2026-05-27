@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator, model_validator
 from pathlib import Path
 import os
+import re
 from typing import Any
 
 
@@ -43,6 +44,35 @@ class Settings(BaseSettings):
 
     # Service discovery
     market_data_service_url: str = "http://market-data:8001"
+
+    # Redis for circuit breakers and rate limiting
+    redis_url: str = "redis://localhost:6379/0"
+
+    # Rate limiting
+    rate_limit_enabled: bool = True
+    rate_limit_requests_per_minute: int = 60
+    rate_limit_burst_size: int = 10
+    rate_limit_order_per_second: int = 5
+
+    # Risk management
+    max_position_size_usd: float = 50000.0
+    max_daily_loss_usd: float = 10000.0
+    max_open_positions: int = 10
+    solana_max_tx_lamports: int = 10_000_000_000  # 100 SOL
+    solana_circuit_breaker_threshold: int = 5  # failures before tripping
+    solana_circuit_breaker_timeout_seconds: int = 300  # 5 min cooldown
+    solana_txn_poll_timeout_seconds: int = 60
+    solana_txn_poll_interval_seconds: float = 3.0
+
+    # Token safety
+    blocked_token_mints: list[str] = []
+    allowed_token_mints: list[str] | None = None  # None = allowlist disabled
+
+    # HTTP client pooling
+    http_connection_pool_size: int = 10
+    http_connection_max_size: int = 20
+    http_keepalive_seconds: float = 30.0
+    http_timeout_seconds: float = 30.0
 
     @model_validator(mode="before")
     @classmethod
@@ -131,6 +161,36 @@ class Settings(BaseSettings):
                     or "trading_data"
                 )
 
+            # Solana RPC
+            if not data.get("solana_rpc_url"):
+                data["solana_rpc_url"] = (
+                    data.get("SOLANA_RPC_URL")
+                    or os.getenv("SOLANA_RPC_URL")
+                    or "https://api.devnet.solana.com"
+                )
+
+            # Redis URL
+            if not data.get("redis_url"):
+                data["redis_url"] = (
+                    data.get("REDIS_URL")
+                    or os.getenv("REDIS_URL")
+                    or "redis://localhost:6379/0"
+                )
+
+            # Risk limits from env
+            if data.get("max_position_size_usd") == 50000.0:  # default unchanged
+                env_val = data.get("MAX_POSITION_SIZE_USD") or os.getenv("MAX_POSITION_SIZE_USD")
+                if env_val:
+                    data["max_position_size_usd"] = float(env_val)
+            if data.get("max_daily_loss_usd") == 10000.0:  # default unchanged
+                env_val = data.get("MAX_DAILY_LOSS_USD") or os.getenv("MAX_DAILY_LOSS_USD")
+                if env_val:
+                    data["max_daily_loss_usd"] = float(env_val)
+            if data.get("max_open_positions") == 10:  # default unchanged
+                env_val = data.get("MAX_OPEN_POSITIONS") or os.getenv("MAX_OPEN_POSITIONS")
+                if env_val:
+                    data["max_open_positions"] = int(env_val)
+
         return data
 
     @property
@@ -146,14 +206,31 @@ class Settings(BaseSettings):
     @field_validator("jwt_secret_key")
     @classmethod
     def validate_jwt_secret(cls, v: str) -> str:
+        """Validate JWT secret meets minimum security requirements."""
         if not v:
             raise ValueError(
                 "JWT_SECRET_KEY must be set via environment variable or Secret. "
                 "Do not use the default empty value in production."
             )
+        if len(v) < 32:
+            raise ValueError(
+                f"JWT_SECRET_KEY must be at least 32 characters (got {len(v)}). "
+                "Use a cryptographically random secret generated with secrets.token_urlsafe(48)."
+            )
         return v
 
-    model_config = {"env_file": ".env", "extra": "ignore"}
+    @field_validator("solana_rpc_url")
+    @classmethod
+    def validate_solana_rpc(cls, v: str) -> str:
+        """Reject devnet RPC when running in production (private key configured)."""
+        if "devnet" in v.lower():
+            import logging
+            logging.warning(
+                "SOLANA_RPC_URL is set to devnet (%s). "
+                "Ensure this is intentional — production should use mainnet RPC.",
+                v
+            )
+        return v
 
 
 settings = Settings()

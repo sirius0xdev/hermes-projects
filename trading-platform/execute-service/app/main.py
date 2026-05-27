@@ -5,6 +5,8 @@ Trading Execution Microservice
 - Solana on-chain execution
 - Order management + position tracking
 - mTLS for inter-service communication
+- Rate limiting (per-client, Redis-backed with in-memory fallback)
+- Risk engine (position limits, daily loss circuit breaker, token safety)
 """
 from __future__ import annotations
 
@@ -20,6 +22,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import init_db, get_session, engine
 from app.middleware.mtls import MTLSMiddleware, create_ssl_context
+from app.middleware.rate_limiter import RateLimitMiddleware, get_rate_limiter
 from app.dependencies import (
     get_hyperliquid_executor,
     get_solana_executor,
@@ -77,6 +80,20 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("Skipping table creation (production - relies on CNPG init jobs / migrations)")
 
+    # Initialize rate limiter (Redis-backed with in-memory fallback)
+    rate_limiter = get_rate_limiter()
+    if hasattr(rate_limiter, "initialize"):
+        await rate_limiter.initialize()
+    app.state.rate_limiter = rate_limiter
+
+    # Initialize risk engine (Redis-backed with in-memory fallback)
+    from app.risk.engine import get_risk_engine
+    risk_engine = get_risk_engine()
+    store = risk_engine._store
+    if hasattr(store, "initialize"):
+        await store.initialize()
+    app.state.risk_engine = risk_engine
+
     # Initialize executors with timeout and graceful fallback
     # If one hangs, the service still serves /health so K8s probes pass
     hl_exec = get_hyperliquid_executor()
@@ -118,6 +135,14 @@ async def lifespan(app: FastAPI):
         await sol_exec.close()
     except Exception:
         logger.exception("Error closing Solana executor")
+    try:
+        await store.close()
+    except Exception:
+        logger.exception("Error closing risk store")
+    try:
+        await rate_limiter.close()
+    except Exception:
+        logger.exception("Error closing rate limiter")
     await engine.dispose()
 
 
@@ -131,6 +156,9 @@ app = FastAPI(
 
 # mTLS middleware (if enabled)
 app.add_middleware(MTLSMiddleware)
+
+# Rate limiting middleware
+app.add_middleware(RateLimitMiddleware)
 
 # Strip Gateway API prefix so /api/execute/trades -> /trades
 app.add_middleware(_StripPrefixMiddleware, prefix="/api/execute")
@@ -177,6 +205,20 @@ async def executor_health() -> JSONResponse:
 @app.get("/health/live")
 async def liveness() -> dict:
     return {"status": "alive"}
+
+
+@app.get("/health/risk")
+async def risk_health() -> JSONResponse:
+    """Report risk engine state: circuit breakers, counters."""
+    sol_exec = get_solana_executor()
+    sol_cb = getattr(sol_exec, "circuit_breaker_state", {})
+    return JSONResponse(
+        status_code=200,
+        content={
+            "solana_circuit_breaker": sol_cb,
+            "rate_limiting_enabled": settings.rate_limit_enabled,
+        },
+    )
 
 
 def run():

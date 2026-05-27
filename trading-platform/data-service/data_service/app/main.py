@@ -13,6 +13,7 @@ import logging
 import os
 import signal
 import threading
+import asyncio
 from asyncio import timeout as asyncio_timeout
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Any
@@ -26,6 +27,7 @@ from data_service.app.routes.market_data import set_cache_service
 from data_service.app.kafka.consumer import DataConsumer
 from data_service.app.kafka.solana_ingester import HeliusIngester, JupiterIngester
 from data_service.app.kafka.topics import KafkaTopics
+from data_service.app.scanners.opportunity_scanner import OpportunityScanner
 
 # Health check router (required for K8s liveness/readiness probes)
 from fastapi import APIRouter
@@ -65,6 +67,8 @@ _consumer: DataConsumer | None = None
 _consume_thread: threading.Thread | None = None
 _helius_ingester: HeliusIngester | None = None
 _jupiter_ingester: JupiterIngester | None = None
+_opportunity_scanner: OpportunityScanner | None = None
+_opp_scan_thread: threading.Thread | None = None
 
 
 @health_router.get("/health", status_code=200)
@@ -140,6 +144,11 @@ def handle_solana_block(message: dict[str, Any]) -> None:
     logger.info("Solana block: slot=%d", value.get("slot"))
 
 
+def handle_opportunity(message: dict[str, Any]) -> None:
+    value = message.get("value", {})
+    logger.info("Opportunity: type=%s symbol=%s spread=%.2f%%", value.get("opportunity_type"), value.get("symbol"), value.get("spread_pct"))
+
+
 DEFAULT_HANDLERS: dict[str, Any] = {
     KafkaTopics.MARKET_PRICES: handle_price_event,
     KafkaTopics.MARKET_ORDERBOOK: handle_orderbook_event,
@@ -149,6 +158,7 @@ DEFAULT_HANDLERS: dict[str, Any] = {
     KafkaTopics.SOLANA_TOKEN_DATA: handle_solana_token_transfer,
     KafkaTopics.SOLANA_POOL_DATA: handle_solana_pool_event,
     KafkaTopics.SOLANA_BLOCK: handle_solana_block,
+    KafkaTopics.OPPORTUNITIES: handle_opportunity,
 }
 
 
@@ -257,6 +267,36 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     _jupiter_ingester.start()
     logger.info("JupiterIngester started")
 
+    # ── Opportunity scanner ──────────────────────────────────────
+    _opportunity_scanner = OpportunityScanner(
+        producer=_producer,
+        min_spread_pct=0.3,
+    )
+
+    def _run_opp_scan_loop():
+        """Run opportunity scanner in its own event loop."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            # Run first scan synchronously, then loop
+            loop.run_until_complete(_opportunity_scanner.scan_once())
+            while _opportunity_scanner._running:
+                loop.run_until_complete(_opportunity_scanner.scan_once())
+                loop.run_until_complete(asyncio.sleep(_opportunity_scanner.poll_interval))
+        except Exception:
+            logger.exception("Opportunity scanner loop crashed")
+        finally:
+            loop.run_until_complete(_opportunity_scanner.close())
+            loop.close()
+
+    _opp_scan_thread = threading.Thread(
+        target=_run_opp_scan_loop,
+        daemon=True,
+        name="opportunity-scanner",
+    )
+    _opp_scan_thread.start()
+    logger.info("Opportunity scanner started")
+
     _service_ready = True
     logger.info("Data service ready")
 
@@ -270,6 +310,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         _helius_ingester.stop()
     if _jupiter_ingester:
         _jupiter_ingester.stop()
+    if _opportunity_scanner:
+        _opportunity_scanner.stop()
     _producer.stop()
     if _consumer:
         _consumer.stop()
@@ -306,6 +348,8 @@ def create_app() -> FastAPI:
     from data_service.app.routes.market_data import router
 
     app.include_router(router)
+    from data_service.app.routes.opportunities import router as opp_router
+    app.include_router(opp_router)
     app.include_router(health_router)  # /health + /health/ready for K8s probes
     return app
 

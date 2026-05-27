@@ -17,3 +17,9 @@ class KafkaTopics:
     SOLANA_TOKEN_DATA = "solana.token.data"
     SOLANA_POOL_DATA = "solana.pool.data"
     SOLANA_BLOCK = "solana.block.v1"
+
+    # Cross-chain opportunity scanner topics
+    OPPORTUNITIES = "trading-platform.opportunities.v1"
+
+    # Opportunity SSE endpoint
+    OPPORTUNITY_SSE = "/api/v1/opportunities/stream"

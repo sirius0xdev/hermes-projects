@@ -9,6 +9,7 @@ pydantic-settings>=2.0
 kafka-python-ng>=2.2
 httpx>=0.27
 redis[hiredis]>=5.0
+websockets>=12.0
 
 [dev]
 pytest>=8.0

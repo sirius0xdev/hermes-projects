@@ -7,6 +7,7 @@ import {
   ArrowRightLeft,
   Cpu,
   Newspaper,
+  Zap,
   Wallet,
   Settings,
 } from 'lucide-react';

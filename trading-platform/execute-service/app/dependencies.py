@@ -1,5 +1,5 @@
 """
-FastAPI dependency providers for executors and order manager.
+FastAPI dependency providers for executors, order manager, and risk engine.
 """
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from fastapi import Depends
 from app.executors.hyperliquid import HyperliquidExecutor
 from app.executors.solana import SolanaExecutor
 from app.order.manager import OrderManager
+from app.risk.engine import get_risk_engine
 
 
 @lru_cache(maxsize=1)

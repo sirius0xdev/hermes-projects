@@ -147,3 +147,45 @@ class TradingSignal(BaseModel):
     data_ref: Optional[str] = None  # ref to source article/event
     created_at: datetime = Field(default_factory=datetime.utcnow)
     metadata: Optional[dict[str, Any]] = None
+
+
+# --- Opportunity Events --- #
+
+class OpportunityType(str, Enum):
+    DELTA_NEUTRAL_ARB = "delta_neutral_arb"
+    YIELD_SPREAD = "yield_spread"
+    PRICE_DIFFERENTIAL = "price_differential"
+    FUNDING_ARBITRAGE = "funding_arbitrage"
+
+
+class OpportunityEvent(BaseModel):
+    """Cross-chain trading opportunity detected by the scanner."""
+    opportunity_id: str = Field(..., description="Unique opportunity identifier")
+    opportunity_type: OpportunityType
+    symbol: str = Field(..., description="Base asset (e.g. BTC, ETH)")
+    title: str = Field(..., description="Human-readable summary")
+    description: Optional[str] = None
+
+    # Platform A
+    platform_a: str = Field(..., description="e.g. Hyperliquid, Aave, Solend")
+    platform_a_value: float = Field(..., description="Rate, yield, or price on platform A (as percentage)")
+    platform_a_url: Optional[str] = None
+
+    # Platform B
+    platform_b: str = Field(..., description="e.g. Solana, Hyperliquid")
+    platform_b_value: float = Field(..., description="Rate, yield, or price on platform B (as percentage)")
+    platform_b_url: Optional[str] = None
+
+    # Spread / arb potential
+    spread_pct: float = Field(..., description="Spread between platforms as percentage")
+    estimated_apr: float = Field(..., description="Estimated annualized return from the opportunity")
+    risk_level: str = Field(..., description="low, medium, high")
+
+    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: Optional[datetime] = None
+    metadata: Optional[dict[str, Any]] = None
+
+    @field_validator("symbol")
+    @classmethod
+    def symbol_upper(cls, v: str) -> str:
+        return v.upper()
