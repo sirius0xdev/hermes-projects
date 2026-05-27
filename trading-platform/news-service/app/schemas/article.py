@@ -134,3 +134,27 @@ class AnalysisListResponse(BaseModel):
     page_size: int
     has_next: bool
     has_prev: bool
+
+
+# ----- Scraped Articles (from news_bot / news_app_db) -----
+
+class ScrapedArticleItem(BaseModel):
+    """Compact scraped article from the news_bot scraper table."""
+    id: int
+    title: str
+    url: str
+    content: Optional[str] = None
+    domain: Optional[str] = None
+    timestamp: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ScrapedArticleListResponse(BaseModel):
+    """Paginated list of scraped articles."""
+    items: list[ScrapedArticleItem]
+    total: int
+    page: int
+    page_size: int
+    has_next: bool
+    has_prev: bool

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.core.database import db
+from app.core.database import db, news_db
 from app.api.articles import router as articles_router
 from app.api.analysis import router as analysis_router
 from app.api.signals import router as signals_router
@@ -48,6 +48,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     
     await db.init()
     logger.info("Database initialized")
+
+    await news_db.init()
+    logger.info("Secondary news_db initialized")
     
     # Start periodic Kafka consumer for unprocessed articles
     # (runs in background, triggered by DB events)
@@ -58,6 +61,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     
     # Shutdown
     await db.close()
+    await news_db.close()
     logger.info("Shut down complete")
 
 
@@ -107,7 +111,7 @@ def create_app() -> FastAPI:
     
     @app.get("/health/db", tags=["health"])
     async def health_check_db(session: AsyncSession = Depends(db.get_session)):
-        """Check database connectivity."""
+        """Check primary database connectivity."""
         try:
             from sqlalchemy import text
             result = await session.execute(text("SELECT 1"))
@@ -115,6 +119,17 @@ def create_app() -> FastAPI:
             return {"status": "healthy", "database": "connected"}
         except Exception as e:
             return {"status": "unhealthy", "database": str(e)}
+
+    @app.get("/health/news-db", tags=["health"])
+    async def health_check_news_db(session: AsyncSession = Depends(news_db.get_session)):
+        """Check secondary news_app_db connectivity (scraper data)."""
+        try:
+            from sqlalchemy import text
+            result = await session.execute(text("SELECT 1"))
+            result.scalar()
+            return {"status": "healthy", "news_db": "connected"}
+        except Exception as e:
+            return {"status": "unhealthy", "news_db": str(e)}
     
     return app
 

@@ -4,14 +4,18 @@ from typing import Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import db
+from app.core.database import db, news_db
+from app.models.news_article import ScrapedArticle
 from app.schemas.article import (
     ArticleCreate,
     ArticleResponse,
     ArticleListItem,
     ArticleListResponse,
+    ScrapedArticleItem,
+    ScrapedArticleListResponse,
 )
 from app.services.article_service import (
     get_articles as _get_articles,
@@ -127,10 +131,76 @@ async def analyze_unprocessed(
     session: AsyncSession = Depends(_get_db),
 ):
     """Scan for unprocessed articles and run NLP analysis on them.
-    
+
     Use this as a manual trigger or for backfilling analysis on
     articles that haven't been processed yet.
     """
     count = await _run_analysis(session)
     await session.commit()
     return {"processed_count": count}
+
+
+async def _get_news_db() -> AsyncSession:
+    """FastAPI dependency to get a session for the secondary news_app_db."""
+    async for session in news_db.get_session():
+        yield session
+
+
+@router.get("/scraped", response_model=ScrapedArticleListResponse)
+async def list_scraped_articles(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    domain: Optional[str] = Query(None, description="Filter by domain (e.g. reuters.com)"),
+    since: Optional[datetime] = Query(None, description="Filter articles after this timestamp"),
+    until: Optional[datetime] = Query(None, description="Filter articles before this timestamp"),
+    session: AsyncSession = Depends(_get_news_db),
+):
+    """List articles scraped by the news_bot pipeline.
+
+    These are raw articles from the secondary news_app_db — not yet
+    processed by the NLP pipeline. Read-only endpoint.
+    """
+    conditions = [ScrapedArticle.timestamp.isnot(None)]
+    if domain:
+        conditions.append(ScrapedArticle.domain == domain)
+    if since:
+        conditions.append(ScrapedArticle.timestamp >= since)
+    if until:
+        conditions.append(ScrapedArticle.timestamp <= until)
+
+    # Count total
+    count_q = select(func.count()).select_from(ScrapedArticle).where(*conditions)
+    total = (await session.execute(count_q)).scalar() or 0
+
+    # Fetch page
+    offset = (page - 1) * page_size
+    q = (
+        select(ScrapedArticle)
+        .where(*conditions)
+        .order_by(ScrapedArticle.timestamp.desc())
+        .offset(offset)
+        .limit(page_size)
+    )
+    rows = (await session.execute(q)).scalars().all()
+
+    has_next = (page * page_size) < total
+    has_prev = page > 1
+
+    return ScrapedArticleListResponse(
+        items=[
+            ScrapedArticleItem(
+                id=a.id,
+                title=a.title,
+                url=a.url,
+                content=a.content,
+                domain=a.domain,
+                timestamp=a.timestamp,
+            )
+            for a in rows
+        ],
+        total=total,
+        page=page,
+        page_size=page_size,
+        has_next=has_next,
+        has_prev=has_prev,
+    )
