@@ -25,16 +25,19 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
   return (
     <>
       {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden backdrop-blur-sm" onClick={onClose} />}
-      <aside className={`fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-bg-secondary border-r border-bg-border flex flex-col transition-transform duration-200 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        {/* Brand */}
+      <aside className={`fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-bg-secondary border-r border-bg-border flex flex-col transition-transform duration-200 data-stream ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        {/* Brand — Section 9 Terminal */}
         <div className="h-16 flex items-center px-5 border-b border-bg-border shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-accent/15 flex items-center justify-center">
-              <ArrowRightLeft className="w-3.5 h-3.5 text-accent" />
+            <div className="w-7 h-7 rounded-md bg-bg-elevated flex items-center justify-center border border-bg-border/80">
+              <span className="text-xs font-bold text-neon-cyan font-mono" style={{ filter: 'drop-shadow(0 0 3px rgba(0,255,247,0.5))' }}>S9</span>
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-text-primary tracking-tight">DeFi Trader</h1>
-              <p className="text-[10px] text-text-dim -mt-0.5">Private Terminal</p>
+              <h1 className="text-sm font-semibold text-text-primary tracking-tight">Section 9</h1>
+              <p className="text-[10px] text-text-dim -mt-0.5 flex items-center gap-1">
+                <span className="status-dot status-dot-active" />
+                Private Terminal
+              </p>
             </div>
           </div>
         </div>
@@ -49,9 +52,9 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                 key={item.path}
                 href={item.path}
                 onClick={onClose}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors duration-150 ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all duration-150 ${
                   active
-                    ? 'bg-accent/[0.08] text-accent font-medium'
+                    ? 'bg-neon-cyan/[0.06] text-neon-cyan font-medium neon-glow-cyan'
                     : 'text-text-dim hover:text-text-primary hover:bg-bg-tertiary'
                 }`}
               >

@@ -4,6 +4,7 @@ import AppShell from '@/components/layout/AppShell';
 import { Settings, Save, CheckCircle2, AlertCircle, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
 const EXEC_BASE = '/api/execute';
+
 const CONFIG_FIELDS: { key: string; label: string; secret: boolean; description: string }[] = [
   { key: 'jwt_secret_key', label: 'JWT Secret Key', secret: true, description: 'Signing key for auth tokens — required for login to work' },
   { key: 'db_password', label: 'Database Password', secret: true, description: 'PostgreSQL password for the trading database' },
@@ -71,28 +72,30 @@ export default function SettingsPage() {
   return (
     <AppShell>
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Header — Section 9 tactical */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-            <Settings className="w-4 h-4 text-accent" />
+          <div className="w-8 h-8 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center">
+            <Settings className="w-4 h-4 text-neon-cyan" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-text">Service Settings</h2>
+            <h2 className="text-lg font-bold text-text tracking-tight">Service Settings</h2>
             <p className="text-[11px] text-text-dim mt-0.5">Configure API keys and credentials for the trading platform</p>
           </div>
         </div>
 
-        {/* Status message */}
+        {/* Status message — neon alerts */}
         {statusMsg && (
-          <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm ${
-            statusMsg.ok ? 'bg-long-muted text-long border border-long/20' : 'bg-short-muted text-short border border-short/20'
+          <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm border ${
+            statusMsg.ok 
+              ? 'bg-neon-cyan/5 text-neon-cyan border-neon-cyan/20' 
+              : 'bg-pink/5 text-pink border-pink/20'
           }`}>
             {statusMsg.ok ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
             <span>{statusMsg.text}</span>
           </div>
         )}
 
-        {/* Config fields */}
+        {/* Config fields — neon cards */}
         <div className="space-y-4">
           {CONFIG_FIELDS.map(field => {
             const isSet = configStatus[field.key];
@@ -100,49 +103,50 @@ export default function SettingsPage() {
             const show = visible[field.key] || false;
 
             return (
-              <div key={field.key} className="card-hover p-4">
-                <div className="flex items-center justify-between mb-1">
+              <div key={field.key} className="neon-card p-4 space-y-2">
+                <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold text-text">{field.label}</label>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                    isSet ? 'bg-long-muted text-long' : 'bg-bg-tertiary text-text-dim'
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                    isSet 
+                      ? 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/30' 
+                      : 'bg-bg-tertiary text-text-dim border-bg-border'
                   }`}>
-                    {isSet ? 'configured' : 'not set'}
+                    {isSet ? 'CONFIGURED' : 'NOT SET'}
                   </span>
                 </div>
-                <p className="text-xs text-text-dim mb-2">{field.description}</p>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type={field.secret && !show ? 'password' : 'text'}
-                      placeholder={isSet ? 'Leave blank to keep current value' : `Enter ${field.label.toLowerCase()}...`}
-                      value={val}
-                      onChange={e => setFormValues({ ...formValues, [field.key]: e.target.value })}
-                      className="w-full bg-bg-elevated border border-bg-border rounded-lg px-3 py-2 text-sm text-text placeholder-text-dim/40 outline-none focus:border-accent/50 transition-colors"
-                    />
-                    {field.secret && (
-                      <button
-                        onClick={() => setVisible({ ...visible, [field.key]: !show })}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-text-dim hover:text-text-secondary"
-                        tabIndex={-1}
-                      >
-                        {show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    )}
-                  </div>
+                <p className="text-xs text-text-dim leading-tight">{field.description}</p>
+                
+                <div className="relative">
+                  <input
+                    type={field.secret && !show ? 'password' : 'text'}
+                    placeholder={isSet ? 'Leave blank to keep current value' : `Enter ${field.label.toLowerCase()}...`}
+                    value={val}
+                    onChange={e => setFormValues({ ...formValues, [field.key]: e.target.value })}
+                    className="input-field w-full pr-10 font-mono text-sm"
+                  />
+                  {field.secret && (
+                    <button
+                      onClick={() => setVisible({ ...visible, [field.key]: !show })}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-dim hover:text-neon-cyan transition-colors"
+                      tabIndex={-1}
+                    >
+                      {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Save */}
+        {/* Save button — strong neon action */}
         <button
           onClick={save}
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-accent text-white font-medium text-sm hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-neon-cyan text-[#0a0a0f] font-medium text-sm hover:bg-neon-cyan/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.985] neon-glow-cyan"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? 'Saving to service...' : 'Save Settings'}
         </button>
 
         {/* Key info */}

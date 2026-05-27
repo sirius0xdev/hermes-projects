@@ -3,17 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #090b10;
-  --bg-secondary: #0f1219;
-  --bg-card: #131620;
-  --bg-elevated: #181c28;
-  --border: #1c2233;
-  --border-light: #262f44;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --text: #e4e7ef;
-  --text-secondary: #8b92a5;
-  --text-dim: #565d73;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0d0d16;
+  --bg-card: #0f0f1e;
+  --bg-elevated: #14142a;
+  --border: #1a1a3a;
+  --border-light: #25254f;
+  --accent: #00fff7;
+  --accent-hover: #66fff9;
+  --pink: #ff00ff;
+  --green: #c0ff00;
+  --text: #d4d4e8;
+  --text-secondary: #7a7a9e;
+  --text-dim: #4a4a6a;
 }
 
 * {
@@ -31,47 +33,274 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
+/* ===== CYBERPUNK BACKGROUND ELEMENTS ===== */
+
+/* Subtle grid overlay - Section 9 tactical HUD */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 255, 247, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 247, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Scanline overlay - CRT monitor effect */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Neon glow text shadows */
+.neon-cyan {
+  color: #00fff7;
+  text-shadow: 0 0 4px rgba(0, 255, 247, 0.5), 0 0 8px rgba(0, 255, 247, 0.3);
+}
+
+.neon-pink {
+  color: #ff00ff;
+  text-shadow: 0 0 4px rgba(255, 0, 255, 0.5), 0 0 8px rgba(255, 0, 255, 0.3);
+}
+
+.neon-green {
+  color: #c0ff00;
+  text-shadow: 0 0 4px rgba(192, 255, 0, 0.5), 0 0 8px rgba(192, 255, 0, 0.3);
+}
+
+/* Glitch text effect */
+.glitch-text {
+  position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  animation: glitch1 3s infinite;
+  color: #ff00ff;
+  clip-path: inset(0 0 0 0);
+}
+
+.glitch-text::after {
+  animation: glitch2 4s infinite;
+  color: #00fff7;
+  clip-path: inset(0 0 0 0);
+}
+
+@keyframes glitch1 {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  5% { clip-path: inset(20% 0 60% 0); }
+  10% { clip-path: inset(60% 0 10% 0); }
+  15% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes glitch2 {
+  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  8% { clip-path: inset(40% 0 40% 0); transform: translate(2px, -1px); }
+  12% { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 1px); }
+  16% { clip-path: inset(0 0 0 0); transform: translate(0); }
+}
+
+/* Price flash animation */
+@keyframes priceFlashUp {
+  0% { background-color: rgba(0, 255, 247, 0); }
+  50% { background-color: rgba(0, 255, 247, 0.15); }
+  100% { background-color: rgba(0, 255, 247, 0); }
+}
+
+@keyframes priceFlashDown {
+  0% { background-color: rgba(255, 0, 255, 0); }
+  50% { background-color: rgba(255, 0, 255, 0.15); }
+  100% { background-color: rgba(255, 0, 255, 0); }
+}
+
+.price-flash-up {
+  animation: priceFlashUp 0.5s ease-out;
+}
+
+.price-flash-down {
+  animation: priceFlashDown 0.5s ease-out;
+}
+
+/* Data stream / digital rain effect */
+.data-stream {
+  position: relative;
+  overflow: hidden;
+}
+
+.data-stream::before {
+  content: '01001010 10100101 01010110 10101010 00110011 11001100 01010101 10100101 01001010 10100101';
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(0, 255, 247, 0.04);
+  white-space: pre;
+  line-height: 1.2;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  animation: dataDrift 60s linear infinite;
+}
+
+@keyframes dataDrift {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* HUD corner brackets */
+.hud-corner {
+  position: relative;
+}
+
+.hud-corner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid rgba(0, 255, 247, 0.3);
+  border-left: 1px solid rgba(0, 255, 247, 0.3);
+  pointer-events: none;
+}
+
+.hud-corner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-bottom: 1px solid rgba(0, 255, 247, 0.3);
+  border-right: 1px solid rgba(0, 255, 247, 0.3);
+  pointer-events: none;
+}
+
+/* HUD full corner bracket for data panels */
+.hud-frame {
+  position: relative;
+}
+
+.hud-frame::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border: 1px solid rgba(0, 255, 247, 0.08);
+  pointer-events: none;
+}
+
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e2640;
+  background: #1a1a3a;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2a3552;
+  background: #25254f;
 }
+
+/* ===== COMPONENT UTILITIES ===== */
 
 /* Card */
 .card {
-  @apply bg-bg-card rounded-lg border border-bg-border;
+  @apply rounded-lg border border-bg-border;
+  background: var(--bg-card);
 }
 
 .card-hover {
-  @apply bg-bg-card rounded-lg border border-bg-border transition-colors;
+  @apply rounded-lg border transition-colors;
+  background: var(--bg-card);
+  border-color: var(--border);
 }
 
 .card-hover:hover {
-  @apply border-bg-border-light;
+  border-color: rgba(0, 255, 247, 0.2);
+}
+
+/* Neon-bordered card */
+.neon-card {
+  @apply rounded-lg border;
+  background: var(--bg-card);
+  border-color: rgba(0, 255, 247, 0.1);
+  box-shadow: 0 0 8px rgba(0, 255, 247, 0.05), inset 0 0 8px rgba(0, 255, 247, 0.02);
+}
+
+.neon-card:hover {
+  border-color: rgba(0, 255, 247, 0.3);
+  box-shadow: 0 0 12px rgba(0, 255, 247, 0.1), inset 0 0 12px rgba(0, 255, 247, 0.03);
 }
 
 /* Input */
 .input-field {
-  @apply w-full px-3 py-2 bg-bg-elevated border border-bg-border rounded-md text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/60 transition-all;
+  @apply w-full px-3 py-2 rounded-md text-sm transition-all;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  caret-color: #00fff7;
+}
+
+.input-field::placeholder {
+  color: var(--text-dim);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: rgba(0, 255, 247, 0.4);
+  box-shadow: 0 0 6px rgba(0, 255, 247, 0.1);
 }
 
 /* Tab */
 .tab-btn {
-  @apply px-3 py-2 text-sm font-medium text-text-dim hover:text-text-secondary border-b-2 border-transparent transition-colors;
+  @apply px-3 py-2 text-sm font-medium transition-colors;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+  color: var(--text-secondary);
 }
 
 .tab-btn-active {
-  @apply text-accent border-accent;
+  color: #00fff7;
+  border-bottom-color: #00fff7;
+  text-shadow: 0 0 4px rgba(0, 255, 247, 0.3);
 }
 
 /* Number input remove arrows */
@@ -86,26 +315,182 @@ input[type='number'] {
 
 /* Range slider */
 input[type='range'] {
-  @apply h-0.5 rounded-full appearance-none bg-bg-elevated;
+  @apply h-0.5 rounded-full appearance-none;
+  background: var(--bg-elevated);
 }
+
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #00fff7;
   cursor: pointer;
   border: 2px solid var(--bg-primary);
-  box-shadow: 0 0 0 1px var(--border);
+  box-shadow: 0 0 6px rgba(0, 255, 247, 0.5);
 }
 
 /* Focus visible */
 :focus-visible {
-  @apply outline-none ring-2 ring-accent/30 ring-offset-1 ring-offset-bg-primary;
+  @apply outline-none ring-2 ring-offset-1;
+  ring-color: rgba(0, 255, 247, 0.25);
+  ring-offset-color: var(--bg-primary);
 }
 
 /* Selection */
 ::selection {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(0, 255, 247, 0.15);
   color: var(--text);
+}
+
+/* HUD divider lines */
+.hud-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 247, 0.2), transparent);
+}
+
+/* Terminal-style cursor blink */
+.cursor-blink::after {
+  content: '▊';
+  animation: blink 1s step-end infinite;
+  color: #00fff7;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Loading spinner - cyberpunk style */
+.cyber-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(0, 255, 247, 0.1);
+  border-top-color: #00fff7;
+  border-right-color: #ff00ff;
+  border-radius: 50%;
+  animation: cyberSpin 0.8s linear infinite;
+  box-shadow: 0 0 8px rgba(0, 255, 247, 0.2);
+}
+
+@keyframes cyberSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Neon glow box helper */
+.neon-glow-cyan {
+  box-shadow: 0 0 4px rgba(0, 255, 247, 0.15), 0 0 10px rgba(0, 255, 247, 0.05);
+}
+
+.neon-glow-pink {
+  box-shadow: 0 0 4px rgba(255, 0, 255, 0.15), 0 0 10px rgba(255, 0, 255, 0.05);
+}
+
+.neon-glow-green {
+  box-shadow: 0 0 4px rgba(192, 255, 0, 0.15), 0 0 10px rgba(192, 255, 0, 0.05);
+}
+
+/* Kanji decorative text - for Section 9 aesthetic */
+.kanji-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(0, 255, 247, 0.15);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Grid background patterns */
+.cyber-grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 255, 247, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 247, 0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Section 9 tactical badge styling */
+.section9-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.15em;
+  color: rgba(0, 255, 247, 0.35);
+  text-transform: uppercase;
+}
+
+.section9-badge::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: #00fff7;
+  opacity: 0.4;
+}
+
+/* HUD data label */
+.hud-label {
+  @apply text-[10px] uppercase tracking-widest font-semibold;
+  color: var(--text-dim);
+}
+
+/* Neon border for cyberpunk panels */
+.neon-border-cyan {
+  border: 1px solid rgba(0, 255, 247, 0.15);
+  box-shadow: inset 0 0 12px rgba(0, 255, 247, 0.02), 0 0 8px rgba(0, 255, 247, 0.03);
+}
+
+.neon-border-cyan:hover {
+  border-color: rgba(0, 255, 247, 0.3);
+  box-shadow: inset 0 0 16px rgba(0, 255, 247, 0.04), 0 0 12px rgba(0, 255, 247, 0.06);
+}
+
+/* Status dot indicators */
+.status-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-dot-active {
+  background: #00fff7;
+  box-shadow: 0 0 6px rgba(0, 255, 247, 0.6);
+}
+
+.status-dot-active::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 247, 0.3);
+  animation: signalPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.status-dot-inactive {
+  background: #4a4a6a;
+}
+
+/* Cyber line chart area - used in SVG components */
+.cyber-gradient-cyan {
+  background: linear-gradient(180deg, rgba(0, 255, 247, 0.15) 0%, transparent 100%);
+}
+
+.cyber-gradient-pink {
+  background: linear-gradient(180deg, rgba(255, 0, 255, 0.15) 0%, transparent 100%);
+}
+
+/* Signal strength indicators */
+.signal-bar {
+  height: 3px;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+/* Animated text reveal for HUD data */
+.hud-reveal {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typewriter 1.5s steps(30) forwards;
 }

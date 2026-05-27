@@ -15,6 +15,20 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
       >
         <Menu className="w-4 h-4" strokeWidth={1.5} />
       </button>
+
+      {/* HUD status indicators */}
+      <div className="hidden sm:flex items-center gap-3 text-[10px] text-text-dim">
+        <span className="flex items-center gap-1.5">
+          <span className="status-dot status-dot-active" />
+          <span className="uppercase tracking-wider font-mono font-semibold text-neon-cyan/60">SYSTEM</span>
+        </span>
+        <span className="text-text-muted">|</span>
+        <span className="flex items-center gap-1.5">
+          <span className="status-dot status-dot-active" />
+          <span className="uppercase tracking-wider font-mono font-semibold text-neon-green/60">DATA</span>
+        </span>
+      </div>
+
       <div className="flex items-center gap-2.5 ml-auto text-sm">
         {session ? (
           <>
@@ -26,7 +40,7 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
           </>
         ) : (
           <>
-            <Link href="/auth" className="text-text-dim hover:text-accent transition-colors text-xs font-medium">Connect Wallet</Link>
+            <Link href="/auth" className="text-text-dim hover:text-neon-cyan transition-colors text-xs font-medium neon-cyan">Connect Wallet</Link>
             <span className="w-1 h-1 rounded-full bg-text-muted" />
             <span className="text-text-dim text-[11px]">Not connected</span>
           </>

@@ -130,12 +130,12 @@ export default function MarketPage() {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-accent" />
+            <div className="w-8 h-8 rounded-md bg-neon-cyan/[0.08] flex items-center justify-center neon-border-cyan">
+              <BarChart3 className="w-4 h-4 text-neon-cyan" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-text">Markets</h2>
-              <p className="text-[11px] text-text-dim mt-0.5 flex items-center gap-1.5">
+              <h2 className="text-lg font-bold text-text tracking-tight">Market Surveillance</h2>
+              <p className="text-[10px] text-text-dim mt-0.5 flex items-center gap-1.5 font-mono">
                 <Clock className="w-3 h-3" />
                 Updated {lastUpdate.toLocaleTimeString()}
               </p>
@@ -148,7 +148,7 @@ export default function MarketPage() {
               placeholder="Search symbol..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full sm:w-56 pl-9 pr-8 py-2 bg-bg-elevated border border-bg-border rounded-lg text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent transition-all"
+              className="w-full sm:w-56 pl-9 pr-8 py-2 bg-bg-elevated border border-bg-border rounded-md text-sm text-text placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-neon-cyan/50 focus:border-neon-cyan transition-all"
             />
             {search && (
               <button
@@ -164,26 +164,26 @@ export default function MarketPage() {
         {/* Ticker Strip */}
         <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
           {filteredTickers.length === 0 && search && (
-            <p className="text-sm text-text-dim py-2">No symbols match "{search}"</p>
+            <p className="text-sm text-text-dim py-2">No symbols match &quot;{search}&quot;</p>
           )}
           {filteredTickers.map(t => (
             <button
               key={t.symbol}
               onClick={() => setSelected(t.symbol)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm transition-all duration-150 whitespace-nowrap ${
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-md border text-sm transition-all duration-150 whitespace-nowrap ${
                 selected === t.symbol
-                  ? 'bg-accent/10 border-accent/30'
-                  : 'bg-bg-card border-bg-border hover:border-bg-border_light'
+                  ? 'bg-neon-cyan/[0.08] neon-border-cyan'
+                  : 'bg-bg-card border-bg-border hover:border-bg-border-light'
               }`}
             >
               <span className="font-semibold text-text">{t.symbol}</span>
               <span className={`font-mono text-xs transition-colors ${
-                t.change24h >= 0 ? 'text-long' : 'text-short'
+                t.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
               }`}>
                 ${formatPrice(t.price)}
               </span>
               <span className={`inline-flex items-center gap-0.5 text-[11px] font-mono px-1.5 py-0.5 rounded-md font-medium ${
-                t.change24h >= 0 ? 'bg-long-muted text-long' : 'bg-short-muted text-short'
+                t.change24h >= 0 ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-pink/[0.08] text-neon-pink'
               }`}>
                 {t.change24h >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {Math.abs(t.change24h).toFixed(2)}%
@@ -195,37 +195,37 @@ export default function MarketPage() {
         {/* Main Content: Chart + Order Book */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
           {/* Chart Area */}
-          <div className="xl:col-span-3 bg-bg-card rounded-lg border border-bg-border">
+          <div className="xl:col-span-3 bg-bg-card rounded-md neon-border-cyan">
             {/* Chart Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 pb-0 gap-3">
               <div className="flex items-baseline gap-3">
-                <span className="text-base font-semibold text-text tracking-tight">{selected}</span>
+                <span className="text-base font-semibold text-text tracking-tight font-mono">{selected}</span>
                 {current && (
-                  <span className={`font-mono text-2xl font-bold transition-colors tracking-tight ${
-                    priceFlash === 'up' ? 'text-long' :
-                    priceFlash === 'down' ? 'text-short' :
-                    current.change24h >= 0 ? 'text-long' : 'text-short'
+                  <span className={`font-mono text-2xl font-bold tracking-tight transition-colors ${
+                    priceFlash === 'up' ? 'text-neon-cyan' :
+                    priceFlash === 'down' ? 'text-neon-pink' :
+                    current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
                   }`}>
                     ${formatPrice(current.price)}
                   </span>
                 )}
                 {current && (
                   <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${
-                    current.change24h >= 0 ? 'bg-long-muted text-long' : 'bg-short-muted text-short'
+                    current.change24h >= 0 ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-pink/[0.08] text-neon-pink'
                   }`}>
                     {current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                     {current.change24h >= 0 ? '+' : ''}{current.change24h.toFixed(2)}%
                   </span>
                 )}
               </div>
-              <div className="flex gap-1 bg-bg-elevated p-1 rounded-lg border border-bg-border">
+              <div className="flex gap-1 bg-bg-elevated p-1 rounded-md border border-bg-border">
                 {TIMEFRAMES.map(tf => (
                   <button
                     key={tf.value}
                     onClick={() => setIntervalState(tf.value)}
                     className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors duration-150 ${
                       interval === tf.value
-                        ? 'bg-accent/20 text-accent'
+                        ? 'bg-neon-cyan/[0.15] text-neon-cyan'
                         : 'text-text-dim hover:text-text-secondary'
                     }`}
                   >
@@ -239,7 +239,7 @@ export default function MarketPage() {
             <div className="p-3">
               {chartLoading ? (
                 <div className="flex items-center justify-center h-[380px]">
-                  <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+                  <div className="cyber-spinner" />
                 </div>
               ) : (
                 <CandlestickChart data={candles} height={380} />
@@ -248,16 +248,16 @@ export default function MarketPage() {
           </div>
 
           {/* Order Book */}
-          <div className="bg-bg-card rounded-lg border border-bg-border">
+          <div className="bg-bg-card rounded-md neon-border-cyan">
             <div className="px-4 py-3 border-b border-bg-border flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-text tracking-tight">Order Book</h3>
+              <h3 className="text-xs font-semibold text-text tracking-tight font-mono uppercase tracking-wider">Order Book</h3>
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-long opacity-60"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-long"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-neon-cyan"></span>
               </span>
             </div>
             <div className="px-1 py-2">
-              <div className="flex justify-between text-[10px] text-text-dim mb-1 px-2 font-medium uppercase tracking-wider">
+              <div className="flex justify-between text-[10px] text-text-dim mb-1 px-2 font-medium uppercase tracking-wider font-mono">
                 <span>Price</span>
                 <span>Size</span>
               </div>
@@ -267,10 +267,10 @@ export default function MarketPage() {
                   const depth = asks.reduce((sum, x) => sum + x.size, 0);
                   const pct = Math.min(a.size / depth * 100 * 3, 60);
                   return (
-                    <div key={`ask-${i}`} className="flex justify-between px-2 py-0.5 text-short relative group hover:bg-bg-hover rounded cursor-default">
-                      <span className="absolute inset-0 bg-short/5 rounded" style={{ right: `${pct}%` }} />
-                      <span className="relative">{formatPrice(a.price)}</span>
-                      <span className="relative">{a.size.toFixed(4)}</span>
+                    <div key={`ask-${i}`} className="flex justify-between px-2 py-0.5 text-neon-pink relative group hover:bg-bg-hover rounded cursor-default">
+                      <span className="absolute inset-0 bg-neon-pink/[0.06] rounded" style={{ right: `${100 - pct}%` }} />
+                      <span className="relative z-10">{formatPrice(a.price)}</span>
+                      <span className="relative z-10">{a.size.toFixed(4)}</span>
                     </div>
                   );
                 })}
@@ -278,7 +278,7 @@ export default function MarketPage() {
               {/* Mid Price */}
               <div className="flex items-center justify-center py-2.5 border-y border-bg-border my-1">
                 <span className={`text-sm font-bold font-mono tracking-tight ${
-                  current?.change24h !== undefined && current.change24h >= 0 ? 'text-long' : 'text-short'
+                  current?.change24h !== undefined && current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink'
                 }`}>
                   ${formatPrice(midPrice)}
                 </span>
@@ -289,10 +289,10 @@ export default function MarketPage() {
                   const depth = bids.reduce((sum, x) => sum + x.size, 0);
                   const pct = Math.min(b.size / depth * 100 * 3, 60);
                   return (
-                    <div key={`bid-${i}`} className="flex justify-between px-2 py-0.5 text-long relative group hover:bg-bg-hover rounded cursor-default">
-                      <span className="absolute inset-0 bg-long/5 rounded" style={{ right: `${pct}%` }} />
-                      <span className="relative">{formatPrice(b.price)}</span>
-                      <span className="relative">{b.size.toFixed(4)}</span>
+                    <div key={`bid-${i}`} className="flex justify-between px-2 py-0.5 text-neon-cyan relative group hover:bg-bg-hover rounded cursor-default">
+                      <span className="absolute inset-0 bg-neon-cyan/[0.06] rounded" style={{ right: `${100 - pct}%` }} />
+                      <span className="relative z-10">{formatPrice(b.price)}</span>
+                      <span className="relative z-10">{b.size.toFixed(4)}</span>
                     </div>
                   );
                 })}
@@ -307,15 +307,15 @@ export default function MarketPage() {
             {[
               { label: '24h High', value: `$${formatPrice(current.high24h)}`, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
               { label: '24h Low', value: `$${formatPrice(current.low24h)}`, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
-              { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-long' : 'text-short', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
+              { label: '24h Change', value: `${current.change24h >= 0 ? '+' : ''}${current.change24h.toFixed(2)}%`, color: current.change24h >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: current.change24h >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" /> },
               { label: '24h Volume', value: `$${formatN(current.volume24h)}`, icon: <BarChart3 className="w-3.5 h-3.5" /> },
-              { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-accent">◎</span> },
+              { label: 'Mark Price', value: `$${formatPrice(midPrice)}`, icon: <span className="text-neon-cyan">◎</span> },
               { label: 'Spread', value: asks.length > 0 && bids.length > 0
                 ? `${((asks[0].price - bids[0].price) / midPrice * 100).toFixed(3)}%`
                 : '—', icon: <span className="text-text-dim">↔</span> },
             ].map(m => (
               <div key={m.label} className="card-hover p-4">
-                <div className="flex items-center gap-1.5 text-[11px] text-text-dim mb-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] text-text-dim mb-1.5 font-mono uppercase tracking-wider">
                   <span className="opacity-70">{m.icon}</span>
                   {m.label}
                 </div>

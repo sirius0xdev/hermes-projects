@@ -50,8 +50,6 @@ function generatePositionHistory(): {
   ];
 }
 
-const ALLOCATION_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#8b5cf6', '#f43f5e', '#3b82f6'];
-
 export default function PortfolioPage() {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -113,7 +111,7 @@ export default function PortfolioPage() {
     return (
       <AppShell>
         <div className="flex items-center justify-center h-64">
-          <div className="w-10 h-10 border-3 border-accent/30 border-t-accent rounded-full animate-spin" />
+          <div className="cyber-spinner" />
         </div>
       </AppShell>
     );
@@ -124,12 +122,12 @@ export default function PortfolioPage() {
       <div className="space-y-5">
         {/* Page Header */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-            <PieChart className="w-4 h-4 text-accent" />
+          <div className="w-8 h-8 rounded-md bg-neon-cyan/[0.08] flex items-center justify-center neon-border-cyan">
+            <PieChart className="w-4 h-4 text-neon-cyan" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-text">Portfolio</h2>
-            <p className="text-[11px] text-text-dim mt-0.5">Real-time positions, orders, and performance</p>
+            <h2 className="text-lg font-bold text-text tracking-tight">Portfolio</h2>
+            <p className="text-[10px] text-text-dim mt-0.5 font-mono">Real-time positions, orders, and performance</p>
           </div>
         </div>
 
@@ -137,15 +135,15 @@ export default function PortfolioPage() {
         {balance && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { label: 'Total Balance', value: `$${fmt(balance.total)}`, cls: 'text-accent', icon: DollarSign },
+              { label: 'Total Balance', value: `$${fmt(balance.total)}`, cls: 'text-neon-cyan', icon: DollarSign },
               { label: 'Available', value: `$${fmt(balance.available)}`, cls: 'text-text', icon: Activity },
               { label: 'In Positions', value: `$${fmt(balance.inPositions)}`, cls: 'text-text', icon: PieChart },
-              { label: 'Unrealized PnL', value: `${balance.unrealizedPnl >= 0 ? '+' : ''}$${fmt(balance.unrealizedPnl)}`, cls: balance.unrealizedPnl >= 0 ? 'text-long' : 'text-short', icon: balance.unrealizedPnl >= 0 ? TrendingUp : TrendingDown },
+              { label: 'Unrealized PnL', value: `${balance.unrealizedPnl >= 0 ? '+' : ''}$${fmt(balance.unrealizedPnl)}`, cls: balance.unrealizedPnl >= 0 ? 'text-neon-cyan' : 'text-neon-pink', icon: balance.unrealizedPnl >= 0 ? TrendingUp : TrendingDown },
             ].map(item => {
               const Icon = item.icon;
               return (
                 <div key={item.label} className="card-hover p-4">
-                  <div className="flex items-center gap-2 text-[11px] text-text-dim mb-2">
+                  <div className="flex items-center gap-2 text-[10px] text-text-dim mb-2 font-mono uppercase tracking-wider">
                     <Icon className="w-3.5 h-3.5 opacity-70" />
                     {item.label}
                   </div>
@@ -160,27 +158,27 @@ export default function PortfolioPage() {
         {positions.length > 0 && (
           <div className="card-hover p-5 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <span className="text-xs text-text-dim">Open PnL</span>
-              <div className={`text-2xl font-bold font-mono tracking-tight ${totalPnl >= 0 ? 'text-long' : 'text-short'}`}>
+              <span className="text-[10px] text-text-dim font-mono uppercase tracking-wider">Open PnL</span>
+              <div className={`text-2xl font-bold font-mono tracking-tight ${totalPnl >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                 {totalPnl >= 0 ? '+' : ''}${fmt(totalPnl)}
                 <span className="text-base ml-1.5 font-medium">({totalPnlPct >= 0 ? '+' : ''}{totalPnlPct}%)</span>
               </div>
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <span className="text-text-dim">{positions.length} position{positions.length !== 1 ? 's' : ''}</span>
-              <span className="text-text-dim">{orders.length} order{orders.length !== 1 ? 's' : ''}</span>
+              <span className="text-text-dim font-mono">{positions.length} position{positions.length !== 1 ? 's' : ''}</span>
+              <span className="text-text-dim font-mono">{orders.length} order{orders.length !== 1 ? 's' : ''}</span>
             </div>
           </div>
         )}
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-bg-border">
-          {[
+          {([
             { key: 'positions' as const, label: 'Positions', count: positions.length },
             { key: 'orders' as const, label: 'Orders', count: orders.length },
             { key: 'history' as const, label: 'History' },
             { key: 'analytics' as const, label: 'Analytics' },
-          ].map(tab => (
+          ]).map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -191,7 +189,7 @@ export default function PortfolioPage() {
               {tab.label}
               {'count' in tab && tab.count !== undefined && (
                 <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                  activeTab === tab.key ? 'bg-accent/20 text-accent' : 'bg-bg-elevated text-text-dim'
+                  activeTab === tab.key ? 'bg-neon-cyan/[0.15] text-neon-cyan' : 'bg-bg-elevated text-text-dim'
                 }`}>
                   {tab.count}
                 </span>
@@ -206,15 +204,15 @@ export default function PortfolioPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-[10px] text-text-dim uppercase tracking-wider border-b border-bg-border">
-                    <th className="text-left px-5 py-3 font-medium">Symbol</th>
-                    <th className="text-left px-5 py-3 font-medium">Side</th>
-                    <th className="text-right px-5 py-3 font-medium">Size</th>
-                    <th className="text-right px-5 py-3 font-medium">Entry</th>
-                    <th className="text-right px-5 py-3 font-medium">Mark</th>
-                    <th className="text-right px-5 py-3 font-medium">PnL</th>
-                    <th className="text-right px-5 py-3 font-medium">Lev</th>
-                    <th className="text-left px-5 py-3 font-medium">Platform</th>
+                  <tr className="text-[10px] text-text-dim uppercase tracking-wider border-b border-bg-border bg-bg-elevated/50">
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Symbol</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Side</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Size</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Entry</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Mark</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">PnL</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Lev</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Platform</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -223,13 +221,13 @@ export default function PortfolioPage() {
                       <td className="px-5 py-3 font-semibold text-text">{p.symbol}</td>
                       <td className={`px-5 py-3 font-semibold`}>
                         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
-                          p.side === 'LONG' ? 'bg-long-muted text-long' : 'bg-short-muted text-short'
+                          p.side === 'LONG' ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-pink/[0.08] text-neon-pink'
                         }`}>{p.side}</span>
                       </td>
                       <td className="px-5 py-3 font-mono text-text text-right">{p.size}</td>
                       <td className="px-5 py-3 font-mono text-text text-right">${fmt(p.entryPrice)}</td>
                       <td className="px-5 py-3 font-mono text-text text-right">${fmt(p.markPrice)}</td>
-                      <td className={`px-5 py-3 font-mono font-semibold text-right ${p.pnl >= 0 ? 'text-long' : 'text-short'}`}>
+                      <td className={`px-5 py-3 font-mono font-semibold text-right ${p.pnl >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                         {p.pnl >= 0 ? '+' : ''}{fmt(p.pnl)}
                         <span className="text-xs ml-1">({p.pnlPct >= 0 ? '+' : ''}{p.pnlPct.toFixed(2)}%)</span>
                       </td>
@@ -255,23 +253,23 @@ export default function PortfolioPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-[10px] text-text-dim uppercase tracking-wider border-b border-bg-border">
-                    <th className="text-left px-5 py-3 font-medium">Symbol</th>
-                    <th className="text-left px-5 py-3 font-medium">Side</th>
-                    <th className="text-left px-5 py-3 font-medium">Type</th>
-                    <th className="text-right px-5 py-3 font-medium">Price</th>
-                    <th className="text-right px-5 py-3 font-medium">Amount</th>
-                    <th className="text-right px-5 py-3 font-medium">Filled</th>
-                    <th className="text-left px-5 py-3 font-medium">Status</th>
-                    <th className="text-left px-5 py-3 font-medium">Platform</th>
-                    <th className="text-left px-5 py-3 font-medium"></th>
+                  <tr className="text-[10px] text-text-dim uppercase tracking-wider border-b border-bg-border bg-bg-elevated/50">
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Symbol</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Side</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Type</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Price</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Amount</th>
+                    <th className="text-right px-5 py-3 font-semibold font-mono">Filled</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Status</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono">Platform</th>
+                    <th className="text-left px-5 py-3 font-semibold font-mono"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map(o => (
                     <tr key={o.id} className="border-b border-bg-border/50 hover:bg-bg-hover transition-colors">
                       <td className="px-5 py-3 font-semibold text-text">{o.symbol}</td>
-                      <td className={`px-5 py-3 font-semibold ${o.side === 'BUY' ? 'text-long' : 'text-short'}`}>{o.side}</td>
+                      <td className={`px-5 py-3 font-semibold ${o.side === 'BUY' ? 'text-neon-cyan' : 'text-neon-pink'}`}>{o.side}</td>
                       <td className="px-5 py-3 font-mono text-text-secondary">{o.type}</td>
                       <td className="px-5 py-3 font-mono text-text text-right">${fmt(o.price)}</td>
                       <td className="px-5 py-3 font-mono text-text text-right">{o.amount}</td>
@@ -286,7 +284,7 @@ export default function PortfolioPage() {
                         {(o.status === 'OPEN' || o.status === 'PENDING') && (
                           <button
                             onClick={() => handleCancel(o.id)}
-                            className="text-short hover:text-short/80 text-xs font-medium transition-colors"
+                            className="text-neon-pink hover:text-neon-pink/80 text-xs font-medium transition-colors"
                           >
                             Cancel
                           </button>
@@ -309,7 +307,7 @@ export default function PortfolioPage() {
           <div className="space-y-5">
             {/* PnL Chart */}
             <div className="card-hover p-5">
-              <h3 className="text-sm font-semibold text-text mb-4">30-Day Equity Curve</h3>
+              <h3 className="text-sm font-semibold text-text mb-4 font-mono tracking-tight">30-Day Equity Curve</h3>
               <PnLChart data={pnlData} />
             </div>
 
@@ -317,7 +315,7 @@ export default function PortfolioPage() {
               {/* Asset Allocation */}
               {allocation.length > 0 && (
                 <div className="card-hover p-5">
-                  <h3 className="text-sm font-semibold text-text mb-4">Asset Allocation</h3>
+                  <h3 className="text-sm font-semibold text-text mb-4 font-mono tracking-tight">Asset Allocation</h3>
                   <div className="flex items-center gap-6">
                     {/* Donut chart */}
                     <DonutChart allocation={allocation} />
@@ -327,7 +325,7 @@ export default function PortfolioPage() {
                           <div className="flex items-center justify-between text-sm mb-1">
                             <div className="flex items-center gap-2">
                               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: ALLOCATION_COLORS[i % ALLOCATION_COLORS.length] }} />
-                              <span className="font-medium text-text">{a.symbol}</span>
+                              <span className="font-medium text-text font-mono">{a.symbol}</span>
                             </div>
                             <span className="font-mono text-text-dim">{a.pct}%</span>
                           </div>
@@ -347,7 +345,7 @@ export default function PortfolioPage() {
               {/* Key Stats */}
               {balance && (
                 <div className="card-hover p-5">
-                  <h3 className="text-sm font-semibold text-text mb-4">Performance Metrics</h3>
+                  <h3 className="text-sm font-semibold text-text mb-4 font-mono tracking-tight">Performance Metrics</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: 'Margin Used', value: `${((balance.inPositions / balance.total) * 100).toFixed(1)}%` },
@@ -365,8 +363,8 @@ export default function PortfolioPage() {
                         return `${avg >= 0 ? '+' : ''}$${fmt(avg)}`;
                       })()}` },
                     ].map(s => (
-                      <div key={s.label} className="bg-bg-elevated rounded-lg p-3">
-                        <div className="text-[11px] text-text-dim">{s.label}</div>
+                      <div key={s.label} className="bg-bg-elevated rounded-md p-3 neon-border-cyan">
+                        <div className="text-[10px] text-text-dim font-mono uppercase tracking-wider">{s.label}</div>
                         <div className="text-sm font-mono text-text mt-1">{s.value}</div>
                       </div>
                     ))}
@@ -380,6 +378,8 @@ export default function PortfolioPage() {
     </AppShell>
   );
 }
+
+const ALLOCATION_COLORS = ['#00fff7', '#ff00ff', '#c0ff00', '#7a7a9e', '#25254f', '#00fff7'];
 
 // ---------- Donut Chart ----------
 function DonutChart({ allocation }: { allocation: { symbol: string; pct: number; value: number }[] }) {
@@ -438,16 +438,16 @@ function PnLChart({ data }: { data: { time: string; value: number }[] }) {
   const startVal = data[0].value;
   const endVal = data[data.length - 1].value;
   const isPositive = endVal >= startVal;
-  const lineColor = isPositive ? '#22c55e' : '#f43f5e';
+  const lineColor = isPositive ? '#00fff7' : '#ff00ff';
 
   return (
     <div className="w-full">
       <div className="flex items-end justify-between text-xs text-text-dim mb-2 px-1">
-        <span>{data[0].time}</span>
-        <span className={`font-mono font-semibold ${isPositive ? 'text-long' : 'text-short'}`}>
+        <span className="font-mono">{data[0].time}</span>
+        <span className={`font-mono font-semibold ${isPositive ? 'text-neon-cyan' : 'text-neon-pink'}`}>
           {endVal >= startVal ? '+' : '-'}${fmt(Math.abs(endVal - startVal))}
         </span>
-        <span>{data[data.length - 1].time}</span>
+        <span className="font-mono">{data[data.length - 1].time}</span>
       </div>
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto" preserveAspectRatio="none">
         <defs>
@@ -463,7 +463,7 @@ function PnLChart({ data }: { data: { time: string; value: number }[] }) {
             y1={padding + pct * (svgHeight - 2 * padding)}
             x2={svgWidth - padding}
             y2={padding + pct * (svgHeight - 2 * padding)}
-            stroke="rgba(28, 34, 51, 0.8)"
+            stroke="#1a1a3a"
             strokeWidth="1"
           />
         ))}
@@ -499,16 +499,16 @@ function PositionHistoryTable() {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-[10px] text-text-dim uppercase tracking-wider border-b border-bg-border">
-              <th className="text-left px-5 py-3 font-medium">Symbol</th>
-              <th className="text-left px-5 py-3 font-medium">Side</th>
-              <th className="text-right px-5 py-3 font-medium">Size</th>
-              <th className="text-right px-5 py-3 font-medium">Entry</th>
-              <th className="text-right px-5 py-3 font-medium">Exit</th>
-              <th className="text-right px-5 py-3 font-medium">PnL</th>
-              <th className="text-right px-5 py-3 font-medium">Duration</th>
-              <th className="text-left px-5 py-3 font-medium">Platform</th>
-              <th className="text-left px-5 py-3 font-medium">Closed</th>
+            <tr className="text-[10px] text-text-dim uppercase tracking-wider border-b border-bg-border bg-bg-elevated/50">
+              <th className="text-left px-5 py-3 font-semibold font-mono">Symbol</th>
+              <th className="text-left px-5 py-3 font-semibold font-mono">Side</th>
+              <th className="text-right px-5 py-3 font-semibold font-mono">Size</th>
+              <th className="text-right px-5 py-3 font-semibold font-mono">Entry</th>
+              <th className="text-right px-5 py-3 font-semibold font-mono">Exit</th>
+              <th className="text-right px-5 py-3 font-semibold font-mono">PnL</th>
+              <th className="text-right px-5 py-3 font-semibold font-mono">Duration</th>
+              <th className="text-left px-5 py-3 font-semibold font-mono">Platform</th>
+              <th className="text-left px-5 py-3 font-semibold font-mono">Closed</th>
             </tr>
           </thead>
           <tbody>
@@ -517,13 +517,13 @@ function PositionHistoryTable() {
                 <td className="px-5 py-3 font-semibold text-text">{h.symbol}</td>
                 <td className={`px-5 py-3 font-semibold`}>
                   <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
-                    h.side === 'LONG' ? 'bg-long-muted text-long' : 'bg-short-muted text-short'
+                    h.side === 'LONG' ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-pink/[0.08] text-neon-pink'
                   }`}>{h.side}</span>
                 </td>
                 <td className="px-5 py-3 font-mono text-text text-right">{h.size}</td>
                 <td className="px-5 py-3 font-mono text-text text-right">${fmt(h.entry)}</td>
                 <td className="px-5 py-3 font-mono text-text text-right">${fmt(h.exit)}</td>
-                <td className={`px-5 py-3 font-mono font-semibold text-right ${h.pnl >= 0 ? 'text-long' : 'text-short'}`}>
+                <td className={`px-5 py-3 font-mono font-semibold text-right ${h.pnl >= 0 ? 'text-neon-cyan' : 'text-neon-pink'}`}>
                   {h.pnl >= 0 ? '+' : ''}{fmt(h.pnl)}
                   <span className="text-xs ml-1">({h.pnlPct >= 0 ? '+' : ''}{h.pnlPct.toFixed(2)}%)</span>
                 </td>
@@ -541,10 +541,10 @@ function PositionHistoryTable() {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    OPEN: 'bg-accent/20 text-accent',
-    FILLED: 'bg-long/20 text-long',
+    OPEN: 'bg-neon-cyan/[0.12] text-neon-cyan',
+    FILLED: 'bg-neon-cyan/[0.1] text-neon-cyan',
     CANCELLED: 'bg-text-dim/20 text-text-dim',
-    PENDING: 'bg-warm-muted text-warm',
+    PENDING: 'bg-neon-green/[0.08] text-neon-green',
   };
   return (
     <span className={`px-2 py-0.5 rounded text-xs font-semibold ${colors[status] ?? 'bg-text-dim/20 text-text-dim'}`}>
@@ -557,7 +557,7 @@ function PlatformBadge({ platform }: { platform: string }) {
   const isHL = platform === 'Hyperliquid';
   return (
     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-      isHL ? 'bg-accent/10 text-accent' : 'bg-warm-muted text-warm'
+      isHL ? 'bg-neon-cyan/[0.08] text-neon-cyan' : 'bg-neon-green/[0.08] text-neon-green'
     }`}>
       {isHL ? 'Hyperliquid' : 'Solana'}
     </span>

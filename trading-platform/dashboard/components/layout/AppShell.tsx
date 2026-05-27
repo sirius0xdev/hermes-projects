@@ -10,7 +10,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setMenuOpen(true)} />
-        <main className="flex-1 p-4 xl:p-6 max-w-[1440px] w-full mx-auto">{children}</main>
+        <main className="flex-1 p-4 xl:p-6 max-w-[1440px] w-full mx-auto animate-hud-appear">{children}</main>
       </div>
     </div>
   );

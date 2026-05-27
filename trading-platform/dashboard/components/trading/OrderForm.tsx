@@ -87,10 +87,10 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         <div className="flex gap-1.5 mb-2">
           {(['Hyperliquid', 'Solana'] as const).map(c => (
             <button key={c} type="button" onClick={() => setChain(c)}
-              className={`flex-1 py-2 text-[11px] font-semibold rounded-lg border transition-all ${
+              className={`flex-1 py-2 text-[11px] font-semibold rounded-md border transition-all ${
                 chain === c
-                  ? 'bg-accent/10 text-accent border-accent/30'
-                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border_light'
+                  ? 'bg-neon-cyan/[0.08] text-neon-cyan neon-border-cyan'
+                  : 'bg-bg-elevated text-text-dim border-bg-border hover:border-bg-border-light'
               }`}>
               {c === 'Hyperliquid' ? '⬡ Hyperliquid' : '◎ Solana'}
             </button>
@@ -101,12 +101,12 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         <div className="flex gap-1.5">
           {(['BUY', 'SELL'] as const).map(s => (
             <button key={s} type="button" onClick={() => setSide(s)}
-              className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
+              className={`flex-1 py-2.5 text-sm font-bold rounded-md transition-all ${
                 side === s
-                  ? (s === 'BUY' ? 'bg-long text-bg shadow-sm shadow-long/20' : 'bg-short text-white shadow-sm shadow-short/20')
+                  ? (s === 'BUY' ? 'bg-neon-cyan text-bg-primary shadow-sm shadow-neon-cyan/20' : 'bg-neon-pink text-bg-primary shadow-sm shadow-neon-pink/20')
                   : 'bg-bg-elevated text-text-dim hover:text-text-secondary'
               }`}>
-              {s}
+              {s === 'BUY' ? '▲ BUY' : '▼ SELL'}
             </button>
           ))}
         </div>
@@ -115,9 +115,9 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         <div className="flex gap-1.5">
           {(['MARKET', 'LIMIT', 'STOP'] as const).map(t => (
             <button key={t} type="button" onClick={() => setType(t)}
-              className={`flex-1 py-2 text-[11px] font-semibold rounded-lg border transition-all ${
+              className={`flex-1 py-2 text-[11px] font-semibold rounded-md border transition-all ${
                 type === t
-                  ? 'border-accent/30 text-accent bg-accent/10'
+                  ? 'neon-border-cyan text-neon-cyan bg-neon-cyan/[0.06]'
                   : 'border-bg-border text-text-dim bg-bg-elevated'
               }`}>
               {t}
@@ -130,8 +130,7 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
           <label className="block">
             <span className="text-[11px] text-text-dim">{showStopInput ? 'Limit Price' : 'Price (USDC)'}</span>
             <input type="number" step="any" value={price} onChange={e => setPrice(e.target.value)}
-              className="input-field mt-1.5"
-              placeholder="0.00" />
+              className="input-field mt-1.5" placeholder="0.00" />
           </label>
         )}
 
@@ -140,7 +139,7 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
           <label className="block">
             <span className="text-[11px] text-text-dim">Trigger Price (USDC)</span>
             <input type="number" step="any" value={stopPrice} onChange={e => setStopPrice(e.target.value)}
-              className="input-field mt-1.5 focus:ring-warm/50 focus:border-warm"
+              className="input-field mt-1.5 focus:ring-neon-green/50 focus:border-neon-green"
               placeholder="0.00" />
           </label>
         )}
@@ -149,15 +148,14 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         <label className="block">
           <span className="text-[11px] text-text-dim">Amount ({symbol.split('-')[0]})</span>
           <input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)}
-            className="input-field mt-1.5"
-            placeholder="0.00" />
+            className="input-field mt-1.5" placeholder="0.00" />
         </label>
 
         {/* Percentage presets */}
         <div className="flex gap-1.5">
           {pctValues.map(pct => (
             <button key={pct} type="button" onClick={() => handlePctClick(pct)}
-              className="flex-1 py-1.5 text-[11px] font-medium bg-bg-elevated text-text-dim border border-bg-border rounded-lg hover:text-accent hover:border-accent/30 transition-colors">
+              className="flex-1 py-1.5 text-[11px] font-medium bg-bg-elevated text-text-dim border border-bg-border rounded-md hover:text-neon-cyan hover:border-neon-cyan/30 transition-colors">
               {pct}%
             </button>
           ))}
@@ -167,7 +165,7 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         <label className="block">
           <div className="flex justify-between items-center">
             <span className="text-[11px] text-text-dim">Leverage</span>
-            <span className="text-xs font-mono font-bold text-accent">{leverage}x</span>
+            <span className="text-xs font-mono font-bold text-neon-cyan">{leverage}x</span>
           </div>
           <input type="range" min="1" max="50" value={leverage} onChange={e => setLeverage(e.target.value)}
             className="w-full mt-2 accent-accent" />
@@ -197,23 +195,23 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
         </div>
 
         <button type="submit" disabled={loading}
-          className={`w-full py-3 rounded-lg text-sm font-bold ${
+          className={`w-full py-3 rounded-md text-sm font-bold transition-all active:scale-[0.98] ${
             side === 'BUY'
-              ? 'bg-long hover:bg-long/90 text-bg shadow-sm shadow-long/20'
-              : 'bg-short hover:bg-short/90 text-white shadow-sm shadow-short/20'
-          } disabled:opacity-50 transition-all active:scale-[0.98]`}>
-          {loading ? 'Submitting...' : `Place ${side === 'BUY' ? 'Buy' : 'Sell'} ${type}`}
+              ? 'bg-neon-cyan hover:bg-neon-cyan/90 text-bg-primary shadow-sm shadow-neon-cyan/20'
+              : 'bg-neon-pink hover:bg-neon-pink/90 text-bg-primary shadow-sm shadow-neon-pink/20'
+          } disabled:opacity-50`}>
+          {loading ? 'Submitting...' : `Place ${side === 'BUY' ? '▲ Buy' : '▼ Sell'} ${type}`}
         </button>
       </form>
 
       {/* Confirmation modal */}
       {confirmOpen && confirmOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true">
-          <div className="card p-6 w-full max-w-sm mx-4 shadow-2xl border-bg-border_light">
-            <h3 className="text-base font-bold text-text mb-4">Confirm Order</h3>
+          <div className="card p-6 w-full max-w-sm mx-4 shadow-2xl neon-border-cyan">
+            <h3 className="text-base font-bold text-text mb-4 glitch-text" data-text="Confirm Order">Confirm Order</h3>
             <div className="space-y-2 text-sm">
               {[
-                { label: 'Side', value: confirmOrder.side, cls: confirmOrder.side === 'BUY' ? 'text-long' : 'text-short' },
+                { label: 'Side', value: confirmOrder.side, cls: confirmOrder.side === 'BUY' ? 'text-neon-cyan' : 'text-neon-pink' },
                 { label: 'Type', value: confirmOrder.type, cls: 'text-text' },
                 { label: 'Symbol', value: confirmOrder.symbol, cls: 'text-text font-mono' },
                 { label: 'Chain', value: confirmOrder.chain === 'Hyperliquid' ? '⬡ Hyperliquid' : '◎ Solana', cls: 'text-text' },
@@ -232,7 +230,7 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
               {confirmOrder.stopPrice && (
                 <div className="flex justify-between">
                   <span className="text-text-dim">Trigger</span>
-                  <span className="text-warm font-mono font-semibold">${Number(confirmOrder.stopPrice).toLocaleString()}</span>
+                  <span className="text-neon-green font-mono font-semibold">${Number(confirmOrder.stopPrice).toLocaleString()}</span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -241,7 +239,7 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
               </div>
               <div className="flex justify-between">
                 <span className="text-text-dim">Leverage</span>
-                <span className="text-accent font-bold">{confirmOrder.leverage}x</span>
+                <span className="text-neon-cyan font-bold">{confirmOrder.leverage}x</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-bg-border">
                 <span className="text-text-secondary font-semibold">Total</span>
@@ -253,12 +251,12 @@ export default function OrderForm({ symbol, onPlaced }: OrderFormProps) {
 
             <div className="flex gap-3 mt-5">
               <button onClick={() => setConfirmOpen(false)}
-                className="flex-1 py-2.5 rounded-lg border border-bg-border text-text-secondary hover:text-text transition-colors font-medium text-sm">
+                className="flex-1 py-2.5 rounded-md border border-bg-border text-text-secondary hover:text-text transition-colors font-medium text-sm">
                 Cancel
               </button>
               <button onClick={handleConfirm}
-                className={`flex-1 py-2.5 rounded-lg text-bg font-bold text-sm ${
-                  confirmOrder.side === 'BUY' ? 'bg-long hover:bg-long/90' : 'bg-short hover:bg-short/90'
+                className={`flex-1 py-2.5 rounded-md text-bg-primary font-bold text-sm ${
+                  confirmOrder.side === 'BUY' ? 'bg-neon-cyan hover:bg-neon-cyan/90' : 'bg-neon-pink hover:bg-neon-pink/90'
                 } transition-colors`}>
                 Confirm {confirmOrder.side}
               </button>

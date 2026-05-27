@@ -13,14 +13,16 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
   const [containerWidth, setContainerWidth] = useState(800);
 
   const colors = useMemo(() => ({
-    bull: '#22c55e',
-    bear: '#f43f5e',
-    bullAlpha: 'rgba(34, 197, 94, 0.12)',
-    bearAlpha: 'rgba(244, 63, 94, 0.12)',
-    grid: 'rgba(28, 34, 51, 0.8)',
-    text: '#565d73',
-    bg: '#090b10',
-    crosshair: '#3d4356',
+    bull: '#00fff7',
+    bear: '#ff00ff',
+    bullAlpha: 'rgba(0, 255, 247, 0.12)',
+    bearAlpha: 'rgba(255, 0, 255, 0.12)',
+    grid: 'rgba(0, 255, 247, 0.06)',
+    text: '#4a4a6a',
+    bg: '#0a0a0f',
+    crosshair: '#1a1a3a',
+    volumeBull: 'rgba(0, 255, 247, 0.08)',
+    volumeBear: 'rgba(255, 0, 255, 0.08)',
   }), []);
 
   useEffect(() => {
@@ -123,7 +125,7 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
       const volBarH = (candle.volume / maxVol) * volH;
       const isBull = candle.close >= candle.open;
 
-      ctx.fillStyle = isBull ? colors.bullAlpha : colors.bearAlpha;
+      ctx.fillStyle = isBull ? colors.volumeBull : colors.volumeBear;
       const volY = padding.top + chartH - volBarH;
       ctx.fillRect(x + (candleW - bodyW) / 2, volY, bodyW, volBarH);
     }
@@ -159,7 +161,7 @@ export default function CandlestickChart({ data, height = 400 }: CandlestickChar
   }, [draw]);
 
   return (
-    <div ref={containerRef} className="w-full rounded-lg overflow-hidden border border-bg-border">
+    <div ref={containerRef} className="w-full rounded-lg overflow-hidden neon-border-cyan">
       <canvas ref={canvasRef} />
     </div>
   );
