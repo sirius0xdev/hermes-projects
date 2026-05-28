@@ -12,6 +12,8 @@ import {
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 
 function formatPrice(price: number) {
@@ -51,6 +53,7 @@ export default function MarketPage() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [priceFlash, setPriceFlash] = useState<'up' | 'down' | null>(null);
   const [chartHeight, setChartHeight] = useState(300);
+  const [obSource, setObSource] = useState<'dataservice' | 'binance' | 'mock' | null>(null);
 
   // Responsive chart height
   useEffect(() => {
@@ -101,6 +104,7 @@ export default function MarketPage() {
       setCandles(c);
       setBids(ob.bids);
       setAsks(ob.asks);
+      if (ob.source) setObSource(ob.source);
     } catch (e) {
       console.error('Failed to fetch candles/orderbook:', e);
     } finally {
@@ -260,10 +264,30 @@ export default function MarketPage() {
           <div className="hidden xl:block bg-bg-card rounded-lg border border-bg-border">
             <div className="px-4 py-3 border-b border-bg-border flex items-center justify-between">
               <h3 className="text-xs font-semibold text-text tracking-tight font-mono uppercase">Order Book</h3>
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-60"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-neon-cyan"></span>
-              </span>
+              <div className="flex items-center gap-1.5">
+                {obSource === 'mock' ? (
+                  <WifiOff className="w-3 h-3 text-text-dim" />
+                ) : obSource === 'binance' ? (
+                  <Wifi className="w-3 h-3 text-amber-400" />
+                ) : (
+                  <Wifi className="w-3 h-3 text-neon-cyan" />
+                )}
+                <span
+                  className={`text-[10px] font-medium ${
+                    obSource === 'mock'
+                      ? 'text-text-dim'
+                      : obSource === 'binance'
+                      ? 'text-amber-400'
+                      : 'text-neon-cyan'
+                  }`}
+                >
+                  {obSource === 'mock'
+                    ? 'Mock'
+                    : obSource === 'binance'
+                    ? 'Binance'
+                    : 'Live'}
+                </span>
+              </div>
             </div>
             <div className="px-1 py-2">
               <div className="flex justify-between text-[10px] text-text-dim mb-1 px-2 font-medium uppercase tracking-wider font-mono">

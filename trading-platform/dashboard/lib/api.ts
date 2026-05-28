@@ -32,6 +32,7 @@ export interface OrderBook {
   asks: OrderBookEntry[];
   symbol: string;
   timestamp: number;
+  source?: 'dataservice' | 'binance' | 'mock';
 }
 
 export interface Position {
@@ -295,25 +296,51 @@ export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promis
 }
 
 export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
+  // 1) Try data-service cache
   try {
     const res = await fetch(`${DATA_BASE}/api/v1/marketdata/orderbook/hyperliquid/${symbol}`);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    return {
-      symbol,
-      timestamp: Date.now(),
-      bids: data.bids.map((b: any) => ({ price: b.price, size: b.quantity })),
-      asks: data.asks.map((a: any) => ({ price: a.price, size: a.quantity })),
-    };
-  } catch {
-    const price = symbol.startsWith('BTC') ? 68250 : symbol.startsWith('ETH') ? 2289 : 104;
-    return {
-      symbol,
-      timestamp: Date.now(),
-      bids: generateOrderBookBids(price),
-      asks: generateOrderBookAsks(price),
-    };
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        symbol,
+        timestamp: Date.now(),
+        source: 'dataservice',
+        bids: data.bids.map((b: any) => ({ price: parseFloat(b.price), size: parseFloat(b.quantity) })),
+        asks: data.asks.map((a: any) => ({ price: parseFloat(a.price), size: parseFloat(a.quantity) })),
+      };
+    }
+  } catch { /* fall through */ }
+
+  // 2) Binance public orderbook
+  const sym = SYMBOL_MAP[symbol];
+  if (sym) {
+    try {
+      const res = await fetch(
+        `https://api.binance.com/api/v3/depth?symbol=${sym.binance}&limit=12`,
+        { cache: 'no-store' }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          symbol,
+          timestamp: Date.now(),
+          source: 'binance',
+          bids: data.bids.map((b: any) => ({ price: parseFloat(b[0]), size: parseFloat(b[1]) })),
+          asks: data.asks.map((a: any) => ({ price: parseFloat(a[0]), size: parseFloat(a[1]) })),
+        };
+      }
+    } catch { /* fall through */ }
   }
+
+  // 3) Mock fallback
+  const basePrice = sym?.basePrice ?? (symbol.startsWith('ETH') ? 2400 : symbol.startsWith('SOL') ? 140 : 75000);
+  return {
+    symbol,
+    timestamp: Date.now(),
+    source: 'mock',
+    bids: generateOrderBookBids(basePrice),
+    asks: generateOrderBookAsks(basePrice),
+  };
 }
 
 export async function fetchPositions(): Promise<Position[]> {
