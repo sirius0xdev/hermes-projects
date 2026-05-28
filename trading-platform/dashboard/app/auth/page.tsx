@@ -2,53 +2,91 @@
 import { useState } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { getAuthNonce, verifyAuthSig } from '@/lib/api';
+import { signMessageSolana, signMessageEVM } from '@/lib/wallet';
 import { useWallet, WALLET_KEY } from '@/hooks/useWallet';
 
 const chains = [
-  { id: 'ethereum' as const, name: 'Ethereum', symbol: 'ETH', icon: '⟠', color: '#627eea' },
-  { id: 'solana' as const, name: 'Solana', symbol: 'SOL', icon: '◎', color: '#9945ff' },
-  { id: 'base' as const, name: 'Base', symbol: 'BASE', icon: '🔵', color: '#0052ff' },
+  { id: 'solana' as const, name: 'Solana', symbol: 'SOL', icon: '◎', color: '#9945ff', wallet: 'Phantom' },
+  { id: 'ethereum' as const, name: 'Ethereum', symbol: 'ETH', icon: '⟠', color: '#627eea', wallet: 'MetaMask' },
+  { id: 'base' as const, name: 'Base', symbol: 'BASE', icon: '🔵', color: '#0052ff', wallet: 'MetaMask' },
 ];
 
-const MOCK_ADDRESSES: Record<string, string> = {
-  ethereum: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18',
-  solana: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
-  base: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18',
-};
+const DOMAIN = typeof window !== 'undefined' ? window.location.hostname || 'sirius-sec.com' : 'sirius-sec.com';
+
+function buildSiwsMessage(walletAddress: string, nonce: string): string {
+  return [
+    `${DOMAIN} wants you to sign in with your Solana account:`,
+    `${walletAddress}`,
+    '',
+    'Sign in to the trading terminal.',
+    '',
+    `URI: https://${DOMAIN}`,
+    `Version: 1`,
+    `Chain ID: solana`,
+    `Nonce: ${nonce}`,
+    `Issued At: ${new Date().toISOString()}`,
+  ].join('\n');
+}
+
+function buildSiweMessage(chain: 'ethereum' | 'base', walletAddress: string, nonce: string): string {
+  const chainId = chain === 'ethereum' ? 1 : 8453;
+  const chainName = chain === 'ethereum' ? 'Ethereum' : 'Base';
+  return [
+    `${DOMAIN} wants you to sign in with your account:`,
+    `${walletAddress}`,
+    '',
+    'Sign in to the trading terminal.',
+    '',
+    `URI: https://${DOMAIN}`,
+    `Version: 1`,
+    `Chain ID: ${chainId}`,
+    `Nonce: ${nonce}`,
+    `Issued At: ${new Date().toISOString()}`,
+  ].join('\n');
+}
 
 export default function AuthPage() {
-  const [step, setStep] = useState<'select' | 'signing' | 'verifying'>('select');
+  const [step, setStep] = useState<'select' | 'connecting' | 'signing' | 'verifying'>('select');
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { session, isConnected, disconnect } = useWallet();
+  const { session, isConnected, disconnect, connectSolana, connectEVM } = useWallet();
 
-  const connect = async (chain: 'ethereum' | 'solana' | 'base') => {
+  const connect = async (chain: 'solana' | 'ethereum' | 'base') => {
     setError(null);
     setSelectedChain(chain);
-    setStep('signing');
+    setStep('connecting');
 
     try {
-      const walletAddress = MOCK_ADDRESSES[chain];
+      // Step 1: Connect to the real wallet and get the address
+      let walletAddress: string;
+      if (chain === 'solana') {
+        walletAddress = await connectSolana();
+      } else {
+        walletAddress = await connectEVM();
+      }
 
-      // Step 1: Request nonce from backend
+      // Step 2: Request nonce from backend
+      setStep('signing');
       const { nonce } = await getAuthNonce(walletAddress, chain);
 
-      // Step 2: Build the message to sign (SIWE/EIP-4361 or SIWS)
-      const chainId = chain === 'ethereum' ? 1 : chain === 'base' ? 8453 : null;
+      // Step 3: Build SIWS (Solana) or SIWE (EVM) message
       const message = chain === 'solana'
-        ? `Websites wants you to sign in with your Solana account:\n${walletAddress}\n\nSign in to the trading terminal.\n\nURI: https://defi-trading.local\nNonce: ${nonce}\nIssued At: ${new Date().toISOString()}`
-        : `${chain === 'base' ? 'Base' : 'Ethereum'} wants you to sign in with your account:\n${walletAddress}\n\nSign in to the trading terminal.\n\nURI: https://defi-trading.local\nVersion: 1\nChain ID: ${chainId}\nNonce: ${nonce}\nIssued At: ${new Date().toISOString()}`;
+        ? buildSiwsMessage(walletAddress, nonce)
+        : buildSiweMessage(chain, walletAddress, nonce);
 
-      // Step 3: Simulate wallet signing (replace with wallet.request in production)
-      const mockSignature = chain === 'solana'
-        ? btoa(`solana-sig-${walletAddress}-${nonce}`)
-        : `0x${btoa(`evm-sig-${walletAddress}-${nonce}`).replace(/=/g, '0').slice(0, 130)}`;
+      // Step 4: Sign with real wallet
+      let signature: string;
+      if (chain === 'solana') {
+        signature = await signMessageSolana(walletAddress, message);
+      } else {
+        signature = await signMessageEVM(walletAddress, message);
+      }
 
-      // Step 4: Verify signature with backend
+      // Step 5: Verify signature with backend
       setStep('verifying');
-      const result = await verifyAuthSig(chain, walletAddress, message, mockSignature);
+      const result = await verifyAuthSig(chain, walletAddress, message, signature);
 
-      // Step 5: Persist session
+      // Step 6: Persist session
       const sessionData = {
         chain,
         walletAddress: result.wallet_address,
@@ -105,7 +143,7 @@ export default function AuthPage() {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-text-primary">{chain.name}</div>
-                  <div className="text-xs text-text-secondary">{chain.symbol} network</div>
+                  <div className="text-xs text-text-secondary">{chain.wallet} · {chain.symbol} network</div>
                 </div>
                 {step !== 'select' && selectedChain === chain.id ? (
                   <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />

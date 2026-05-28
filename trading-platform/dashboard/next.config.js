@@ -6,6 +6,7 @@ const nextConfig = {
     return [
       { source: '/api/data/:path*', destination: 'http://trading-data-service:8000/:path*' },
       { source: '/api/execute/:path*', destination: 'http://trading-execute-service:8000/:path*' },
+      { source: '/api/auth/:path*', destination: 'http://trading-execute-service:8000/auth/:path*' },
       { source: '/api/news/:path*', destination: 'http://trading-news-service:8000/:path*' },
     ];
   },

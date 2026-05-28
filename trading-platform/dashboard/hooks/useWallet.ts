@@ -1,4 +1,5 @@
 import { useLocalStorage } from './useLocalStorage';
+import { detectAndConnectSolana, detectAndConnectEVM } from '@/lib/wallet';
 
 export interface WalletSession {
   chain: 'ethereum' | 'solana' | 'base';
@@ -18,11 +19,19 @@ export function useWallet() {
   const setWallet = (s: WalletSession) => setSession(s);
   const disconnect = () => setSession(null);
 
+  /** Connect to a Solana wallet (Phantom) and return the public key. */
+  const connectSolana = async (): Promise<string> => detectAndConnectSolana();
+
+  /** Connect to an EVM wallet (MetaMask) and return the address. */
+  const connectEVM = async (): Promise<string> => detectAndConnectEVM();
+
   return {
     session,
     isConnected,
     isExpired,
     setWallet,
     disconnect,
+    connectSolana,
+    connectEVM,
   };
 }

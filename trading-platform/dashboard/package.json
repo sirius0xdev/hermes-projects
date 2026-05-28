@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.95.0",
     "clsx": "^2.1.0",
     "lightweight-charts": "^4.2.0",
     "lucide-react": "^1.16.0",
