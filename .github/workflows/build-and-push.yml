@@ -28,6 +28,7 @@ jobs:
         project:
           - paaas
           - waitlist-api
+          - siriusdevops
           - trading-platform/data-service
           - trading-platform/news-service
           - trading-platform/execute-service
