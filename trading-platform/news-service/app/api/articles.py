@@ -1,14 +1,16 @@
-"""API routes for article CRUD and listing."""
+"""API routes for article CRUD and listing, and analyst summaries."""
 
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
 
 from app.core.database import db, news_db
 from app.models.news_article import ScrapedArticle
+from app.models.article import ArticleSummary
 from app.schemas.article import (
     ArticleCreate,
     ArticleResponse,
@@ -204,3 +206,94 @@ async def list_scraped_articles(
         has_next=has_next,
         has_prev=has_prev,
     )
+
+
+# ── Pydantic response models for summaries ─────────────────────────
+
+def _summary_dict(s) -> dict:
+    """ORM row → plain dict."""
+    return {
+        "id": s.id,
+        "summary_text": s.summary_text,
+        "is_master_summary": s.is_master_summary,
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+    }
+
+
+def _summary_list_dict(s) -> dict:
+    """ORM row → list-view dict (no full text)."""
+    return {
+        "id": s.id,
+        "is_master_summary": s.is_master_summary,
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+        "preview": s.summary_text[:200] if s.summary_text else "",
+    }
+
+
+# ── Summary endpoints ──────────────────────────────────────────────
+
+@router.get("/summaries/latest", response_model=dict)
+async def get_latest_summary(
+    session: AsyncSession = Depends(_get_db),
+):
+    """Return the most recent analyst summary."""
+    stmt = (
+        select(ArticleSummary)
+        .order_by(ArticleSummary.created_at.desc())
+        .limit(1)
+    )
+    result = await session.execute(stmt)
+    summary = result.scalar_one_or_none()
+    if not summary:
+        raise HTTPException(status_code=404, detail="No summaries found")
+    return _summary_dict(summary)
+
+
+@router.get("/summaries", response_model=dict)
+async def list_summaries(
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
+    since: Optional[datetime] = Query(None, description="Only summaries created after this timestamp"),
+    session: AsyncSession = Depends(_get_db),
+):
+    """List analyst summaries with pagination (newest first)."""
+    stmt = select(ArticleSummary).order_by(ArticleSummary.created_at.desc())
+    count_stmt = select(func.count(ArticleSummary.id)).select_from(ArticleSummary)
+
+    if since:
+        stmt = stmt.where(ArticleSummary.created_at >= since)
+        count_stmt = count_stmt.where(ArticleSummary.created_at >= since)
+
+    total_result = await session.execute(count_stmt)
+    total = total_result.scalar_one()
+
+    offset = (page - 1) * per_page
+    stmt = stmt.offset(offset).limit(per_page)
+    result = await session.execute(stmt)
+    items = result.scalars().all()
+
+    return {
+        "items": [_summary_list_dict(s) for s in items],
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "has_next": (page * per_page) < total,
+        "has_prev": page > 1,
+    }
+
+
+@router.get("/summaries/{summary_id}", response_model=dict)
+async def get_summary(
+    summary_id: int,
+    session: AsyncSession = Depends(_get_db),
+):
+    """Return a specific analyst summary by ID."""
+    stmt = select(ArticleSummary).where(ArticleSummary.id == summary_id)
+    result = await session.execute(stmt)
+    summary = result.scalar_one_or_none()
+    if not summary:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Summary with id {summary_id} not found"
+        )
+    return _summary_dict(summary)
