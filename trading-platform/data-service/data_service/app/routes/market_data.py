@@ -21,6 +21,7 @@ from data_service.app.cache.client import get_redis_client, shutdown_redis
 from data_service.app.cache.service import CacheService
 from data_service.app.schemas.market_data import (
     CacheStatsDTO,
+    CandleDTO,
     CandlesResponseDTO,
     OrderBookDTO,
     OrderBookEntryDTO,
@@ -139,27 +140,81 @@ async def get_candles(
     exchange: str,
     symbol: str,
     interval: str,
+    limit: int = 50,
     cache: CacheService = Depends(_get_cache),
 ):
-    """Get cached OHLC candles for a symbol and interval."""
-    candles = await cache.get_candles(exchange, symbol, interval)
-    if candles is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No cached candles for {exchange}:{symbol}:{interval}",
-        )
-    # Reconstruct response with full envelope
-    raw = await cache.redis.get(f"candle:{exchange}:{symbol}:{interval}")
-    from data_service.app.cache.service import _deserialize
+    """Get OHLC candles for a symbol and interval.
 
-    full = _deserialize(raw)
+    Checks Redis cache first; on cache miss, fetches from Binance public
+    API (api.binance.com/api/v3/klines), caches the result, then returns it.
+    """
+    from data_service.app.cache.service import _deserialize
+    import asyncio
+
+    # ── 1. Try Redis cache first ──────────────────────────────────
+    cached = await cache.get_candles(exchange, symbol, interval)
+    if cached is not None:
+        raw = await cache.redis.get(f"candle:{exchange}:{symbol}:{interval}")
+        full = _deserialize(raw)
+        if full is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No cached candles for {exchange}:{symbol}:{interval}",
+            )
+        candle_dtos = [CandleDTO(**c) for c in cached]
+        return CandlesResponseDTO(
+            exchange=full["exchange"],
+            symbol=full["symbol"],
+            interval=full["interval"],
+            count=full["count"],
+            candles=candle_dtos,
+            ts=full["ts"],
+        )
+
+    # ── 2. Cache miss — fallback to Binance public API ────────────
+    logger.info("Cache miss for candles %s:%s:%s — fetching from Binance", exchange, symbol, interval)
+    try:
+        from data_service.app.scanners.binance_prices import BinancePriceClient
+        binance = BinancePriceClient(http_timeout=15)
+        async with asyncio.timeout(20):
+            binance_candles = await binance.get_candles(symbol, interval=interval, limit=limit)
+        await binance.close()
+    except Exception as e:
+        logger.warning("Binance candle fetch failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Candle data unavailable: Redis miss and Binance API failed ({e})",
+        )
+
+    # ── 3. Cache result in Redis + return ─────────────────────────
+    candle_dicts = [
+        {
+            "time": c.time,
+            "open": str(c.open),
+            "high": str(c.high),
+            "low": str(c.low),
+            "close": str(c.close),
+            "volume": str(c.volume),
+        }
+        for c in binance_candles
+    ]
+    if candle_dicts:
+        try:
+            await cache.set_candles(
+                exchange=exchange, symbol=symbol, interval=interval, candles=candle_dicts
+            )
+            logger.info("Cached %d candles for %s:%s:%s", len(candle_dicts), exchange, symbol, interval)
+        except Exception:
+            logger.warning("Failed to cache candles — returning uncached data")
+
+    candle_dtos = [CandleDTO(**d) for d in candle_dicts]
     return CandlesResponseDTO(
-        exchange=full["exchange"],
-        symbol=full["symbol"],
-        interval=full["interval"],
-        count=full["count"],
-        candles=candles,
-        ts=full["ts"],
+        exchange=exchange,
+        symbol=symbol,
+        interval=interval,
+        count=len(candle_dtos),
+        candles=candle_dtos,
+        ts=binance_candles[-1].time if binance_candles else "",
     )
 
 

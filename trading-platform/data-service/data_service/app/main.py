@@ -28,6 +28,7 @@ from data_service.app.kafka.consumer import DataConsumer
 from data_service.app.kafka.solana_ingester import HeliusIngester, JupiterIngester
 from data_service.app.kafka.topics import KafkaTopics
 from data_service.app.scanners.opportunity_scanner import OpportunityScanner
+from data_service.app.scanners.binance_prices import BinancePriceClient
 
 # Health check router (required for K8s liveness/readiness probes)
 from fastapi import APIRouter
@@ -83,11 +84,54 @@ async def health_check():
 
 @health_router.get("/health/ready", status_code=200)
 async def health_ready():
-    """Readiness check — only returns 200 when all dependencies are connected."""
+    """Readiness check — verifies DB + Redis connectivity with timeouts.
+
+    Returns 200 when the service is functionally ready to accept traffic.
+    External dependencies (Kafka, Solana) are best-effort and reported
+    but don't block readiness.
+    """
     from fastapi import HTTPException
+
     if not _service_ready:
         raise HTTPException(status_code=503, detail="Service not ready")
-    result = {"status": "ready"}
+
+    deps: dict[str, bool] = {}
+
+    # ── Check Redis ──────────────────────────────────────────────
+    try:
+        import data_service.app.routes.market_data as md_routes
+        cache_svc = md_routes.CACHE_SVC
+        if cache_svc is not None:
+            async with asyncio_timeout(5):
+                await cache_svc.redis.ping()
+            deps["redis"] = True
+        else:
+            deps["redis"] = False
+    except Exception:
+        deps["redis"] = False
+
+    # ── Check DB ──────────────────────────────────────────────────
+    try:
+        import data_service.app.db as db_module
+        from sqlalchemy import text as sa_text
+        if db_module.db_config is not None:
+            async with asyncio_timeout(5):
+                async with db_module.db_config.session_factory() as sess:
+                    await sess.execute(sa_text("SELECT 1"))
+            deps["postgres"] = True
+        else:
+            deps["postgres"] = False
+    except Exception:
+        deps["postgres"] = False
+
+    # If DB or Redis is down, not ready
+    if not deps.get("postgres") or not deps.get("redis"):
+        raise HTTPException(
+            status_code=503,
+            detail=f"Dependencies not healthy: {deps}",
+        )
+
+    result = {"status": "ready", "dependencies": deps}
     if _consumer:
         result["consumer_running"] = _consumer.is_running
     if _helius_ingester:
@@ -193,6 +237,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("Redis cache initialized")
     except Exception as e:
         logger.warning("Redis connection failed: %s — continuing without cache", e)
+        cache_svc = None
 
     # Connect DB
     try:
@@ -207,6 +252,57 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as e:
         logger.error("Database connection failed: %s", e)
         raise
+
+    # ── Seed Redis cache from Binance public API ──────────────────
+    if cache_svc is not None:
+        try:
+            logger.info("Seeding Redis cache from Binance public API…")
+            binance = BinancePriceClient()
+            async with asyncio_timeout(20):
+                prices = await binance.scan_once()
+
+            # Batch-write prices to cache
+            price_updates = []
+            for sym, bp in prices.items():
+                price_updates.append({
+                    "exchange": "binance",
+                    "symbol": sym,
+                    "bid": f"{bp.bid:.8f}",
+                    "ask": f"{bp.ask:.8f}",
+                    "last": f"{bp.price:.8f}",
+                    "volume_24h": f"{bp.volume_24h:.4f}",
+                })
+            if price_updates:
+                await cache_svc.set_price_batch(price_updates)
+                logger.info("Seeded %d Binance prices in Redis cache", len(price_updates))
+
+            # Fetch 1h candles for top-5 symbols
+            for sym in list(prices.keys())[:5]:
+                try:
+                    candles = await binance.get_candles(sym, interval="1h", limit=50)
+                    candle_dicts = [
+                        {
+                            "time": c.time,
+                            "open": c.open,
+                            "high": c.high,
+                            "low": c.low,
+                            "close": c.close,
+                            "volume": c.volume,
+                        }
+                        for c in candles
+                    ]
+                    if candle_dicts:
+                        await cache_svc.set_candles(
+                            exchange="binance", symbol=sym, interval="1h", candles=candle_dicts
+                        )
+                except Exception:
+                    logger.debug("Failed to seed candles for %s", sym)
+
+            await binance.close()
+        except Exception:
+            logger.warning("Binance cache seeding failed — will retry on first price request")
+    else:
+        logger.info("Skipping Binance cache seed (Redis unavailable)")
 
     # ── Kafka consumer ─────────────────────────────────────────────
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "trading-kafka.customer1.svc.cluster.local:9092")
@@ -318,14 +414,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     if redis_client:
         try:
-            await shutdown_redis()
+            async with asyncio_timeout(10):
+                await shutdown_redis()
+        except asyncio.TimeoutError:
+            logger.warning("Redis shutdown timed out")
         except Exception as e:
             logger.warning("Error shutting down Redis: %s", e)
 
     try:
-        import data_service.app.db as db_module
-        if db_module.db_config:
-            await db_module.db_config.close()
+        async with asyncio_timeout(10):
+            import data_service.app.db as db_module
+            if db_module.db_config:
+                await db_module.db_config.close()
+    except asyncio.TimeoutError:
+        logger.warning("DB shutdown timed out")
     except Exception as e:
         logger.warning("Error shutting down DB: %s", e)
 
@@ -339,7 +441,6 @@ def create_app() -> FastAPI:
         version="0.1.0",
         description="PostgreSQL + Redis + Kafka data service for the trading platform",
         lifespan=lifespan,
-        root_path="/api/data",
     )
 
     # Strip Gateway API prefix so /api/data/api/v1/... -> /api/v1/...
