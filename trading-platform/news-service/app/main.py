@@ -130,6 +130,20 @@ def create_app() -> FastAPI:
             return {"status": "healthy", "news_db": "connected"}
         except Exception as e:
             return {"status": "unhealthy", "news_db": str(e)}
+
+    @app.get("/health/news-db/summaries", tags=["health"])
+    async def health_check_summaries(session: AsyncSession = Depends(db.get_session)):
+        """Verify article_summaries table is accessible via a quick COUNT probe."""
+        try:
+            from app.models.article import ArticleSummary
+            from sqlalchemy import func, select
+            result = await session.execute(
+                select(func.count(ArticleSummary.id)).select_from(ArticleSummary)
+            )
+            count = result.scalar_one()
+            return {"status": "healthy", "summaries_count": count}
+        except Exception as e:
+            return {"status": "unhealthy", "summaries": str(e)}
     
     return app
 

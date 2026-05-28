@@ -14,7 +14,7 @@ We also add:
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Text, DateTime, Float, Boolean,
-    ForeignKey, UniqueConstraint, Index
+    ForeignKey, UniqueConstraint, Index, func
 )
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -116,3 +116,18 @@ class SignalAnalysis(Base):
     analyzed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     article = relationship("Article", back_populates="analysis")
+
+
+# ----- Analyst summaries (written by cronjob, read by this service) -----
+
+class ArticleSummary(Base):
+    """Analyst-generated summaries saved to article_summaries table.
+
+    Managed externally by the Analyst CronJob — this service only reads them.
+    """
+    __tablename__ = "article_summaries"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    summary_text = Column(Text, nullable=False)
+    is_master_summary = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
