@@ -86,14 +86,52 @@ def set_cache_service(svc: CacheService) -> None:
 
 @router.get("/price/{exchange}/{symbol}", response_model=PriceDTO)
 async def get_price(exchange: str, symbol: str, cache: CacheService = Depends(_get_cache)):
-    """Get current price for a symbol. Checks Redis cache first."""
+    """Get current price for a symbol. Checks Redis cache first, then Binance public API."""
+    import asyncio
+
+    # ── 1. Try Redis cache first ──────────────────────────────────
     data = await cache.get_price(exchange, symbol)
-    if data is None:
+    if data is not None:
+        return PriceDTO(**data)
+
+    # ── 2. Cache miss — fallback to Binance public API ────────────
+    logger.info("Cache miss for price %s:%s — fetching from Binance", exchange, symbol)
+    try:
+        from data_service.app.scanners.binance_prices import BinancePriceClient
+
+        binance = BinancePriceClient(http_timeout=10)
+        async with asyncio.timeout(15):
+            bp = await binance.get_price(symbol)
+        await binance.close()
+    except Exception as e:
+        logger.warning("Binance price fetch failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Price data unavailable: Redis miss and Binance API failed ({e})",
+        )
+
+    if bp is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No cached price for {exchange}:{symbol}",
+            detail=f"No price data for {exchange}:{symbol} (not in defaults either)",
         )
-    return PriceDTO(**data)
+
+    # ── 3. Write back to cache then return ────────────────────────
+    price_data = {
+        "exchange": exchange,
+        "symbol": symbol,
+        "bid": f"{bp.bid:.8f}",
+        "ask": f"{bp.ask:.8f}",
+        "last": f"{bp.price:.8f}",
+        "volume_24h": f"{bp.volume_24h:.4f}",
+    }
+    try:
+        await cache.set_price(**price_data)
+        logger.info("Cached price for %s:%s from Binance", exchange, symbol)
+    except Exception:
+        logger.warning("Failed to cache price — returning uncached data")
+
+    return PriceDTO(**price_data)
 
 
 @router.post("/price/batch", status_code=status.HTTP_204_NO_CONTENT)

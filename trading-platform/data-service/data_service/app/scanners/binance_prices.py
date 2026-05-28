@@ -230,6 +230,63 @@ class BinancePriceClient:
         logger.info("Fetched %d candles for %s %s", len(candles), symbol, interval)
         return candles
 
+    async def get_price(self, symbol: str) -> BinancePrice | None:
+        """Fetch price for a single symbol using /ticker/price + /ticker/bookTicker.
+
+        More efficient than scan_once() when you only need one symbol.
+        Returns None if both API call and default lookup fail.
+        """
+        now = datetime.now(timezone.utc)
+
+        try:
+            # Fetch last price
+            resp = await self._client.get(
+                "/api/v3/ticker/price", params={"symbol": symbol}
+            )
+            resp.raise_for_status()
+            price_data = resp.json()
+
+            # Fetch best bid/ask
+            book_resp = await self._client.get(
+                "/api/v3/ticker/bookTicker", params={"symbol": symbol}
+            )
+            book_resp.raise_for_status()
+            book_data = book_resp.json()
+
+            # Fetch 24hr volume via /ticker/24hr
+            vol_resp = await self._client.get(
+                "/api/v3/ticker/24hr", params={"symbol": symbol}
+            )
+            vol_resp.raise_for_status()
+            vol_data = vol_resp.json()
+
+            return BinancePrice(
+                symbol=symbol,
+                price=float(price_data.get("price", 0)),
+                bid=float(book_data.get("bidPrice", 0)),
+                ask=float(book_data.get("askPrice", 0)),
+                volume_24h=float(vol_data.get("volume", 0)),
+                price_change_pct=float(vol_data.get("priceChangePercent", 0)),
+                timestamp=now,
+            )
+
+        except Exception:
+            logger.warning(
+                "Binance API unavailable for %s — checking defaults", symbol
+            )
+            defaults = DEFAULT_PRICES.get(symbol)
+            if defaults:
+                return BinancePrice(
+                    symbol=symbol,
+                    price=defaults["price"],
+                    bid=defaults["bid"],
+                    ask=defaults["ask"],
+                    volume_24h=defaults["vol"],
+                    price_change_pct=defaults["change_pct"],
+                    timestamp=now,
+                )
+            return None
+
     async def scan_loop(self):
         """Run continuous scanning loop. Yields batches on each poll."""
         self._running = True

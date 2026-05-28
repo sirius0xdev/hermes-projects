@@ -231,6 +231,81 @@ async def test_get_candles():
         await client.close()
 
 
+# ── BinancePriceClient get_price (single symbol) ─────────────────────
+
+
+@pytest.mark.asyncio
+async def test_get_price_success():
+    """get_price fetches a single symbol efficiently."""
+    client = BinancePriceClient(symbols=["BTCUSDT"])
+    try:
+        with patch.object(
+            client._client, "get", new_callable=AsyncMock
+        ) as mock_get:
+            mock_get.side_effect = [
+                _mock_response({"symbol": "BTCUSDT", "price": "67500.50"}),
+                _mock_response({
+                    "symbol": "BTCUSDT",
+                    "bidPrice": "67500.00",
+                    "askPrice": "67501.00",
+                }),
+                _mock_response({
+                    "symbol": "BTCUSDT",
+                    "volume": "45000.123",
+                    "priceChangePercent": "0.50",
+                }),
+            ]
+
+            price = await client.get_price("BTCUSDT")
+
+            assert price is not None
+            assert price.symbol == "BTCUSDT"
+            assert price.price == 67500.50
+            assert price.bid == 67500.0
+            assert price.ask == 67501.0
+            assert price.volume_24h == 45000.123
+            assert price.price_change_pct == 0.50
+    finally:
+        await client.close()
+
+
+@pytest.mark.asyncio
+async def test_get_price_fallback_default():
+    """get_price falls back to DEFAULT_PRICES when API fails."""
+    client = BinancePriceClient(symbols=["BTCUSDT"])
+    try:
+        with patch.object(
+            client._client, "get", new_callable=AsyncMock
+        ) as mock_get:
+            mock_get.side_effect = Exception("Connection error")
+
+            price = await client.get_price("BTCUSDT")
+
+            assert price is not None
+            assert price.price == DEFAULT_PRICES["BTCUSDT"]["price"]
+            assert price.bid == DEFAULT_PRICES["BTCUSDT"]["bid"]
+            assert price.ask == DEFAULT_PRICES["BTCUSDT"]["ask"]
+    finally:
+        await client.close()
+
+
+@pytest.mark.asyncio
+async def test_get_price_none_for_unknown_symbol():
+    """get_price returns None for symbols not in DEFAULT_PRICES when API fails."""
+    client = BinancePriceClient(symbols=["UNKNOWNUSDT"])
+    try:
+        with patch.object(
+            client._client, "get", new_callable=AsyncMock
+        ) as mock_get:
+            mock_get.side_effect = Exception("Connection error")
+
+            price = await client.get_price("UNKNOWNUSDT")
+
+            assert price is None
+    finally:
+        await client.close()
+
+
 # ── Cache seeding integration ─────────────────────────────────────────
 
 
