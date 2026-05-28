@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sirius DevOps — AI Agent Platforms</title>
+<meta name="description" content="Production autonomous AI agent systems and intelligence pipelines. Custom Scrapy + vLLM + Kubernetes solutions for 24/7 news monitoring, signal generation, and automated decision support.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #09090b;
+  --surface: #0f0f12;
+  --surface-raised: #16161a;
+  --border: #1e1e24;
+  --border-light: rgba(255,255,255,0.06);
+  --text: #c8c8d0;
+  --text-heading: #e8e8ed;
+  --text-muted: #6b6b7b;
+  --text-faint: #44445a;
+  --accent: #d4882a;
+  --accent-dim: rgba(212,136,42,0.12);
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.12);
+  --red: #f85149;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ─── Header ─── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-heading);
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo .star {
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1;
+}
+
+header nav { display: flex; gap: 32px; }
+
+header nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 0.15s;
+}
+header nav a:hover { color: var(--text-heading); }
+
+/* ─── Hero ─── */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding: 80px 0 64px;
+  align-items: start;
+}
+
+.hero-left { padding-top: 8px; }
+
+.hero h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -1.2px;
+  color: var(--text-heading);
+  margin-bottom: 20px;
+}
+
+.hero h1 .accent-word {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hero-description {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 480px;
+  margin-bottom: 28px;
+}
+
+.hero-description strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-primary, .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #09090b;
+  border: 1px solid var(--accent);
+}
+
+.btn-primary:hover {
+  background: #e8a84a;
+  border-color: #e8a84a;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-raised);
+  border-color: var(--border-light);
+}
+
+/* Section styles */
+.section-overline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  color: var(--text-heading);
+  margin-bottom: 32px;
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+  margin: 40px 0;
+}
+
+/* Capabilities / Pipeline steps */
+.cap-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cap-item {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 0 20px;
+}
+
+.cap-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  padding-top: 4px;
+}
+
+.cap-content h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 6px;
+}
+
+.cap-content p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 2px 9px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* Pipeline visual */
+.pipeline {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  margin: 32px 0;
+}
+
+.pipeline-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.step {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.step h4 {
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.step p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Deploy / Repo cards */
+.deploy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.deploy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.deploy-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.deploy-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.deploy-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.deploy-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.deploy-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Contact */
+.contact {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
+  padding: 48px 0 80px;
+}
+
+.contact-text h2 {
+  font-size: 24px;
+  color: var(--text-heading);
+  margin-bottom: 16px;
+}
+
+.contact-text p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.contact-links {
+  display: flex;
+  gap: 12px;
+}
+
+.contact-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.contact-panel h3 {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.contact-row:last-child {
+  border-bottom: none;
+}
+
+.contact-row .label {
+  color: var(--text-faint);
+}
+
+.contact-row .value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Footer */
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--text);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 60px 0 48px;
+  }
+  
+  .contact {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .hero h1 { letter-spacing: -0.8px; }
+  .hero-cta { flex-direction: column; align-items: flex-start; }
+  .btn-primary, .btn-ghost { width: 100%; justify-content: center; }
+  footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<header>
+  <div class="logo"><span class="star">&#9733;</span> siriusdevops.com</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#capabilities">Capabilities</a>
+    <a href="index.html#deployments">Deployments</a>
+    <a href="services.html">Services</a>
+    <a href="index.html#contact">Contact</a>
+  </nav>
+</header>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="hero-left">
+    <h1>Autonomous AI pipelines.<br>Real production systems.</h1>
+    <p class="hero-description">
+      I build and operate custom <strong>intelligence platforms</strong> that scrape, analyze with LLMs, store, and deliver actionable signals — all on Kubernetes with full GitOps.
+    </p>
+    <div class="hero-cta">
+      <a href="#pipeline" class="btn-primary">See the pipeline</a>
+      <a href="index.html#contact" class="btn-ghost">Get in touch</a>
+    </div>
+  </div>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-faint);">
+    <div style="color: var(--accent); margin-bottom: 8px;">$ kubectl get cronjobs -n customer1</div>
+    <div>news-scraper     0/1     3m ago</div>
+    <div>news-analyst      0/1     3m ago</div>
+    <div>news-messenger    0/1     3m ago</div>
+    <div style="margin-top: 12px; color: var(--green);">All systems nominal • 99.2% uptime</div>
+  </div>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── Featured Pipeline ─── -->
+<section id="pipeline">
+  <div class="section-overline">Featured Offering</div>
+  <h2 class="section-title">News Intelligence Platform</h2>
+  
+  <p style="max-width: 720px; font-size: 15px; line-height: 1.65; color: var(--text-muted); margin-bottom: 32px;">
+    A complete, production-grade autonomous system that monitors hundreds of sources, extracts clean articles, runs LLM analysis at scale, and pushes trading-relevant signals straight to Telegram. Currently powering real-time gold futures (GC=F) monitoring using custom VWAP strategies.
+  </p>
+
+  <div class="pipeline">
+    <div class="pipeline-steps">
+      <div class="step">
+        <h4>01 — Ingestion</h4>
+        <p>Scrapy spiders with intelligent article extraction, brotli decompression, proxy support, and aggressive deduplication. Handles 100+ domains reliably.</p>
+      </div>
+      <div class="step">
+        <h4>02 — Analysis</h4>
+        <p>vLLM on GKE GPU nodes (L4/A100) running abliterated Qwen models. Structured JSON output: summary, entities, sentiment, relevance, and strategy-aligned signals.</p>
+      </div>
+      <div class="step">
+        <h4>03 — Storage &amp; API</h4>
+        <p>CloudNativePG dedicated database + internal REST API in the trading platform for dashboard queries and historical research.</p>
+      </div>
+      <div class="step">
+        <h4>04 — Action</h4>
+        <p>Telegram delivery bot with clean, actionable alerts including context, links, and proposed trade implications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tags" style="margin-bottom: 32px;">
+    <span class="tag">Scrapy</span>
+    <span class="tag">vLLM</span>
+    <span class="tag">GKE CronJobs</span>
+    <span class="tag">CloudNativePG</span>
+    <span class="tag">Qwen 3.6 27B</span>
+    <span class="tag">Hermes Agents</span>
+    <span class="tag">Telegram Bot</span>
+    <span class="tag">GitOps / Flux</span>
+  </div>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── What I Build ─── -->
+<section>
+  <div class="section-overline">Services</div>
+  <h2 class="section-title">Autonomous intelligence systems for your domain</h2>
+  
+  <ol class="cap-list">
+    <li class="cap-item">
+      <span class="cap-num">01</span>
+      <div class="cap-content">
+        <h3>Custom news &amp; signal intelligence pipelines</h3>
+        <p>End-to-end systems like the one above tailored to your data sources, LLM requirements, and delivery channels (Slack, Telegram, internal dashboards, trading engines).</p>
+        <div class="tags">
+          <span class="tag">Market monitoring</span>
+          <span class="tag">Competitive intel</span>
+          <span class="tag">Regulatory alerts</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">02</span>
+      <div class="cap-content">
+        <h3>Multi-agent AI orchestration</h3>
+        <p>Deploy teams of specialized Hermes agents that plan, research, code, review, and execute complex workflows — all tracked in a shared kanban and versioned in Git.</p>
+        <div class="tags">
+          <span class="tag">Hermes</span>
+          <span class="tag">Kanban-driven</span>
+          <span class="tag">Autonomous ops</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">03</span>
+      <div class="cap-content">
+        <h3>Production LLM serving infrastructure</h3>
+        <p>vLLM clusters on GKE with proper autoscaling, model routing, observability, and cost controls. Ready for your fine-tuned or open models.</p>
+        <div class="tags">
+          <span class="tag">vLLM</span>
+          <span class="tag">GPU node pools</span>
+          <span class="tag">KEDA scale-to-zero</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">04</span>
+      <div class="cap-content">
+        <h3>Full GitOps lifecycle &amp; maintenance</h3>
+        <p>Everything versioned in Git. PR-driven changes. Automatic image builds, Flux reconciliation, and zero-downtime updates. I operate what I build.</p>
+        <div class="tags">
+          <span class="tag">Flux CD</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Renovate</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── Repos ─── -->
+<section>
+  <div class="section-overline">Open components</div>
+  <h2 class="section-title">The actual running code</h2>
+  
+  <div class="deploy-grid">
+    <a class="deploy-card" href="https://github.com/sirius0xdev/newsscraper" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-name">newsscraper</span>
+      </div>
+      <p class="deploy-desc">Production Scrapy project with advanced parsing, compression support, and clean article extraction.</p>
+      <div class="deploy-meta">
+        <span>Python</span>
+        <span>CI → GHCR</span>
+      </div>
+    </a>
+    
+    <a class="deploy-card" href="https://github.com/sirius0xdev/news-analyst" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-name">news-analyst</span>
+      </div>
+      <p class="deploy-desc">LLM analysis service using vLLM. Structured output for summaries and trading signals.</p>
+      <div class="deploy-meta">
+        <span>vLLM</span>
+        <span>FastAPI</span>
+      </div>
+    </a>
+    
+    <a class="deploy-card" href="https://github.com/sirius0xdev/gcloud-lab" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-name">gcloud-lab</span>
+      </div>
+      <p class="deploy-desc">All Kubernetes manifests. CronJobs, CNPG clusters, network policies, and GitOps config.</p>
+      <div class="deploy-meta">
+        <span>Kustomize</span>
+        <span>Flux</span>
+      </div>
+    </a>
+    
+    <a class="deploy-card" href="https://github.com/sirius0xdev/hermes-projects" target="_blank" rel="noopener">
+      <div class="deploy-card-header">
+        <span class="deploy-name">hermes-projects</span>
+      </div>
+      <p class="deploy-desc">The multi-agent AI team (including this very agent) that builds and maintains these systems.</p>
+      <div class="deploy-meta">
+        <span>Multi-agent</span>
+        <span>Kanban</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── Contact ─── -->
+<section class="contact" id="contact">
+  <div class="contact-text">
+    <h2>Ready to run your own autonomous intelligence system?</h2>
+    <p>Whether you need a market news pipeline, competitor monitoring platform, or a full multi-agent research team — I design, deploy, and operate the complete stack on Kubernetes.</p>
+    <div class="contact-links">
+      <a href="mailto:sirius@siriusdevops.com" class="btn-primary">Email me</a>
+      <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="btn-ghost">GitHub</a>
+    </div>
+  </div>
+  
+  <div class="contact-panel">
+    <h3>Quick reference</h3>
+    <div class="contact-row">
+      <span class="label">Email</span>
+      <a href="mailto:sirius@siriusdevops.com" class="value">sirius@siriusdevops.com</a>
+    </div>
+    <div class="contact-row">
+      <span class="label">GitHub</span>
+      <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="value">sirius0xdev</a>
+    </div>
+    <div class="contact-row">
+      <span class="label">Availability</span>
+      <span class="value">Open for Q3 2026</span>
+    </div>
+    <div class="contact-row">
+      <span class="label">Location</span>
+      <span class="value">Remote / Async-first</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="brand">siriusdevops.com</div>
+  <div class="links">
+    <a href="https://github.com/sirius0xdev">GitHub</a>
+    <a href="mailto:sirius@siriusdevops.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>
