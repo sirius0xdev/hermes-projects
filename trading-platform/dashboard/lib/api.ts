@@ -241,15 +241,57 @@ export async function fetchTickers(): Promise<TickerPrice[]> {
   ];
 }
 
+// Map dashboard symbols to Binance symbols + base prices for fallback
+const SYMBOL_MAP: Record<string, { binance: string; basePrice: number }> = {
+  'BTC-PERP':  { binance: 'BTCUSDT',  basePrice: 75000 },
+  'ETH-PERP':  { binance: 'ETHUSDT',  basePrice: 2400 },
+  'SOL-PERP':  { binance: 'SOLUSDT',  basePrice: 140 },
+  'ARB-PERP':  { binance: 'ARBUSDT',  basePrice: 0.75 },
+  'DOGE-PERP': { binance: 'DOGEUSDT', basePrice: 0.17 },
+};
+
+// Map dashboard intervals to Binance intervals
+const INTERVAL_MAP: Record<string, string> = {
+  '1m': '1m', '5m': '5m', '15m': '15m', '1h': '1h',
+  '4h': '4h', '1d': '1d', '1w': '1w',
+};
+
 export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promise<Candle[]> {
+  // 1) Try data-service cache first
   try {
     const res = await fetch(`${DATA_BASE}/api/v1/marketdata/candles/hyperliquid/${symbol}/${interval}`);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    return data.candles;
-  } catch {
-    return generateCandles(200, symbol.startsWith('ETH') ? 2289 : symbol.startsWith('SOL') ? 104 : 68250);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.candles?.length > 0) return data.candles;
+    }
+  } catch { /* fall through */ }
+
+  // 2) Try Binance public API (reliable, no key)
+  const sym = SYMBOL_MAP[symbol];
+  if (sym) {
+    try {
+      const binInterval = INTERVAL_MAP[interval] || '5m';
+      const res = await fetch(
+        `https://api.binance.com/api/v3/klines?symbol=${sym.binance}&interval=${binInterval}&limit=200`,
+        { cache: 'no-store' }
+      );
+      if (res.ok) {
+        const klines = await res.json();
+        return klines.map((k: any) => ({
+          time: k[0],       // open time ms
+          open: parseFloat(k[1]),
+          high: parseFloat(k[2]),
+          low: parseFloat(k[3]),
+          close: parseFloat(k[4]),
+          volume: parseFloat(k[5]),
+        }));
+      }
+    } catch { /* fall through */ }
   }
+
+  // 3) Last resort: mock data
+  const basePrice = sym?.basePrice ?? (symbol.startsWith('ETH') ? 2400 : symbol.startsWith('SOL') ? 140 : 75000);
+  return generateCandles(200, basePrice);
 }
 
 export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
