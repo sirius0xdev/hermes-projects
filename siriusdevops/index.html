@@ -90,6 +90,15 @@ header nav a:hover { color: var(--text-heading); }
 
 .hero-left { padding-top: 8px; }
 
+.hero-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
 .hero h1 {
   font-size: clamp(28px, 4vw, 44px);
   font-weight: 700;
@@ -122,6 +131,7 @@ header nav a:hover { color: var(--text-heading); }
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
 .btn-primary {
@@ -154,6 +164,36 @@ header nav a:hover { color: var(--text-heading); }
   transition: background 0.15s, border-color 0.15s;
 }
 .btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: var(--text-faint); }
+
+/* Trust bar */
+.trust-bar {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+.trust-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trust-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-heading);
+  letter-spacing: -0.3px;
+}
+
+.trust-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* ─── Terminal (hero right) ─── */
 .terminal {
@@ -326,6 +366,18 @@ header nav a:hover { color: var(--text-heading); }
 
 .deploy-card:hover { border-color: var(--text-faint); }
 
+.deploy-card.featured {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(212,136,42,0.03) 100%);
+  border-color: rgba(212,136,42,0.15);
+}
+
+.deploy-card.featured:hover { border-color: rgba(212,136,42,0.3); }
+
 .deploy-card-header {
   display: flex;
   align-items: center;
@@ -371,6 +423,34 @@ header nav a:hover { color: var(--text-heading); }
   color: var(--text-faint);
   display: flex;
   gap: 16px;
+}
+
+.deploy-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deploy-stage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.deploy-stage .stage-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.deploy-stage .stage-arrow {
+  color: var(--text-faint);
+  margin: 0 4px;
 }
 
 /* ─── Contact ─── */
@@ -484,6 +564,10 @@ footer .links a:hover { color: var(--text-muted); }
 
   .deploy-grid { grid-template-columns: 1fr; }
 
+  .deploy-card.featured {
+    grid-template-columns: 1fr;
+  }
+
   .contact {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -491,6 +575,8 @@ footer .links a:hover { color: var(--text-muted); }
   }
 
   .cap-item { grid-template-columns: 24px 1fr; gap: 0 16px; }
+
+  .trust-bar { gap: 24px; }
 }
 
 @media (max-width: 520px) {
@@ -504,6 +590,9 @@ footer .links a:hover { color: var(--text-muted); }
   .deploy-meta { flex-direction: column; gap: 4px; }
 
   footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+
+  .trust-bar { gap: 20px; }
+  .trust-value { font-size: 14px; }
 }
 </style>
 </head>
@@ -514,8 +603,8 @@ footer .links a:hover { color: var(--text-muted); }
   <div class="logo"><span class="star">&#9733;</span> siriusdevops.com</div>
   <nav>
     <a href="#capabilities">Capabilities</a>
-    <a href="#services">Services</a>
     <a href="#deployments">Deployments</a>
+    <a href="#services">Services</a>
     <a href="#contact">Contact</a>
   </nav>
 </header>
@@ -523,13 +612,32 @@ footer .links a:hover { color: var(--text-muted); }
 <!-- ─── Hero ─── -->
 <section class="hero">
   <div class="hero-left">
-    <h1>Infrastructure that<br>runs <span class="accent-word">without drama.</span></h1>
+    <div class="hero-subtitle">Cloud Infrastructure Engineering</div>
+    <h1>I build infrastructure<br>that <span class="accent-word">stays out of the way.</span></h1>
     <p class="hero-description">
-      I design and operate production cloud infrastructure for teams who'd rather ship features than debug cluster networking. <strong>GKE clusters, AI/ML platforms, GitOps pipelines, hardened database fleets.</strong> Everything versioned, everything automated.
+      Solo infrastructure engineer for teams who'd rather ship features than debug cluster networking. <strong>Production clusters, AI inference platforms, GitOps pipelines, hardened databases.</strong> Everything versioned, everything automated.
     </p>
     <div class="hero-cta">
       <a href="#contact" class="btn-primary">Get in touch</a>
       <a href="#deployments" class="btn-ghost">See what's running</a>
+    </div>
+    <div class="trust-bar">
+      <div class="trust-item">
+        <span class="trust-value">142d+</span>
+        <span class="trust-label">Cluster uptime</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-value">370+</span>
+        <span class="trust-label">Data feeds live</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-value">24/7</span>
+        <span class="trust-label">Always running</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-value">5+</span>
+        <span class="trust-label">Production systems</span>
+      </div>
     </div>
   </div>
 
@@ -569,10 +677,10 @@ footer .links a:hover { color: var(--text-muted); }
     <li class="cap-item">
       <span class="cap-num">01</span>
       <div class="cap-content">
-        <h3>GKE cluster design and management</h3>
+        <h3>Cluster design and management</h3>
         <p>Production-grade clusters with node auto-provisioning, workload identity federation, and multi-region topologies. Built to run reliably from day one, not patched into shape.</p>
         <div class="tags">
-          <span class="tag">GKE Autopilot</span>
+          <span class="tag">Autopilot</span>
           <span class="tag">Workload Identity</span>
           <span class="tag">Multi-region</span>
         </div>
@@ -582,24 +690,24 @@ footer .links a:hover { color: var(--text-muted); }
       <span class="cap-num">02</span>
       <div class="cap-content">
         <h3>AI/ML inference platforms</h3>
-        <p>vLLM serving on GPU node pools with KEDA scale-to-zero. L4 instances for lightweight dispatch, A100 for heavy lifting. Model routing, multi-tenant isolation, and cost tracking baked in.</p>
+        <p>Private GPU serving with scale-to-zero autoscaling, multi-tenant isolation, model routing, and cost tracking. From lightweight dispatch to heavy inference workloads.</p>
         <div class="tags">
-          <span class="tag">vLLM</span>
-          <span class="tag">KEDA</span>
-          <span class="tag">GPU Pools</span>
-          <span class="tag">L4 / A100</span>
+          <span class="tag">GPU Serving</span>
+          <span class="tag">Scale-to-Zero</span>
+          <span class="tag">Multi-tenant</span>
         </div>
       </div>
     </li>
     <li class="cap-item">
       <span class="cap-num">03</span>
       <div class="cap-content">
-        <h3>CloudNativePG database fleets</h3>
-        <p>High-availability PostgreSQL on Kubernetes with automated backups, point-in-time recovery, and PgBouncer connection pooling. No managed database lock-in, full observability.</p>
+        <h3>High-availability database fleets</h3>
+        <p>PostgreSQL with automated backups, point-in-time recovery, and connection pooling. No managed database lock-in, full observability, zero-downtime failover.</p>
         <div class="tags">
-          <span class="tag">CloudNativePG</span>
+          <span class="tag">PostgreSQL</span>
           <span class="tag">PgBouncer</span>
           <span class="tag">PITR</span>
+          <span class="tag">HA Failover</span>
         </div>
       </div>
     </li>
@@ -607,12 +715,11 @@ footer .links a:hover { color: var(--text-muted); }
       <span class="cap-num">04</span>
       <div class="cap-content">
         <h3>GitOps and CI/CD pipelines</h3>
-        <p>Flux CD reconciliation, GitHub Actions workflows, Renovate dependency automation. Every commit propagates to cluster — auditable, repeatable, fast. No click-ops.</p>
+        <p>Every commit propagates to cluster — auditable, repeatable, fast. Automated dependency updates, zero-downtime rollouts, instant rollback if something breaks. No click-ops.</p>
         <div class="tags">
-          <span class="tag">Flux CD</span>
-          <span class="tag">GitHub Actions</span>
-          <span class="tag">Renovate</span>
-          <span class="tag">Kustomize</span>
+          <span class="tag">GitOps</span>
+          <span class="tag">CI/CD</span>
+          <span class="tag">Auto-update</span>
         </div>
       </div>
     </li>
@@ -620,24 +727,23 @@ footer .links a:hover { color: var(--text-muted); }
       <span class="cap-num">05</span>
       <div class="cap-content">
         <h3>Security hardening</h3>
-        <p>NetworkPolicy micro-segmentation, non-root containers, SOPS-encrypted secrets with Age/KMS unsealing, and CIS benchmark compliance. Defense in depth applied by default, not retrofitted.</p>
+        <p>Network segmentation, non-root containers, encrypted secrets with KMS unsealing, and CIS benchmark compliance. Defense in depth applied by default, not retrofitted.</p>
         <div class="tags">
           <span class="tag">NetworkPolicy</span>
-          <span class="tag">SOPS</span>
+          <span class="tag">Encrypted Secrets</span>
           <span class="tag">mTLS</span>
-          <span class="tag">CIS Benchmarks</span>
         </div>
       </div>
     </li>
     <li class="cap-item">
       <span class="cap-num">06</span>
       <div class="cap-content">
-        <h3>Gateway API and HTTP routing</h3>
-        <p>Advanced traffic routing with Gateway API, automatic TLS via cert-manager, and granular request matching. Blue-green and canary deployments with automatic rollbacks.</p>
+        <h3>Traffic routing and service mesh</h3>
+        <p>Advanced traffic routing with automatic TLS, granular request matching, blue-green and canary deployments with automatic rollbacks. Every request hits the right place.</p>
         <div class="tags">
           <span class="tag">Gateway API</span>
-          <span class="tag">cert-manager</span>
-          <span class="tag">Cilium</span>
+          <span class="tag">Auto TLS</span>
+          <span class="tag">Service Mesh</span>
         </div>
       </div>
     </li>
@@ -645,11 +751,11 @@ footer .links a:hover { color: var(--text-muted); }
       <span class="cap-num">07</span>
       <div class="cap-content">
         <h3>Cost optimization</h3>
-        <p>SPOT instance orchestration with graceful eviction, KEDA scale-to-zero for batch workloads, right-sized node pools, and committed-use discount planning. Infrastructure that respects your budget.</p>
+        <p>Spot instance orchestration, scale-to-zero for batch workloads, right-sized node pools, and committed-use discount planning. Infrastructure that respects your budget.</p>
         <div class="tags">
-          <span class="tag">SPOT Instances</span>
+          <span class="tag">Spot Instances</span>
           <span class="tag">Scale-to-Zero</span>
-          <span class="tag">CUD Planning</span>
+          <span class="tag">Right-sizing</span>
         </div>
       </div>
     </li>
@@ -658,108 +764,39 @@ footer .links a:hover { color: var(--text-muted); }
 
 <div class="section-divider" role="separator"></div>
 
-<!-- ─── Featured Pipeline ─── -->
-<section id="services" class="capabilities">
-  <div class="section-overline">Featured Offering</div>
-  <h2 class="section-title">News Intelligence Platform</h2>
-
-  <p style="max-width: 720px; font-size: 15px; line-height: 1.65; color: var(--text-muted); margin-bottom: 32px;">
-    A complete, production-grade autonomous system that monitors hundreds of sources, extracts clean articles, runs LLM analysis at scale, and pushes trading-relevant signals straight to Telegram. Currently powering real-time gold futures (GC=F) monitoring using custom VWAP strategies.
-  </p>
-
-  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 32px;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
-        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">01 — Ingestion</h4>
-        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Scrapy spiders with intelligent article extraction, brotli decompression, proxy support, and aggressive deduplication. Handles 100+ domains reliably.</p>
-      </div>
-      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
-        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">02 — Analysis</h4>
-        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">vLLM on GKE GPU nodes (L4/A100) running abliterated Qwen models. Structured JSON output: summary, entities, sentiment, relevance, and strategy-aligned signals.</p>
-      </div>
-      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
-        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">03 — Storage &amp; API</h4>
-        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">CloudNativePG dedicated database + internal REST API in the trading platform for dashboard queries and historical research.</p>
-      </div>
-      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
-        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">04 — Action</h4>
-        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Telegram delivery bot with clean, actionable alerts including context, links, and proposed trade implications.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="tags" style="margin-bottom: 48px;">
-    <span class="tag">Scrapy</span>
-    <span class="tag">vLLM</span>
-    <span class="tag">GKE CronJobs</span>
-    <span class="tag">CloudNativePG</span>
-    <span class="tag">Qwen 3.6 27B</span>
-    <span class="tag">Hermes Agents</span>
-    <span class="tag">Telegram Bot</span>
-    <span class="tag">GitOps / Flux</span>
-  </div>
-
-  <div class="section-overline">Services</div>
-  <h2 class="section-title" style="margin-top: 8px;">Autonomous intelligence systems for your domain</h2>
-
-  <ol class="cap-list">
-    <li class="cap-item">
-      <span class="cap-num">01</span>
-      <div class="cap-content">
-        <h3>Custom news &amp; signal intelligence pipelines</h3>
-        <p>End-to-end systems like the one above tailored to your data sources, LLM requirements, and delivery channels (Slack, Telegram, internal dashboards, trading engines).</p>
-        <div class="tags">
-          <span class="tag">Market monitoring</span>
-          <span class="tag">Competitive intel</span>
-          <span class="tag">Regulatory alerts</span>
-        </div>
-      </div>
-    </li>
-    <li class="cap-item">
-      <span class="cap-num">02</span>
-      <div class="cap-content">
-        <h3>Multi-agent AI orchestration</h3>
-        <p>Deploy teams of specialized Hermes agents that plan, research, code, review, and execute complex workflows — all tracked in a shared kanban and versioned in Git.</p>
-        <div class="tags">
-          <span class="tag">Hermes</span>
-          <span class="tag">Kanban-driven</span>
-          <span class="tag">Autonomous ops</span>
-        </div>
-      </div>
-    </li>
-    <li class="cap-item">
-      <span class="cap-num">03</span>
-      <div class="cap-content">
-        <h3>Production LLM serving infrastructure</h3>
-        <p>vLLM clusters on GKE with proper autoscaling, model routing, observability, and cost controls. Ready for your fine-tuned or open models.</p>
-        <div class="tags">
-          <span class="tag">vLLM</span>
-          <span class="tag">GPU node pools</span>
-          <span class="tag">KEDA scale-to-zero</span>
-        </div>
-      </div>
-    </li>
-    <li class="cap-item">
-      <span class="cap-num">04</span>
-      <div class="cap-content">
-        <h3>Full GitOps lifecycle &amp; maintenance</h3>
-        <p>Everything versioned in Git. PR-driven changes. Automatic image builds, Flux reconciliation, and zero-downtime updates. I operate what I build.</p>
-        <div class="tags">
-          <span class="tag">Flux CD</span>
-          <span class="tag">GitHub Actions</span>
-          <span class="tag">Renovate</span>
-        </div>
-      </div>
-    </li>
-  </ol>
-</section>
-
-<div class="section-divider" role="separator"></div>
-
-<!-- ─── Deployments ─── -->
+<!-- ─── Deployments (moved up — this sells most) ─── -->
 <section class="deploy-log" id="deployments">
   <div class="section-overline">Live Infrastructure</div>
   <h2 class="section-title">Not portfolio pieces — this is running</h2>
+  <p style="max-width: 680px; font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 32px;">
+    These aren't side projects or demos. They're production systems processing real data, serving real workloads, and running while I sleep.
+  </p>
+
+  <!-- Featured: News Intelligence Pipeline -->
+  <a class="deploy-card featured" href="#services" style="margin-bottom: 16px;">
+    <div>
+      <div class="deploy-card-header">
+        <span class="deploy-status"></span>
+        <span class="deploy-name">news-intelligence</span>
+        <span class="deploy-env">production</span>
+      </div>
+      <p class="deploy-desc">
+        Full autonomous pipeline: scrapes 100+ news sources, runs LLM analysis on GPU, and pushes trading signals to Telegram in real time. Currently monitoring gold futures with VWAP-aligned strategies.
+      </p>
+      <div class="deploy-meta">
+        <span>100+ sources</span>
+        <span>LLM analysis</span>
+        <span>real-time alerts</span>
+        <span>4-stage pipeline</span>
+      </div>
+    </div>
+    <div class="deploy-stages">
+      <div class="deploy-stage"><span class="stage-dot"></span> Ingestion — Scrapy + dedup</div>
+      <div class="deploy-stage"><span class="stage-dot"></span> Analysis — LLM on GPU</div>
+      <div class="deploy-stage"><span class="stage-dot"></span> Storage — PostgreSQL + API</div>
+      <div class="deploy-stage"><span class="stage-dot"></span> Delivery — Telegram alerts</div>
+    </div>
+  </a>
 
   <div class="deploy-grid">
     <a class="deploy-card" href="https://github.com/sirius0xdev/gcloud-lab" target="_blank" rel="noopener">
@@ -768,11 +805,11 @@ footer .links a:hover { color: var(--text-muted); }
         <span class="deploy-name">gcloud-lab</span>
         <span class="deploy-env">production</span>
       </div>
-      <p class="deploy-desc">Full GKE cluster config — Terraform, Flux CD, GPU node pools, CloudNativePG, Cilium CNI. The infrastructure behind the AI inference platform.</p>
+      <p class="deploy-desc">Full cluster infrastructure — Terraform provisioning, GitOps pipelines, GPU node pools, database fleets, Cilium networking. The backbone of the AI inference platform.</p>
       <div class="deploy-meta">
         <span>4 nodes</span>
         <span>2 clusters</span>
-        <span>142 days uptime</span>
+        <span>142d uptime</span>
       </div>
     </a>
 
@@ -794,12 +831,13 @@ footer .links a:hover { color: var(--text-muted); }
       <div class="deploy-card-header">
         <span class="deploy-status"></span>
         <span class="deploy-name">hermes-projects</span>
-        <span class="deploy-env">gke</span>
+        <span class="deploy-env">production</span>
       </div>
-      <p class="deploy-desc">Multi-agent AI team on Hermes — autonomous coding, research, and operations agents orchestrated via kanban. AI infrastructure in practice, not a demo.</p>
+      <p class="deploy-desc">Multi-agent AI team — autonomous coding, research, and operations agents orchestrated via kanban. Infrastructure managed by the very agents it runs.</p>
       <div class="deploy-meta">
         <span>multi-agent</span>
-        <span>kanban-orchestrated</span>
+        <span>kanban-driven</span>
+        <span>self-operating</span>
       </div>
     </a>
 
@@ -809,7 +847,7 @@ footer .links a:hover { color: var(--text-muted); }
         <span class="deploy-name">trading-platform</span>
         <span class="deploy-env">production</span>
       </div>
-      <p class="deploy-desc">Real-time trading infrastructure — 370+ automated data feeds, Solana whale tracking, gold position scanners. Low-latency pipelines running 24/7.</p>
+      <p class="deploy-desc">Real-time trading infrastructure — 370+ automated data feeds, whale tracking, position scanners. Low-latency pipelines running 24/7 on dedicated clusters.</p>
       <div class="deploy-meta">
         <span>370+ feeds</span>
         <span>24/7 uptime</span>
@@ -820,11 +858,70 @@ footer .links a:hover { color: var(--text-muted); }
 
 <div class="section-divider" role="separator"></div>
 
+<!-- ─── Services ─── -->
+<section id="services" class="capabilities">
+  <div class="section-overline">Services</div>
+  <h2 class="section-title">What I can build for you</h2>
+
+  <ol class="cap-list">
+    <li class="cap-item">
+      <span class="cap-num">01</span>
+      <div class="cap-content">
+        <h3>Custom intelligence pipelines</h3>
+        <p>End-to-end systems tailored to your data sources, analysis needs, and delivery channels. News monitoring, competitive intelligence, regulatory alerts, market signals — delivered to Slack, Telegram, or your trading engine.</p>
+        <div class="tags">
+          <span class="tag">Market monitoring</span>
+          <span class="tag">Competitive intel</span>
+          <span class="tag">Custom delivery</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">02</span>
+      <div class="cap-content">
+        <h3>Autonomous agent systems</h3>
+        <p>Deploy teams of specialist agents that plan, research, code, review, and execute — all tracked in shared kanban and versioned in Git. Persistent memory, no context loss between sessions.</p>
+        <div class="tags">
+          <span class="tag">Multi-agent</span>
+          <span class="tag">Kanban orchestration</span>
+          <span class="tag">Persistent memory</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">03</span>
+      <div class="cap-content">
+        <h3>Private AI inference platforms</h3>
+        <p>Dedicated GPU serving with autoscaling, model routing, observability, and cost controls. Your models, your data — fully isolated from shared infrastructure.</p>
+        <div class="tags">
+          <span class="tag">GPU serving</span>
+          <span class="tag">Private compute</span>
+          <span class="tag">Scale-to-zero</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">04</span>
+      <div class="cap-content">
+        <h3>Full infrastructure managed</h3>
+        <p>Everything versioned in Git. Automated builds, zero-downtime updates, encrypted secrets, and monitoring that alerts before you notice. I operate what I build — you don't need a DevOps person.</p>
+        <div class="tags">
+          <span class="tag">GitOps</span>
+          <span class="tag">24/7 monitoring</span>
+          <span class="tag">Fully managed</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
 <!-- ─── Contact ─── -->
 <section class="contact" id="contact">
   <div class="contact-text">
     <h2>Available for consulting and contracts</h2>
-    <p>Whether you need a production cluster designed from scratch, an existing setup hardened for security, or an AI inference platform stood up — reach out. I work remotely and communicate in code reviews and commit messages.</p>
+    <p>Whether you need a production cluster designed from scratch, an existing setup hardened for security, or an autonomous intelligence system built for your domain — reach out. I work remotely and communicate in code reviews and commit messages.</p>
     <div class="contact-links">
       <a href="mailto:sirius@siriusdevops.com" class="btn-primary">Email me</a>
       <a href="https://github.com/sirius0xdev" target="_blank" rel="noopener" class="btn-ghost">GitHub</a>
