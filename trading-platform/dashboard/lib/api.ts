@@ -278,14 +278,17 @@ export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promis
       );
       if (res.ok) {
         const klines = await res.json();
-        return klines.map((k: any) => ({
-          time: k[0],       // open time ms
-          open: parseFloat(k[1]),
-          high: parseFloat(k[2]),
-          low: parseFloat(k[3]),
-          close: parseFloat(k[4]),
-          volume: parseFloat(k[5]),
-        }));
+        // Validate: Binance returns {"code":0,"msg":"..."} on geo-block — must be array of arrays
+        if (Array.isArray(klines) && klines.length > 0 && Array.isArray(klines[0])) {
+          return klines.map((k: any) => ({
+            time: k[0],
+            open: parseFloat(k[1]),
+            high: parseFloat(k[2]),
+            low: parseFloat(k[3]),
+            close: parseFloat(k[4]),
+            volume: parseFloat(k[5]),
+          }));
+        }
       }
     } catch { /* fall through */ }
   }
