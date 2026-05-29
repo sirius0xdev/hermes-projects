@@ -253,56 +253,106 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.error("Database connection failed: %s", e)
         raise
 
-    # ── Seed Redis cache from Binance public API ──────────────────
+    # ── Seed Redis cache: Chainlink (primary) → Binance (fallback) ──
     if cache_svc is not None:
+        # Primary: Chainlink Data API
         try:
-            logger.info("Seeding Redis cache from Binance public API…")
-            binance = BinancePriceClient()
-            async with asyncio_timeout(20):
-                prices = await binance.scan_once()
+            logger.info("Seeding Redis cache from Chainlink Data API…")
+            from data_service.app.scanners.chainlink_prices import ChainlinkPriceClient
 
-            # Batch-write prices to cache
-            price_updates = []
-            for sym, bp in prices.items():
-                price_updates.append({
-                    "exchange": "binance",
-                    "symbol": sym,
-                    "bid": f"{bp.bid:.8f}",
-                    "ask": f"{bp.ask:.8f}",
-                    "last": f"{bp.price:.8f}",
-                    "volume_24h": f"{bp.volume_24h:.4f}",
-                })
-            if price_updates:
-                await cache_svc.set_price_batch(price_updates)
-                logger.info("Seeded %d Binance prices in Redis cache", len(price_updates))
+            chainlink = ChainlinkPriceClient()
+            async with asyncio_timeout(25):
+                prices = await chainlink.scan_once()
+            await chainlink.close()
 
-            # Fetch 1h candles for top-5 symbols
-            for sym in list(prices.keys())[:5]:
-                try:
-                    candles = await binance.get_candles(sym, interval="1h", limit=50)
-                    candle_dicts = [
-                        {
-                            "time": c.time,
-                            "open": c.open,
-                            "high": c.high,
-                            "low": c.low,
-                            "close": c.close,
-                            "volume": c.volume,
-                        }
-                        for c in candles
-                    ]
-                    if candle_dicts:
-                        await cache_svc.set_candles(
-                            exchange="binance", symbol=sym, interval="1h", candles=candle_dicts
-                        )
-                except Exception:
-                    logger.debug("Failed to seed candles for %s", sym)
+            if prices:
+                # Batch-write prices to cache
+                price_updates = []
+                for sym, cp in prices.items():
+                    price_updates.append({
+                        "exchange": "chainlink",
+                        "symbol": sym,
+                        "bid": f"{cp.bid:.8f}",
+                        "ask": f"{cp.ask:.8f}",
+                        "last": f"{cp.price:.8f}",
+                        "volume_24h": f"{cp.volume_24h:.4f}",
+                    })
+                if price_updates:
+                    await cache_svc.set_price_batch(price_updates)
+                    logger.info("Seeded %d Chainlink prices in Redis cache", len(price_updates))
 
-            await binance.close()
+                # Fetch 1h candles for top symbols
+                for sym in list(prices.keys())[:5]:
+                    try:
+                        candles = await chainlink.get_candles(sym, interval="1h", limit=50)
+                        candle_dicts = [
+                            {
+                                "time": c.time,
+                                "open": c.open,
+                                "high": c.high,
+                                "low": c.low,
+                                "close": c.close,
+                                "volume": c.volume,
+                            }
+                            for c in candles
+                        ]
+                        if candle_dicts:
+                            await cache_svc.set_candles(
+                                exchange="chainlink", symbol=sym, interval="1h", candles=candle_dicts
+                            )
+                    except Exception:
+                        logger.debug("Failed to seed candles for %s", sym)
+            else:
+                raise ValueError("Chainlink returned 0 prices")
         except Exception:
-            logger.warning("Binance cache seeding failed — will retry on first price request")
+            logger.warning("Chainlink cache seeding failed — falling back to Binance")
+            # Fallback: Binance public API
+            try:
+                logger.info("Seeding Redis cache from Binance public API…")
+                binance = BinancePriceClient()
+                async with asyncio_timeout(20):
+                    prices = await binance.scan_once()
+
+                price_updates = []
+                for sym, bp in prices.items():
+                    price_updates.append({
+                        "exchange": "binance",
+                        "symbol": sym,
+                        "bid": f"{bp.bid:.8f}",
+                        "ask": f"{bp.ask:.8f}",
+                        "last": f"{bp.price:.8f}",
+                        "volume_24h": f"{bp.volume_24h:.4f}",
+                    })
+                if price_updates:
+                    await cache_svc.set_price_batch(price_updates)
+                    logger.info("Seeded %d Binance prices in Redis cache", len(price_updates))
+
+                for sym in list(prices.keys())[:5]:
+                    try:
+                        candles = await binance.get_candles(sym, interval="1h", limit=50)
+                        candle_dicts = [
+                            {
+                                "time": c.time,
+                                "open": c.open,
+                                "high": c.high,
+                                "low": c.low,
+                                "close": c.close,
+                                "volume": c.volume,
+                            }
+                            for c in candles
+                        ]
+                        if candle_dicts:
+                            await cache_svc.set_candles(
+                                exchange="binance", symbol=sym, interval="1h", candles=candle_dicts
+                            )
+                    except Exception:
+                        logger.debug("Failed to seed candles for %s", sym)
+
+                await binance.close()
+            except Exception:
+                logger.warning("Binance cache seeding also failed — will retry on first request")
     else:
-        logger.info("Skipping Binance cache seed (Redis unavailable)")
+        logger.info("Skipping cache seed (Redis unavailable)")
 
     # ── Kafka consumer ─────────────────────────────────────────────
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "trading-kafka.customer1.svc.cluster.local:9092")

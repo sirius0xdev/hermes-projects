@@ -86,7 +86,10 @@ def set_cache_service(svc: CacheService) -> None:
 
 @router.get("/price/{exchange}/{symbol}", response_model=PriceDTO)
 async def get_price(exchange: str, symbol: str, cache: CacheService = Depends(_get_cache)):
-    """Get current price for a symbol. Checks Redis cache first, then Binance public API."""
+    """Get current price for a symbol.
+
+    Priority: Redis cache → Chainlink → Binance public API.
+    """
     import asyncio
 
     # ── 1. Try Redis cache first ──────────────────────────────────
@@ -94,40 +97,63 @@ async def get_price(exchange: str, symbol: str, cache: CacheService = Depends(_g
     if data is not None:
         return PriceDTO(**data)
 
-    # ── 2. Cache miss — fallback to Binance public API ────────────
-    logger.info("Cache miss for price %s:%s — fetching from Binance", exchange, symbol)
-    try:
-        from data_service.app.scanners.binance_prices import BinancePriceClient
+    # ── 2. Cache miss — try Chainlink (primary) ──────────────────
+    logger.info("Cache miss for price %s:%s — trying Chainlink", exchange, symbol)
+    price_data: Optional[dict] = None
 
-        binance = BinancePriceClient(http_timeout=10)
+    try:
+        from data_service.app.scanners.chainlink_prices import ChainlinkPriceClient
+
+        chainlink = ChainlinkPriceClient(http_timeout=10)
         async with asyncio.timeout(15):
-            bp = await binance.get_price(symbol)
-        await binance.close()
+            cp = await chainlink.get_price(symbol)
+        await chainlink.close()
+
+        if cp is not None:
+            price_data = {
+                "exchange": exchange,
+                "symbol": symbol,
+                "bid": f"{cp.bid:.8f}",
+                "ask": f"{cp.ask:.8f}",
+                "last": f"{cp.price:.8f}",
+                "volume_24h": f"{cp.volume_24h:.4f}",
+            }
     except Exception as e:
-        logger.warning("Binance price fetch failed: %s", e)
+        logger.warning("Chainlink price fetch failed: %s", e)
+
+    # ── 3. Chainlink miss — fallback to Binance ──────────────────
+    if price_data is None:
+        logger.info("Chainlink unavailable for %s — falling back to Binance", symbol)
+        try:
+            from data_service.app.scanners.binance_prices import BinancePriceClient
+
+            binance = BinancePriceClient(http_timeout=10)
+            async with asyncio.timeout(15):
+                bp = await binance.get_price(symbol)
+            await binance.close()
+
+            if bp is not None:
+                price_data = {
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "bid": f"{bp.bid:.8f}",
+                    "ask": f"{bp.ask:.8f}",
+                    "last": f"{bp.price:.8f}",
+                    "volume_24h": f"{bp.volume_24h:.4f}",
+                }
+        except Exception as e:
+            logger.warning("Binance price fetch also failed: %s", e)
+
+    if price_data is None:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Price data unavailable: Redis miss and Binance API failed ({e})",
+            detail=f"Price data unavailable for {exchange}:{symbol}: Redis miss, Chainlink + Binance failed",
         )
 
-    if bp is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No price data for {exchange}:{symbol} (not in defaults either)",
-        )
-
-    # ── 3. Write back to cache then return ────────────────────────
-    price_data = {
-        "exchange": exchange,
-        "symbol": symbol,
-        "bid": f"{bp.bid:.8f}",
-        "ask": f"{bp.ask:.8f}",
-        "last": f"{bp.price:.8f}",
-        "volume_24h": f"{bp.volume_24h:.4f}",
-    }
+    # ── 4. Write back to cache then return ────────────────────────
     try:
         await cache.set_price(**price_data)
-        logger.info("Cached price for %s:%s from Binance", exchange, symbol)
+        logger.info("Cached price for %s:%s", exchange, symbol)
     except Exception:
         logger.warning("Failed to cache price — returning uncached data")
 
@@ -183,8 +209,7 @@ async def get_candles(
 ):
     """Get OHLC candles for a symbol and interval.
 
-    Checks Redis cache first; on cache miss, fetches from Binance public
-    API (api.binance.com/api/v3/klines), caches the result, then returns it.
+    Priority: Redis cache → Chainlink (delegates to Binance) → Binance public API → mock.
     """
     from data_service.app.cache.service import _deserialize
     import asyncio
@@ -209,41 +234,73 @@ async def get_candles(
             ts=full["ts"],
         )
 
-    # ── 2. Cache miss — fallback to Binance public API ────────────
-    logger.info("Cache miss for candles %s:%s:%s — fetching from Binance", exchange, symbol, interval)
+    candle_dicts: list[dict] = []
+
+    # ── 2. Cache miss — try Chainlink (primary) ──────────────────
+    logger.info("Cache miss for candles %s:%s:%s — trying Chainlink", exchange, symbol, interval)
     try:
-        from data_service.app.scanners.binance_prices import BinancePriceClient
-        binance = BinancePriceClient(http_timeout=15)
+        from data_service.app.scanners.chainlink_prices import ChainlinkPriceClient
+
+        chainlink = ChainlinkPriceClient(http_timeout=12)
         async with asyncio.timeout(20):
-            binance_candles = await binance.get_candles(symbol, interval=interval, limit=limit)
-        await binance.close()
+            chainlink_candles = await chainlink.get_candles(
+                symbol, interval=interval, limit=limit
+            )
+        await chainlink.close()
+
+        if chainlink_candles:
+            candle_dicts = [
+                {
+                    "time": c.time,
+                    "open": str(c.open),
+                    "high": str(c.high),
+                    "low": str(c.low),
+                    "close": str(c.close),
+                    "volume": str(c.volume),
+                }
+                for c in chainlink_candles
+            ]
     except Exception as e:
-        logger.warning("Binance candle fetch failed: %s", e)
+        logger.warning("Chainlink candle fetch failed: %s", e)
+
+    # ── 3. Chainlink miss — direct Binance fallback ───────────────
+    if not candle_dicts:
+        logger.info("Chainlink candles empty for %s — falling back to Binance", symbol)
+        try:
+            from data_service.app.scanners.binance_prices import BinancePriceClient
+            binance = BinancePriceClient(http_timeout=15)
+            async with asyncio.timeout(20):
+                binance_candles = await binance.get_candles(symbol, interval=interval, limit=limit)
+            await binance.close()
+
+            candle_dicts = [
+                {
+                    "time": c.time,
+                    "open": str(c.open),
+                    "high": str(c.high),
+                    "low": str(c.low),
+                    "close": str(c.close),
+                    "volume": str(c.volume),
+                }
+                for c in binance_candles
+            ]
+        except Exception as e:
+            logger.warning("Binance candle fetch also failed: %s", e)
+
+    if not candle_dicts:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Candle data unavailable: Redis miss and Binance API failed ({e})",
+            detail=f"Candle data unavailable for {exchange}:{symbol}:{interval}: all sources failed",
         )
 
-    # ── 3. Cache result in Redis + return ─────────────────────────
-    candle_dicts = [
-        {
-            "time": c.time,
-            "open": str(c.open),
-            "high": str(c.high),
-            "low": str(c.low),
-            "close": str(c.close),
-            "volume": str(c.volume),
-        }
-        for c in binance_candles
-    ]
-    if candle_dicts:
-        try:
-            await cache.set_candles(
-                exchange=exchange, symbol=symbol, interval=interval, candles=candle_dicts
-            )
-            logger.info("Cached %d candles for %s:%s:%s", len(candle_dicts), exchange, symbol, interval)
-        except Exception:
-            logger.warning("Failed to cache candles — returning uncached data")
+    # ── 4. Cache result in Redis + return ────────────────────────
+    try:
+        await cache.set_candles(
+            exchange=exchange, symbol=symbol, interval=interval, candles=candle_dicts
+        )
+        logger.info("Cached %d candles for %s:%s:%s", len(candle_dicts), exchange, symbol, interval)
+    except Exception:
+        logger.warning("Failed to cache candles — returning uncached data")
 
     candle_dtos = [CandleDTO(**d) for d in candle_dicts]
     return CandlesResponseDTO(
@@ -252,7 +309,7 @@ async def get_candles(
         interval=interval,
         count=len(candle_dtos),
         candles=candle_dtos,
-        ts=binance_candles[-1].time if binance_candles else "",
+        ts=candle_dicts[-1]["time"] if candle_dicts else "",
     )
 
 

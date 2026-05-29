@@ -183,58 +183,27 @@ function generateMockTradeHistory(): TradeHistoryItem[] {
 
 // ========== API FUNCTIONS ==========
 export async function fetchTickers(): Promise<TickerPrice[]> {
-  // Primary path: data-service cache (populated by Kafka feeders)
+  // Primary path: data-service (Chainlink-backed, cached in Redis)
   try {
-    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/price/hyperliquid/BTC`);
+    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/price/chainlink/BTC`);
     if (res.ok) {
       const data = await res.json();
       const price = parseFloat(data.last || data.price || '0');
       return [{
-        symbol: 'BTC-PERP', 
-        price: price || 68250.5, 
+        symbol: 'BTC-PERP',
+        price: price || 68250.5,
         change24h: 2.34,
-        volume24h: 1250000000, 
-        high24h: price * 1.02 || 43800, 
+        volume24h: 1250000000,
+        high24h: price * 1.02 || 43800,
         low24h: price * 0.97 || 42100,
       }];
     }
   } catch (e) {
-    console.warn('[Data] Cache miss on data-service, trying live public API', e);
+    console.warn('[Data] data-service cache miss on tickers', e);
   }
 
-  // Live fallback - real data from public Hyperliquid API (no more fake numbers)
-  try {
-    const response = await fetch('https://api.hyperliquid.xyz/info', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'metaAndAssetCtxs'
-      })
-    });
-    
-    if (response.ok) {
-      const ctxs = await response.json();
-      // Extract real prices (Hyperliquid returns array of asset contexts)
-      const assets = ctxs[1] || [];
-      const mapping: Record<string, number> = {};
-      assets.forEach((asset: any) => {
-        if (asset && asset.name) mapping[asset.name] = parseFloat(asset.markPx || asset.last || '0');
-      });
-      
-      return [
-        { symbol: 'BTC-PERP', price: mapping.BTC || 68250, change24h: 1.8, volume24h: 1840000000, high24h: 69500, low24h: 67100 },
-        { symbol: 'ETH-PERP', price: mapping.ETH || 2650, change24h: 2.4, volume24h: 920000000, high24h: 2720, low24h: 2590 },
-        { symbol: 'SOL-PERP', price: mapping.SOL || 152.8, change24h: 4.9, volume24h: 680000000, high24h: 158.4, low24h: 145.2 },
-        { symbol: 'ARB-PERP', price: mapping.ARB || 0.812, change24h: -0.9, volume24h: 145000000, high24h: 0.851, low24h: 0.792 },
-        { symbol: 'DOGE-PERP', price: mapping.DOGE || 0.184, change24h: 5.2, volume24h: 92000000, high24h: 0.192, low24h: 0.171 },
-      ];
-    }
-  } catch (liveErr) {
-    console.error('[Data] Live Hyperliquid API failed too:', liveErr);
-  }
-
-  // True last resort - clearly labeled static data
-  console.warn('[Data] Using static fallback. Check data-service Redis cache and Kafka consumers.');
+  // Last resort — clearly stale
+  console.warn('[Data] Using static fallback. Check data-service + Chainlink API key.');
   return [
     { symbol: 'BTC-PERP', price: 68250, change24h: 1.8, volume24h: 1840000000, high24h: 69500, low24h: 67100 },
     { symbol: 'ETH-PERP', price: 2650, change24h: 2.4, volume24h: 920000000, high24h: 2720, low24h: 2590 },
@@ -258,48 +227,22 @@ const INTERVAL_MAP: Record<string, string> = {
 };
 
 export async function fetchCandles(symbol = 'BTC-PERP', interval = '5m'): Promise<Candle[]> {
-  // 1) Try data-service cache first
+  // 1) Try data-service cache first (Chainlink-backed)
   try {
-    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/candles/hyperliquid/${symbol}/${interval}`);
+    const res = await fetch(`${DATA_BASE}/api/v1/marketdata/candles/chainlink/${symbol}/${interval}`);
     if (res.ok) {
       const data = await res.json();
       if (data.candles?.length > 0) return data.candles;
     }
   } catch { /* fall through */ }
 
-  // 2) Try Binance public API (reliable, no key)
-  const sym = SYMBOL_MAP[symbol];
-  if (sym) {
-    try {
-      const binInterval = INTERVAL_MAP[interval] || '5m';
-      const res = await fetch(
-        `https://api.binance.com/api/v3/klines?symbol=${sym.binance}&interval=${binInterval}&limit=200`,
-        { cache: 'no-store' }
-      );
-      if (res.ok) {
-        const klines = await res.json();
-        // Validate: Binance returns {"code":0,"msg":"..."} on geo-block — must be array of arrays
-        if (Array.isArray(klines) && klines.length > 0 && Array.isArray(klines[0])) {
-          return klines.map((k: any) => ({
-            time: k[0],
-            open: parseFloat(k[1]),
-            high: parseFloat(k[2]),
-            low: parseFloat(k[3]),
-            close: parseFloat(k[4]),
-            volume: parseFloat(k[5]),
-          }));
-        }
-      }
-    } catch { /* fall through */ }
-  }
-
-  // 3) Last resort: mock data
-  const basePrice = sym?.basePrice ?? (symbol.startsWith('ETH') ? 2400 : symbol.startsWith('SOL') ? 140 : 75000);
+  // 2) Last resort: mock data
+  const basePrice = SYMBOL_MAP[symbol]?.basePrice ?? (symbol.startsWith('ETH') ? 2400 : symbol.startsWith('SOL') ? 140 : 75000);
   return generateCandles(200, basePrice);
 }
 
 export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
-  // 1) Try data-service cache
+  // 1) Try data-service cache (Chainlink-backed)
   try {
     const res = await fetch(`${DATA_BASE}/api/v1/marketdata/orderbook/hyperliquid/${symbol}`);
     if (res.ok) {
@@ -314,29 +257,8 @@ export async function fetchOrderBook(symbol = 'BTC-PERP'): Promise<OrderBook> {
     }
   } catch { /* fall through */ }
 
-  // 2) Binance public orderbook
-  const sym = SYMBOL_MAP[symbol];
-  if (sym) {
-    try {
-      const res = await fetch(
-        `https://api.binance.com/api/v3/depth?symbol=${sym.binance}&limit=12`,
-        { cache: 'no-store' }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          symbol,
-          timestamp: Date.now(),
-          source: 'binance',
-          bids: data.bids.map((b: any) => ({ price: parseFloat(b[0]), size: parseFloat(b[1]) })),
-          asks: data.asks.map((a: any) => ({ price: parseFloat(a[0]), size: parseFloat(a[1]) })),
-        };
-      }
-    } catch { /* fall through */ }
-  }
-
-  // 3) Mock fallback
-  const basePrice = sym?.basePrice ?? (symbol.startsWith('ETH') ? 2400 : symbol.startsWith('SOL') ? 140 : 75000);
+  // 2) Mock fallback
+  const basePrice = SYMBOL_MAP[symbol]?.basePrice ?? (symbol.startsWith('ETH') ? 2400 : symbol.startsWith('SOL') ? 140 : 75000);
   return {
     symbol,
     timestamp: Date.now(),
