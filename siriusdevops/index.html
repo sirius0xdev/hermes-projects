@@ -514,8 +514,8 @@ footer .links a:hover { color: var(--text-muted); }
   <div class="logo"><span class="star">&#9733;</span> siriusdevops.com</div>
   <nav>
     <a href="#capabilities">Capabilities</a>
+    <a href="#services">Services</a>
     <a href="#deployments">Deployments</a>
-    <a href="services.html">Services</a>
     <a href="#contact">Contact</a>
   </nav>
 </header>
@@ -650,6 +650,104 @@ footer .links a:hover { color: var(--text-muted); }
           <span class="tag">SPOT Instances</span>
           <span class="tag">Scale-to-Zero</span>
           <span class="tag">CUD Planning</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<div class="section-divider" role="separator"></div>
+
+<!-- ─── Featured Pipeline ─── -->
+<section id="services" class="capabilities">
+  <div class="section-overline">Featured Offering</div>
+  <h2 class="section-title">News Intelligence Platform</h2>
+
+  <p style="max-width: 720px; font-size: 15px; line-height: 1.65; color: var(--text-muted); margin-bottom: 32px;">
+    A complete, production-grade autonomous system that monitors hundreds of sources, extracts clean articles, runs LLM analysis at scale, and pushes trading-relevant signals straight to Telegram. Currently powering real-time gold futures (GC=F) monitoring using custom VWAP strategies.
+  </p>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 32px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">01 — Ingestion</h4>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Scrapy spiders with intelligent article extraction, brotli decompression, proxy support, and aggressive deduplication. Handles 100+ domains reliably.</p>
+      </div>
+      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">02 — Analysis</h4>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">vLLM on GKE GPU nodes (L4/A100) running abliterated Qwen models. Structured JSON output: summary, entities, sentiment, relevance, and strategy-aligned signals.</p>
+      </div>
+      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">03 — Storage &amp; API</h4>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">CloudNativePG dedicated database + internal REST API in the trading platform for dashboard queries and historical research.</p>
+      </div>
+      <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+        <h4 style="font-size: 14px; color: var(--accent); margin-bottom: 6px;">04 — Action</h4>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Telegram delivery bot with clean, actionable alerts including context, links, and proposed trade implications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tags" style="margin-bottom: 48px;">
+    <span class="tag">Scrapy</span>
+    <span class="tag">vLLM</span>
+    <span class="tag">GKE CronJobs</span>
+    <span class="tag">CloudNativePG</span>
+    <span class="tag">Qwen 3.6 27B</span>
+    <span class="tag">Hermes Agents</span>
+    <span class="tag">Telegram Bot</span>
+    <span class="tag">GitOps / Flux</span>
+  </div>
+
+  <div class="section-overline">Services</div>
+  <h2 class="section-title" style="margin-top: 8px;">Autonomous intelligence systems for your domain</h2>
+
+  <ol class="cap-list">
+    <li class="cap-item">
+      <span class="cap-num">01</span>
+      <div class="cap-content">
+        <h3>Custom news &amp; signal intelligence pipelines</h3>
+        <p>End-to-end systems like the one above tailored to your data sources, LLM requirements, and delivery channels (Slack, Telegram, internal dashboards, trading engines).</p>
+        <div class="tags">
+          <span class="tag">Market monitoring</span>
+          <span class="tag">Competitive intel</span>
+          <span class="tag">Regulatory alerts</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">02</span>
+      <div class="cap-content">
+        <h3>Multi-agent AI orchestration</h3>
+        <p>Deploy teams of specialized Hermes agents that plan, research, code, review, and execute complex workflows — all tracked in a shared kanban and versioned in Git.</p>
+        <div class="tags">
+          <span class="tag">Hermes</span>
+          <span class="tag">Kanban-driven</span>
+          <span class="tag">Autonomous ops</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">03</span>
+      <div class="cap-content">
+        <h3>Production LLM serving infrastructure</h3>
+        <p>vLLM clusters on GKE with proper autoscaling, model routing, observability, and cost controls. Ready for your fine-tuned or open models.</p>
+        <div class="tags">
+          <span class="tag">vLLM</span>
+          <span class="tag">GPU node pools</span>
+          <span class="tag">KEDA scale-to-zero</span>
+        </div>
+      </div>
+    </li>
+    <li class="cap-item">
+      <span class="cap-num">04</span>
+      <div class="cap-content">
+        <h3>Full GitOps lifecycle &amp; maintenance</h3>
+        <p>Everything versioned in Git. PR-driven changes. Automatic image builds, Flux reconciliation, and zero-downtime updates. I operate what I build.</p>
+        <div class="tags">
+          <span class="tag">Flux CD</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Renovate</span>
         </div>
       </div>
     </li>
