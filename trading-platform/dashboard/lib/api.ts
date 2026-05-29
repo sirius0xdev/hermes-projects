@@ -115,15 +115,15 @@ export interface AuthVerifyResponse {
 function generateCandles(count = 200, basePrice = 42000): Candle[] {
   const candles: Candle[] = [];
   let price = basePrice;
-  const now = Math.floor(Date.now() / 1000);
-  for (let i = count; i >= 0; i--) {
-    const change = (Math.random() - 0.48) * price * 0.015;
-    const open = price;
-    const close = price + change;
-    const high = Math.max(open, close) + Math.random() * Math.abs(change) * 2;
-    const low = Math.min(open, close) - Math.random() * Math.abs(change) * 2;
-    candles.push({
-      time: now - i * 300,
+    const now = Date.now();
+    for (let i = count; i >= 0; i--) {
+      const change = (Math.random() - 0.48) * price * 0.015;
+      const open = price;
+      const close = price + change;
+      const high = Math.max(open, close) + Math.random() * Math.abs(change) * 2;
+      const low = Math.min(open, close) - Math.random() * Math.abs(change) * 2;
+      candles.push({
+        time: now - i * 300000, // milliseconds, 5-min intervals
       open: +open.toFixed(2),
       high: +high.toFixed(2),
       low: +low.toFixed(2),
