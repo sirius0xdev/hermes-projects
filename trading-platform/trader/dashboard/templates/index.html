@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hyperliquid Scalper</title>
+  <style>
+    :root { --bg:#0b0f1c; --panel:#101525; --text:#e6f0ff; --dim:#8aa; --cyan:#00e5ff; --pink:#ff4d88; --green:#2ecc71; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; background:var(--bg); color:var(--text); }
+    header { padding:18px 24px; border-bottom:1px solid #1a2340; display:flex; gap:18px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    h1 { font-size:18px; margin:0; }
+    .controls { display:flex; gap:10px; align-items:center; }
+    button { background:#101525; color:var(--text); border:1px solid #1a2340; padding:9px 12px; border-radius:8px; cursor:pointer; }
+    button:hover { border-color:#2a3a6a; }
+    .pill { padding:6px 10px; border-radius:999px; border:1px solid #1a2340; font-size:12px; }
+    main { padding:18px 24px; display:grid; grid-template-columns: 280px 1fr; gap:18px; }
+    @media (max-width:980px){ main { grid-template-columns: 1fr; } }
+    .panel { background:var(--panel); border:1px solid #1a2340; border-radius:12px; padding:14px; }
+    .panel h2 { margin:0 0 10px; font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; }
+    .stat { font-size:22px; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:left; padding:8px 6px; border-bottom:1px solid #121a30; font-size:12px; }
+    th { color:var(--dim); font-weight:500; }
+    .green { color:var(--green); } .pink { color:var(--pink); } .cyan { color:var(--cyan); }
+    .tag { display:inline-block; padding:2px 7px; border-radius:999px; font-size:10px; background:#131c38; border:1px solid #233055; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hyperliquid Scalper <span class="tag">beta</span></h1>
+    <div class="controls">
+      <span id="status" class="pill">loading</span>
+      <button id="startBtn" onclick="startBot()">Start</button>
+      <button id="stopBtn" onclick="stopBot()" disabled>Stop</button>
+      <button onclick="refresh()">Refresh</button>
+    </div>
+  </header>
+  <main>
+    <section class="panel">
+      <h2>PnL</h2>
+      <div class="stat" id="totalPnl">—</div>
+      <div style="margin-top:8px; font-size:12px; color:var(--dim)">Gross profit: <span id="grossProfit">—</span></div>
+      <div style="margin-top:6px; font-size:12px; color:var(--dim)">Gross loss: <span id="grossLoss">—</span></div>
+      <div style="margin-top:6px; font-size:12px; color:var(--dim)">Closed trades: <span id="closedCount">—</span></div>
+    </section>
+    <section class="panel">
+      <h2>Risk Config <span id="configStatus" style="font-size:11px;color:var(--dim);margin-left:8px"></span></h2>
+      <form id="configForm" style="display:grid; gap:10px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            Equity (USDT)
+            <input id="cfgEquity" type="number" step="0.01" min="1" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px;">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            Leverage
+            <input id="cfgLeverage" type="number" min="1" max="50" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px;">
+          </label>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            Min Risk % (per trade)
+            <input id="cfgRiskMin" type="number" step="0.01" min="0.01" max="0.99" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px;">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            Max Risk % (per trade)
+            <input id="cfgRiskMax" type="number" step="0.01" min="0.01" max="0.99" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px;">
+          </label>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            Max Daily Loss %
+            <input id="cfgMaxDailyLoss" type="number" step="0.01" min="0.01" max="0.99" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px;">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            Max Concurrent Positions
+            <input id="cfgMaxPos" type="number" min="1" max="10" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px;">
+          </label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button type="submit" class="green" style="background:#143d2e; border-color:#228844;">Save Config</button>
+          <button type="button" onclick="loadConfig()" style="background:#1d1d3d; border-color:#333;">Reload</button>
+        </div>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>API Keys / Secrets <span id="secretsStatus" style="font-size:11px;color:var(--dim);margin-left:8px"></span></h2>
+      <div id="secretsList" style="display:grid; gap:10px;"></div>
+    </section>
+    <section class="panel">
+      <h2>Recent trades</h2>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Asset</th><th>Side</th><th>Notional</th><th>Lev</th><th>Status</th><th>PnL</th><th></th></tr>
+          </thead>
+          <tbody id="trades"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script>
+    // Detect base path for API calls (handles Tailscale serve subpath /trader)
+    const BASE_PATH = (() => {
+      const path = window.location.pathname;
+      // If served under /trader/, use /trader as base
+      if (path.startsWith('/trader')) return '/trader';
+      return '';
+    })();
+    const API = (p) => `${BASE_PATH}/api/${p}`;
+    const $$ = (id) => document.getElementById(id);
+    const fmt = (n)=> (Number.isFinite(n)? (n>0?'+':'')+n.toFixed(2): '—');
+    let running = false;
+
+    async function loadConfig(){
+      try {
+        const r = await fetch(API('config/risk'));
+        if (!r.ok) throw new Error('failed');
+        const d = await r.json();
+        $$('cfgEquity').value = d.equity_usd;
+        $$('cfgLeverage').value = d.leverage;
+        $$('cfgRiskMin').value = d.risk_pct_min;
+        $$('cfgRiskMax').value = d.risk_pct_max;
+        $$('cfgMaxDailyLoss').value = d.max_daily_loss_pct;
+        $$('cfgMaxPos').value = d.max_concurrent_positions;
+        $$('configStatus').textContent = `updated ${d.updated_at?.slice(0,19).replace('T',' ')}`;
+      } catch (e) {
+        $$('configStatus').textContent = 'load failed';
+        $$('configStatus').style.color = 'var(--pink)';
+      }
+    }
+
+    async function saveConfig(e){
+      e.preventDefault();
+      const payload = {
+        equity_usd: parseFloat($$('cfgEquity').value),
+        leverage: parseInt($$('cfgLeverage').value),
+        risk_pct_min: parseFloat($$('cfgRiskMin').value),
+        risk_pct_max: parseFloat($$('cfgRiskMax').value),
+        max_daily_loss_pct: parseFloat($$('cfgMaxDailyLoss').value),
+        max_concurrent_positions: parseInt($$('cfgMaxPos').value),
+      };
+      try {
+        const r = await fetch(API('config/risk'), {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (r.ok) {
+          $$('configStatus').textContent = `saved ${d.updated_at?.slice(0,19).replace('T',' ')}`;
+          $$('configStatus').style.color = 'var(--green)';
+          loadConfig();
+        } else {
+          $$('configStatus').textContent = `error: ${d.status}`;
+          $$('configStatus').style.color = 'var(--pink)';
+        }
+      } catch (e) {
+        $$('configStatus').textContent = 'save failed';
+        $$('configStatus').style.color = 'var(--pink)';
+      }
+    }
+
+    async function loadStatus(){
+      const r = await fetch(API('status')); const d = await r.json(); running = d.running;
+      $$('status').textContent = running ? 'running' : 'stopped';
+      $$('status').classList.toggle('green', running);
+      $$('status').classList.toggle('pink', !running);
+      $$('startBtn').disabled = running;
+      $$('stopBtn').disabled = !running;
+    }
+
+    async function startBot(){
+      const r = await fetch(API('control'), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'start'})});
+      const d = await r.json(); await loadStatus();
+    }
+    async function stopBot(){
+      const r = await fetch(API('control'), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'stop'})});
+      const d = await r.json(); await loadStatus();
+    }
+
+    async function loadTrades(){
+      const [openR, closedR, pnlR] = await Promise.all([ fetch(API('trades?status=open&limit=50')), fetch(API('trades?status=closed&limit=50')), fetch(API('pnl')) ]);
+      const openT = await openR.json(); const closedT = await closedR.json(); const pnl = await pnlR.json();
+      const all = [...closedT, ...openT];
+      const rows = all.map(t=>`<tr>
+        <td>${new Date(t.ts).toLocaleString()}</td>
+        <td>${t.asset ?? ''}</td>
+        <td><span class="tag">${t.side ?? t.decision ?? ''}</span></td>
+        <td>${Number.isFinite(t.size_usd_notional)? '$'+t.size_usd_notional.toFixed(2): '—'}</td>
+        <td>${t.leverage ?? '—'}x</td>
+        <td><span class="tag">${t.status}</span></td>
+        <td class="${(t.pnl??0)>=0?'green':'pink'}">${fmt(t.pnl)}</td>
+        <td>${t.status==='open'?`<button onclick="closeTrade(${t.id})">Close</button>`:''}</td>
+      </tr>`).join('');
+      $$('trades').innerHTML = rows || `<tr><td colspan="8" style="color:var(--dim)">No trades yet.</td></tr>`;
+      $$('totalPnl').textContent = fmt(pnl.total_pnl);
+      $$('grossProfit').textContent = fmt(pnl.gross_profit);
+      $$('grossLoss').textContent = fmt(pnl.gross_loss);
+      $$('closedCount').textContent = pnl.total_closed ?? 0;
+    }
+
+    async function closeTrade(id){
+      await fetch(`/api/trades/${id}/close`, {method:'POST'});
+      await loadTrades();
+    }
+
+    // Secrets management
+    async function loadSecrets(){
+      try {
+        const r = await fetch(API('config/secrets'));
+        if (!r.ok) throw new Error('failed');
+        const secrets = await r.json();
+        const container = $$('secretsList');
+        container.innerHTML = '';
+        for (const [key, data] of Object.entries(secrets)) {
+          const div = document.createElement('div');
+          div.style.cssText = 'display:grid; grid-template-columns: 1fr 1fr auto auto; gap:8px; align-items:end;';
+          div.innerHTML = `
+            <label style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+              <span>${key}</span>
+              <input type="password" id="sec_${key}" value="${data.value}" placeholder="${data.description}" style="background:#0b0f1c; color:var(--text); border:1px solid #1a2340; padding:6px 8px; border-radius:6px; font-family:inherit;">
+            </label>
+            <div style="font-size:10px; color:var(--dim); max-width:200px;">${data.description}</div>
+            <button onclick="saveSecret('${key}')" style="background:#143d2e; border-color:#228844; padding:6px 10px;">Save</button>
+            <button onclick="deleteSecret('${key}')" style="background:#3d1414; border-color:#882222; padding:6px 10px;">Delete</button>
+          `;
+          container.appendChild(div);
+        }
+        $$('secretsStatus').textContent = 'loaded';
+        $$('secretsStatus').style.color = 'var(--green)';
+      } catch (e) {
+        $$('secretsStatus').textContent = 'load failed';
+        $$('secretsStatus').style.color = 'var(--pink)';
+      }
+    }
+
+    async function saveSecret(key){
+      const input = $$(`sec_${key}`);
+      const value = input.value;
+      if (!value || value.startsWith('*')) {
+        // Don't save masked values
+        return;
+      }
+      try {
+        const r = await fetch(API('config/secrets'), {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key, value})
+        });
+        const d = await r.json();
+        if (r.ok) {
+          $$('secretsStatus').textContent = `saved ${key}`;
+          $$('secretsStatus').style.color = 'var(--green)';
+          input.value = '********';
+          loadSecrets();
+        } else {
+          $$('secretsStatus').textContent = `error: ${d.status}`;
+          $$('secretsStatus').style.color = 'var(--pink)';
+        }
+      } catch (e) {
+        $$('secretsStatus').textContent = 'save failed';
+        $$('secretsStatus').style.color = 'var(--pink)';
+      }
+    }
+
+    async function deleteSecret(key){
+      if (!confirm(`Delete ${key}?`)) return;
+      try {
+        const r = await fetch(API(`config/secrets/${key}`), {method:'DELETE'});
+        const d = await r.json();
+        if (r.ok) {
+          $$('secretsStatus').textContent = `deleted ${key}`;
+          $$('secretsStatus').style.color = 'var(--green)';
+          loadSecrets();
+        } else {
+          $$('secretsStatus').textContent = `error: ${d.status}`;
+          $$('secretsStatus').style.color = 'var(--pink)';
+        }
+      } catch (e) {
+        $$('secretsStatus').textContent = 'delete failed';
+        $$('secretsStatus').style.color = 'var(--pink)';
+      }
+    }
+
+    function refresh(){ Promise.all([loadStatus(), loadTrades(), loadConfig(), loadSecrets()]); }
+    setInterval(refresh, 3000);
+    refresh();
+  </script>
+</body>
+</html>

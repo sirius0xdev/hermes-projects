@@ -1,0 +1,35 @@
+name: trader docker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "trading-platform/trader/**"
+      - ".github/workflows/trader-docker.yml"
+  workflow_dispatch:
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trading-platform/trader
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: trading-platform/trader
+          file: trading-platform/trader/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/trader:latest
+            ghcr.io/${{ github.repository_owner }}/trader:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/trader:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/trader:buildcache,mode=max
