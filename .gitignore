@@ -20,3 +20,7 @@ trading-platform/**/venv
 trading-platform/**/node_modules
 trading-platform/**/.next
 trading-platform/**/tsconfig.tsbuildinfo
+trading-platform/hybrid-bot-v2/data/hybrid.pid
+trading-platform/hybrid-bot-v2/data/hybrid_paper.lock
+trading-platform/hybrid-bot-v2/data/*.sqlite
+trading-platform/hybrid-bot-v2/__pycache__/
